@@ -4,44 +4,36 @@
 
 ### 1.1 アーキテクチャ図
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         Client Browser                          │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-                                │ HTTP/HTTPS
-                                ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                     Frontend (React + Vite)                     │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
-│  │   Routes    │  │ Components  │  │    TanStack Query       │  │
-│  │  (Router)   │──│    (MUI)    │──│   (Server State)        │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
-│                                              │                   │
-└──────────────────────────────────────────────│───────────────────┘
-                                               │
-                                               │ REST API
-                                               ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                    Backend (Express + TypeScript)               │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────────┐  │
-│  │   Routes    │──│ Controllers │──│       Services          │  │
-│  │             │  │             │  │   (Business Logic)      │  │
-│  └─────────────┘  └─────────────┘  └─────────────────────────┘  │
-│         │                                    │                   │
-│         │                                    ▼                   │
-│  ┌─────────────┐                  ┌─────────────────────────┐   │
-│  │ Middleware  │                  │     Repositories        │   │
-│  │ (Auth,CORS) │                  │    (Data Access)        │   │
-│  └─────────────┘                  └─────────────────────────┘   │
-│                                              │                   │
-└──────────────────────────────────────────────│───────────────────┘
-                                               │
-                                               │ Prisma ORM
-                                               ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                        SQLite Database                          │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Client["Client Browser"]
+        Browser[Browser]
+    end
+
+    subgraph Frontend["Frontend (React + Vite)"]
+        Routes[Routes<br/>TanStack Router]
+        Components[Components<br/>MUI]
+        Query[TanStack Query<br/>Server State]
+        Routes --> Components --> Query
+    end
+
+    subgraph Backend["Backend (Express + TypeScript)"]
+        BRoutes[Routes]
+        Controllers[Controllers]
+        Services[Services<br/>Business Logic]
+        Middleware[Middleware<br/>Auth, CORS]
+        Repositories[Repositories<br/>Data Access]
+        BRoutes --> Controllers --> Services --> Repositories
+        Middleware -.-> BRoutes
+    end
+
+    subgraph Database["Database"]
+        SQLite[(SQLite)]
+    end
+
+    Browser -->|HTTP/HTTPS| Frontend
+    Query -->|REST API| BRoutes
+    Repositories -->|Prisma ORM| SQLite
 ```
 
 ### 1.2 コンポーネント間の通信
@@ -58,48 +50,38 @@
 
 ### 2.1 レイヤードアーキテクチャ
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                      HTTP Request                           │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                        Routes Layer                         │
-│   - エンドポイント定義                                        │
-│   - ミドルウェア適用（Auth, Validation）                       │
-│   - ルーティング                                             │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                     Controllers Layer                       │
-│   - リクエストパラメータ抽出                                   │
-│   - バリデーション実行                                        │
-│   - レスポンス整形                                           │
-│   - エラーハンドリング                                        │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                      Services Layer                         │
-│   - ビジネスロジック実装                                      │
-│   - トランザクション管理                                      │
-│   - 複数リポジトリの調整                                      │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                    Repositories Layer                       │
-│   - Prisma クエリ実行                                        │
-│   - データ変換                                               │
-│   - キャッシュ（将来）                                        │
-└─────────────────────────────────────────────────────────────┘
-                              │
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│                        Database                             │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    Request[HTTP Request]
+
+    subgraph Routes["Routes Layer"]
+        R1["エンドポイント定義"]
+        R2["ミドルウェア適用（Auth, Validation）"]
+        R3["ルーティング"]
+    end
+
+    subgraph Controllers["Controllers Layer"]
+        C1["リクエストパラメータ抽出"]
+        C2["バリデーション実行"]
+        C3["レスポンス整形"]
+        C4["エラーハンドリング"]
+    end
+
+    subgraph Services["Services Layer"]
+        S1["ビジネスロジック実装"]
+        S2["トランザクション管理"]
+        S3["複数リポジトリの調整"]
+    end
+
+    subgraph Repositories["Repositories Layer"]
+        Repo1["Prisma クエリ実行"]
+        Repo2["データ変換"]
+        Repo3["キャッシュ（将来）"]
+    end
+
+    DB[(Database)]
+
+    Request --> Routes --> Controllers --> Services --> Repositories --> DB
 ```
 
 ### 2.2 各レイヤーの責務
@@ -113,46 +95,19 @@
 
 ### 2.3 ミドルウェアスタック
 
-```
-Request
-    │
-    ▼
-┌─────────────┐
-│   Helmet    │  セキュリティヘッダー
-└─────────────┘
-    │
-    ▼
-┌─────────────┐
-│    CORS     │  クロスオリジン設定
-└─────────────┘
-    │
-    ▼
-┌─────────────┐
-│ JSON Parser │  リクエストボディ解析
-└─────────────┘
-    │
-    ▼
-┌─────────────┐
-│    Auth     │  JWT 検証（必要な場合）
-└─────────────┘
-    │
-    ▼
-┌─────────────┐
-│  Validation │  リクエストバリデーション
-└─────────────┘
-    │
-    ▼
-┌─────────────┐
-│  Controller │  ビジネスロジック実行
-└─────────────┘
-    │
-    ▼
-┌─────────────┐
-│Error Handler│  エラー処理・レスポンス
-└─────────────┘
-    │
-    ▼
-Response
+```mermaid
+flowchart TB
+    Request[Request]
+    Helmet["Helmet<br/>セキュリティヘッダー"]
+    CORS["CORS<br/>クロスオリジン設定"]
+    JSONParser["JSON Parser<br/>リクエストボディ解析"]
+    Auth["Auth<br/>JWT 検証（必要な場合）"]
+    Validation["Validation<br/>リクエストバリデーション"]
+    Controller["Controller<br/>ビジネスロジック実行"]
+    ErrorHandler["Error Handler<br/>エラー処理・レスポンス"]
+    Response[Response]
+
+    Request --> Helmet --> CORS --> JSONParser --> Auth --> Validation --> Controller --> ErrorHandler --> Response
 ```
 
 ---
@@ -246,63 +201,68 @@ function ArticlesPage() {
 
 ### 4.1 エンティティ関係図
 
-```
-┌─────────────────┐
-│      User       │
-├─────────────────┤
-│ id              │◄──────────────────────────────────┐
-│ email           │                                   │
-│ username        │◄─────────────────┐                │
-│ password        │                  │                │
-│ bio             │                  │                │
-│ image           │                  │                │
-│ createdAt       │                  │                │
-│ updatedAt       │                  │                │
-└─────────────────┘                  │                │
-        │                            │                │
-        │ 1:N                        │                │
-        ▼                            │                │
-┌─────────────────┐                  │                │
-│    Article      │                  │                │
-├─────────────────┤                  │                │
-│ id              │◄─────────────────│────────┐       │
-│ slug            │                  │        │       │
-│ title           │                  │        │       │
-│ description     │                  │        │       │
-│ body            │                  │        │       │
-│ authorId        │──────────────────┘        │       │
-│ createdAt       │                           │       │
-│ updatedAt       │                           │       │
-└─────────────────┘                           │       │
-        │                                     │       │
-        │ N:M                                 │       │
-        ▼                                     │       │
-┌─────────────────┐                           │       │
-│      Tag        │                           │       │
-├─────────────────┤                           │       │
-│ id              │                           │       │
-│ name            │                           │       │
-└─────────────────┘                           │       │
-                                              │       │
-┌─────────────────┐                           │       │
-│    Comment      │                           │       │
-├─────────────────┤                           │       │
-│ id              │                           │       │
-│ body            │                           │       │
-│ articleId       │───────────────────────────┘       │
-│ authorId        │───────────────────────────────────┘
-│ createdAt       │
-│ updatedAt       │
-└─────────────────┘
+```mermaid
+erDiagram
+    User {
+        string id PK
+        string email UK
+        string username UK
+        string password
+        string bio
+        string image
+        datetime createdAt
+        datetime updatedAt
+    }
 
-┌─────────────────┐       ┌─────────────────┐
-│    Follow       │       │    Favorite     │
-├─────────────────┤       ├─────────────────┤
-│ followerId      │       │ userId          │
-│ followingId     │       │ articleId       │
-└─────────────────┘       └─────────────────┘
-     User:User              User:Article
-       N:M                    N:M
+    Article {
+        string id PK
+        string slug UK
+        string title
+        string description
+        string body
+        string authorId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Tag {
+        string id PK
+        string name UK
+    }
+
+    ArticleTag {
+        string articleId FK
+        string tagId FK
+    }
+
+    Comment {
+        string id PK
+        string body
+        string articleId FK
+        string authorId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Follow {
+        string followerId FK
+        string followingId FK
+    }
+
+    Favorite {
+        string userId FK
+        string articleId FK
+    }
+
+    User ||--o{ Article : "writes"
+    User ||--o{ Comment : "writes"
+    User ||--o{ Favorite : "favorites"
+    User ||--o{ Follow : "follower"
+    User ||--o{ Follow : "following"
+    Article ||--o{ Comment : "has"
+    Article ||--o{ ArticleTag : "has"
+    Article ||--o{ Favorite : "favorited by"
+    Tag ||--o{ ArticleTag : "tagged"
 ```
 
 ### 4.2 Prisma スキーマ
@@ -412,57 +372,34 @@ model Follow {
 
 ### 5.1 JWT 認証シーケンス
 
-```
-┌────────┐          ┌────────┐          ┌────────┐
-│ Client │          │ Server │          │   DB   │
-└───┬────┘          └───┬────┘          └───┬────┘
-    │                   │                   │
-    │  POST /api/users/login               │
-    │  {email, password}                   │
-    │──────────────────►│                   │
-    │                   │                   │
-    │                   │  Find user by email
-    │                   │──────────────────►│
-    │                   │                   │
-    │                   │◄──────────────────│
-    │                   │  User data        │
-    │                   │                   │
-    │                   │  Verify password  │
-    │                   │  (bcrypt.compare) │
-    │                   │                   │
-    │                   │  Generate JWT     │
-    │                   │                   │
-    │◄──────────────────│                   │
-    │  {user: {..., token}}                │
-    │                   │                   │
-    │  Store token in   │                   │
-    │  localStorage     │                   │
-    │                   │                   │
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+    participant DB
+
+    Client->>Server: POST /api/users/login<br/>{email, password}
+    Server->>DB: Find user by email
+    DB-->>Server: User data
+    Server->>Server: Verify password<br/>(bcrypt.compare)
+    Server->>Server: Generate JWT
+    Server-->>Client: {user: {..., token}}
+    Client->>Client: Store token in localStorage
 ```
 
 ### 5.2 認証済みリクエスト
 
-```
-┌────────┐          ┌────────┐          ┌────────┐
-│ Client │          │ Server │          │   DB   │
-└───┬────┘          └───┬────┘          └───┬────┘
-    │                   │                   │
-    │  GET /api/user                       │
-    │  Authorization: Token {jwt}          │
-    │──────────────────►│                   │
-    │                   │                   │
-    │                   │  Verify JWT       │
-    │                   │  Extract userId   │
-    │                   │                   │
-    │                   │  Find user by id  │
-    │                   │──────────────────►│
-    │                   │                   │
-    │                   │◄──────────────────│
-    │                   │  User data        │
-    │                   │                   │
-    │◄──────────────────│                   │
-    │  {user: {...}}                       │
-    │                   │                   │
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Server
+    participant DB
+
+    Client->>Server: GET /api/user<br/>Authorization: Token {jwt}
+    Server->>Server: Verify JWT<br/>Extract userId
+    Server->>DB: Find user by id
+    DB-->>Server: User data
+    Server-->>Client: {user: {...}}
 ```
 
 ### 5.3 トークン構造
