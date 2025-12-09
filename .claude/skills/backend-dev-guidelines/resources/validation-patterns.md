@@ -747,6 +747,76 @@ router.post('/users',
 
 ---
 
+## RealWorld バリデーションルール
+
+### ユーザー登録
+
+| フィールド | ルール |
+|-----------|--------|
+| `username` | 必須、一意、1-20文字 |
+| `email` | 必須、一意、有効なメール形式 |
+| `password` | 必須、8文字以上 |
+
+```typescript
+const registerUserSchema = z.object({
+  user: z.object({
+    username: z.string().min(1).max(20),
+    email: z.string().email(),
+    password: z.string().min(8),
+  }),
+});
+```
+
+### 記事作成
+
+| フィールド | ルール |
+|-----------|--------|
+| `title` | 必須、1-100文字 |
+| `description` | 必須、1-200文字 |
+| `body` | 必須 |
+| `tagList` | 任意、配列 |
+
+```typescript
+const createArticleSchema = z.object({
+  article: z.object({
+    title: z.string().min(1).max(100),
+    description: z.string().min(1).max(200),
+    body: z.string().min(1),
+    tagList: z.array(z.string()).optional(),
+  }),
+});
+```
+
+### コメント作成
+
+| フィールド | ルール |
+|-----------|--------|
+| `body` | 必須、1-1000文字 |
+
+```typescript
+const createCommentSchema = z.object({
+  comment: z.object({
+    body: z.string().min(1).max(1000),
+  }),
+});
+```
+
+### ユーザー情報更新
+
+```typescript
+const updateUserSchema = z.object({
+  user: z.object({
+    email: z.string().email().optional(),
+    username: z.string().min(1).max(20).optional(),
+    password: z.string().min(8).optional(),
+    bio: z.string().optional(),
+    image: z.string().url().optional(),
+  }),
+});
+```
+
+---
+
 **関連ファイル:**
 - [SKILL.md](SKILL.md) - メインガイド
 - [routing-and-controllers.md](routing-and-controllers.md) - Controllerでバリデーションを使用

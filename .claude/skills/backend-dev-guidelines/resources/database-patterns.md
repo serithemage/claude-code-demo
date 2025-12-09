@@ -1,10 +1,79 @@
 # データベースパターン - Prisma モベストプラクティス
 
-バックエンドマイクロサービスでPrismaを使用したデータベースアクセスパターンの完全なガイドです。
+バックエンドサービスでPrismaを使用したデータベースアクセスパターンの完全なガイドです。
+
+## RealWorld データモデル
+
+### エンティティ関係図
+
+```mermaid
+erDiagram
+    User {
+        string id PK
+        string email UK
+        string username UK
+        string password
+        string bio
+        string image
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Article {
+        string id PK
+        string slug UK
+        string title
+        string description
+        string body
+        string authorId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Tag {
+        string id PK
+        string name UK
+    }
+
+    ArticleTag {
+        string articleId FK
+        string tagId FK
+    }
+
+    Comment {
+        string id PK
+        string body
+        string articleId FK
+        string authorId FK
+        datetime createdAt
+        datetime updatedAt
+    }
+
+    Follow {
+        string followerId FK
+        string followingId FK
+    }
+
+    Favorite {
+        string userId FK
+        string articleId FK
+    }
+
+    User ||--o{ Article : "writes"
+    User ||--o{ Comment : "writes"
+    User ||--o{ Favorite : "favorites"
+    User ||--o{ Follow : "follower"
+    User ||--o{ Follow : "following"
+    Article ||--o{ Comment : "has"
+    Article ||--o{ ArticleTag : "has"
+    Article ||--o{ Favorite : "favorited by"
+    Tag ||--o{ ArticleTag : "tagged"
+```
 
 ## 目次
 
 - [PrismaService使用法](#prismaservice使用法)
+- [Prismaスキーマ](#prismaスキーマ)
 - [Repositoryパターン](#repositoryパターン)
 - [トランザクションパターン](#トランザクションパターン)
 - [クエリ最適化](#クエリ最適化)
@@ -18,20 +87,122 @@
 ### 基本パターン
 
 ```typescript
-import { PrismaService } from '@project-lifecycle-portal/database';
+import { prisma } from '../lib/prisma';
 
-// 常にPrismaService.mainを使用
-const users = await PrismaService.main.user.findMany();
+// Prismaクライアントを使用
+const users = await prisma.user.findMany();
 ```
 
-### 可用性確認
+### 初期化
 
 ```typescript
-if (!PrismaService.isAvailable) {
-    throw new Error('Prisma client not initialized');
+// lib/prisma.ts
+import { PrismaClient } from '@prisma/client';
+
+export const prisma = new PrismaClient();
+```
+
+---
+
+## Prismaスキーマ
+
+```prisma
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
 }
 
-const user = await PrismaService.main.user.findUnique({ where: { id } });
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  username  String   @unique
+  password  String
+  bio       String?
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  articles   Article[]
+  comments   Comment[]
+  favorites  Favorite[]
+  followers  Follow[]   @relation("Following")
+  following  Follow[]   @relation("Follower")
+}
+
+model Article {
+  id          String   @id @default(uuid())
+  slug        String   @unique
+  title       String
+  description String
+  body        String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+  tags      ArticleTag[]
+  comments  Comment[]
+  favorites Favorite[]
+
+  @@index([authorId])
+  @@index([createdAt])
+}
+
+model Tag {
+  id       String       @id @default(uuid())
+  name     String       @unique
+  articles ArticleTag[]
+}
+
+model ArticleTag {
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId String
+  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  tagId     String
+
+  @@id([articleId, tagId])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  body      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId String
+  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  String
+
+  @@index([articleId])
+}
+
+model Favorite {
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String
+  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  articleId String
+
+  @@id([userId, articleId])
+}
+
+model Follow {
+  follower    User   @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
+  followerId  String
+  following   User   @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
+  followingId String
+
+  @@id([followerId, followingId])
+}
 ```
 
 ---

@@ -14,6 +14,22 @@ TanStack Router 実装とフォルダベースルーティングおよび lazy l
 
 ---
 
+## RealWorld ページ一覧
+
+| ルート | ページ名 | 説明 |
+|--------|---------|------|
+| `/#/` | ホーム | 記事フィード、人気タグ |
+| `/#/login` | ログイン | ログインフォーム |
+| `/#/register` | 新規登録 | 登録フォーム |
+| `/#/settings` | 設定 | ユーザー設定、ログアウト |
+| `/#/editor` | 新規記事 | 記事作成フォーム |
+| `/#/editor/:slug` | 記事編集 | 記事編集フォーム |
+| `/#/article/:slug` | 記事詳細 | 記事本文、コメント |
+| `/#/profile/:username` | プロフィール | ユーザー情報、投稿記事 |
+| `/#/profile/:username/favorites` | お気に入り | ユーザーのお気に入り記事 |
+
+---
+
 ## フォルダベースルーティング
 
 ### ディレクトリ構造
@@ -22,13 +38,18 @@ TanStack Router 実装とフォルダベースルーティングおよび lazy l
 routes/
   __root.tsx                    # ルートレイアウト
   index.tsx                     # ホーム route (/)
-  posts/
-    index.tsx                   # /posts
-    create/
-      index.tsx                 # /posts/create
-    $postId.tsx                 # /posts/:postId (動的)
-  comments/
-    index.tsx                   # /comments
+  login.tsx                     # /login
+  register.tsx                  # /register
+  settings.tsx                  # /settings
+  editor/
+    index.tsx                   # /editor (新規記事)
+    $slug.tsx                   # /editor/:slug (記事編集)
+  article/
+    $slug.tsx                   # /article/:slug (記事詳細)
+  profile/
+    $username.tsx               # /profile/:username
+    $username/
+      favorites.tsx             # /profile/:username/favorites
 ```
 
 **パターン**:

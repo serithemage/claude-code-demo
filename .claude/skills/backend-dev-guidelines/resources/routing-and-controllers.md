@@ -619,15 +619,94 @@ async createUser(req: Request, res: Response): Promise<void> {
 | コード | ユースケース | 例 |
 |------|----------|---------|
 | 200 | 成功（GET、PUT） | ユーザー取得、更新 |
-| 201 | 作成完了（POST） | ユーザー作成 |
-| 204 | 内容なし（DELETE） | ユーザー削除 |
+| 201 | 作成完了（POST） | ユーザー作成、記事作成 |
+| 204 | 内容なし（DELETE） | ユーザー削除、記事削除 |
 | 400 | 不正なリクエスト | 無効な入力データ |
 | 401 | 認証なし | 認証されていない |
-| 403 | 禁止 | 権限なし |
+| 403 | 禁止 | 権限なし（他人の記事編集など） |
 | 404 | 見つからない | リソースが存在しない |
-| 409 | 競合 | 重複リソース |
 | 422 | 処理できないエンティティ | バリデーション失敗 |
 | 500 | 内部サーバーエラー | 予期しないエラー |
+
+---
+
+## RealWorld API エンドポイント
+
+### 認証 API
+
+| メソッド | エンドポイント | 説明 | 認証 |
+|---------|---------------|------|------|
+| POST | `/api/users/login` | ログイン | 不要 |
+| POST | `/api/users` | ユーザー登録 | 不要 |
+| GET | `/api/user` | 現在のユーザー取得 | 必須 |
+| PUT | `/api/user` | ユーザー情報更新 | 必須 |
+
+### プロフィール API
+
+| メソッド | エンドポイント | 説明 | 認証 |
+|---------|---------------|------|------|
+| GET | `/api/profiles/:username` | プロフィール取得 | 任意 |
+| POST | `/api/profiles/:username/follow` | フォロー | 必須 |
+| DELETE | `/api/profiles/:username/follow` | アンフォロー | 必須 |
+
+### 記事 API
+
+| メソッド | エンドポイント | 説明 | 認証 |
+|---------|---------------|------|------|
+| GET | `/api/articles` | 記事一覧取得 | 任意 |
+| GET | `/api/articles/feed` | フィード取得 | 必須 |
+| GET | `/api/articles/:slug` | 記事詳細取得 | 任意 |
+| POST | `/api/articles` | 記事作成 | 必須 |
+| PUT | `/api/articles/:slug` | 記事更新 | 必須 |
+| DELETE | `/api/articles/:slug` | 記事削除 | 必須 |
+
+### コメント API
+
+| メソッド | エンドポイント | 説明 | 認証 |
+|---------|---------------|------|------|
+| GET | `/api/articles/:slug/comments` | コメント一覧取得 | 任意 |
+| POST | `/api/articles/:slug/comments` | コメント作成 | 必須 |
+| DELETE | `/api/articles/:slug/comments/:id` | コメント削除 | 必須 |
+
+### お気に入り API
+
+| メソッド | エンドポイント | 説明 | 認証 |
+|---------|---------------|------|------|
+| POST | `/api/articles/:slug/favorite` | お気に入り追加 | 必須 |
+| DELETE | `/api/articles/:slug/favorite` | お気に入り解除 | 必須 |
+
+### タグ API
+
+| メソッド | エンドポイント | 説明 | 認証 |
+|---------|---------------|------|------|
+| GET | `/api/tags` | タグ一覧取得 | 不要 |
+
+---
+
+## 認証ヘッダー
+
+```
+Authorization: Token jwt.token.here
+```
+
+### 共通レスポンス形式
+
+**成功時**
+```json
+{
+  "user": { ... },      // または "article", "articles", etc.
+}
+```
+
+**エラー時**
+```json
+{
+  "errors": {
+    "body": ["can't be empty"],
+    "email": ["has already been taken"]
+  }
+}
+```
 
 ### 使用例
 

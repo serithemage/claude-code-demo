@@ -4,6 +4,140 @@
 
 ---
 
+## プロジェクト概要
+
+**RealWorld (Conduit)** - Medium.com クローンのソーシャルブログプラットフォーム
+
+| 技術 | バージョン | 用途 |
+|------|-----------|------|
+| **React** | 19.x | UI ライブラリ |
+| **TypeScript** | 5.x | 型安全 |
+| **MUI** | v7 | UI コンポーネント |
+| **TanStack Query** | 5.x | データフェッチング |
+| **TanStack Router** | 1.x | ルーティング |
+
+---
+
+## RealWorld 画面コンポーネント
+
+### ページ一覧
+
+| ルート | ページ名 | 主なコンポーネント |
+|--------|---------|-------------------|
+| `/#/` | ホーム | `HomePage`, `ArticleList`, `TagList`, `FeedTabs` |
+| `/#/login` | ログイン | `LoginPage`, `AuthForm` |
+| `/#/register` | 新規登録 | `RegisterPage`, `AuthForm` |
+| `/#/settings` | 設定 | `SettingsPage`, `SettingsForm` |
+| `/#/editor` | 新規記事 | `EditorPage`, `ArticleForm` |
+| `/#/editor/:slug` | 記事編集 | `EditorPage`, `ArticleForm` |
+| `/#/article/:slug` | 記事詳細 | `ArticlePage`, `ArticleMeta`, `CommentList` |
+| `/#/profile/:username` | プロフィール | `ProfilePage`, `ProfileHeader`, `ArticleList` |
+| `/#/profile/:username/favorites` | お気に入り | `ProfilePage`, `ArticleList` |
+
+### 共通レイアウトコンポーネント
+
+```typescript
+// ヘッダー（未ログイン時）
+interface HeaderProps {
+    isAuthenticated: false;
+}
+// 表示項目: Conduit ロゴ, Home, Sign in, Sign up
+
+// ヘッダー（ログイン時）
+interface HeaderProps {
+    isAuthenticated: true;
+    user: User;
+}
+// 表示項目: Conduit ロゴ, Home, New Article, Settings, プロフィール
+```
+
+### 機能別コンポーネント
+
+#### 認証 (features/auth)
+```typescript
+// ログインフォーム
+interface LoginFormProps {
+    onSubmit: (data: { email: string; password: string }) => void;
+    errors?: string[];
+}
+
+// 登録フォーム
+interface RegisterFormProps {
+    onSubmit: (data: { username: string; email: string; password: string }) => void;
+    errors?: string[];
+}
+```
+
+#### 記事 (features/articles)
+```typescript
+// 記事プレビュー
+interface ArticlePreviewProps {
+    article: Article;
+    onFavorite: (slug: string) => void;
+}
+
+// 記事一覧
+interface ArticleListProps {
+    articles: Article[];
+    articlesCount: number;
+    currentPage: number;
+    onPageChange: (page: number) => void;
+}
+
+// 記事フォーム
+interface ArticleFormProps {
+    article?: Article;
+    onSubmit: (data: { title: string; description: string; body: string; tagList: string[] }) => void;
+    errors?: string[];
+}
+
+// フィードタブ
+interface FeedTabsProps {
+    activeTab: 'your' | 'global' | 'tag';
+    selectedTag?: string;
+    isAuthenticated: boolean;
+    onTabChange: (tab: string) => void;
+}
+```
+
+#### コメント (features/comments)
+```typescript
+// コメント一覧
+interface CommentListProps {
+    comments: Comment[];
+    currentUser?: User;
+    onDelete: (id: number) => void;
+}
+
+// コメントフォーム
+interface CommentFormProps {
+    user: User;
+    onSubmit: (body: string) => void;
+}
+```
+
+#### プロフィール (features/profiles)
+```typescript
+// プロフィールヘッダー
+interface ProfileHeaderProps {
+    profile: Profile;
+    isCurrentUser: boolean;
+    onFollow: () => void;
+    onUnfollow: () => void;
+}
+```
+
+#### タグ (features/tags)
+```typescript
+// 人気タグ一覧
+interface TagListProps {
+    tags: string[];
+    onTagSelect: (tag: string) => void;
+}
+```
+
+---
+
 ## React.FC パターン (推奨)
 
 ### React.FC を使用する理由

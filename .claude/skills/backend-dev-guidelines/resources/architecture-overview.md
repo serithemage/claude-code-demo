@@ -1,13 +1,24 @@
 # アーキテクチャ概要 - バックエンドサービス
 
-バックエンドマイクロサービスで使用されるLayered Architectureパターンの完全なガイドです。
+バックエンドサービスで使用されるLayered Architectureパターンの完全なガイドです。
+
+## プロジェクト概要
+
+**RealWorld (Conduit)** - Medium.comクローンのソーシャルブログプラットフォーム
+
+| 技術 | バージョン | 用途 |
+|------|-----------|------|
+| **Node.js** | 20.x LTS | JavaScript ランタイム |
+| **Express** | 4.x | Web フレームワーク |
+| **TypeScript** | 5.x | 型安全性 |
+| **Prisma** | 5.x | ORM |
+| **SQLite** | 3.x | データベース |
 
 ## 目次
 
 - [Layered Architectureパターン](#layered-architectureパターン)
 - [リクエストライフサイクル](#リクエストライフサイクル)
-- [サービス比較](#サービス比較)
-- [ディレクトリ構造の根拠](#ディレクトリ構造の根拠)
+- [ディレクトリ構造](#ディレクトリ構造)
 - [モジュール構成](#モジュール構成)
 - [関心の分離](#関心の分離)
 
@@ -17,47 +28,41 @@
 
 ### 4つのレイヤー
 
-```
-┌─────────────────────────────────────┐
-│         HTTPリクエスト                │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│  レイヤー1: ROUTES                    │
-│  - ルート定義のみ                      │
-│  - Middleware登録                    │
-│  - Controllerに委譲                   │
-│  - ビジネスロジックなし                 │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│  レイヤー2: CONTROLLERS               │
-│  - リクエスト/レスポンス処理             │
-│  - 入力バリデーション                   │
-│  - Service呼び出し                    │
-│  - レスポンスフォーマット                │
-│  - エラー処理                          │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│  レイヤー3: SERVICES                  │
-│  - ビジネスロジック                     │
-│  - オーケストレーション                  │
-│  - Repository呼び出し                 │
-│  - HTTP知識なし                       │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│  レイヤー4: REPOSITORIES              │
-│  - データアクセス抽象化                  │
-│  - Prisma操作                        │
-│  - クエリ最適化                        │
-│  - キャッシング                        │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│         データベース (MySQL)           │
-└─────────────────────────────────────┘
+```mermaid
+flowchart TB
+    Request[HTTP リクエスト]
+
+    subgraph Routes["レイヤー1: ROUTES"]
+        R1["ルート定義のみ"]
+        R2["Middleware登録"]
+        R3["Controllerに委譲"]
+        R4["ビジネスロジックなし"]
+    end
+
+    subgraph Controllers["レイヤー2: CONTROLLERS"]
+        C1["リクエスト/レスポンス処理"]
+        C2["入力バリデーション（Zod）"]
+        C3["Service呼び出し"]
+        C4["レスポンスフォーマット"]
+        C5["エラー処理"]
+    end
+
+    subgraph Services["レイヤー3: SERVICES"]
+        S1["ビジネスロジック"]
+        S2["オーケストレーション"]
+        S3["Repository呼び出し"]
+        S4["HTTP知識なし"]
+    end
+
+    subgraph Repositories["レイヤー4: REPOSITORIES"]
+        Repo1["データアクセス抽象化"]
+        Repo2["Prisma操作"]
+        Repo3["クエリ最適化"]
+    end
+
+    DB[(SQLite Database)]
+
+    Request --> Routes --> Controllers --> Services --> Repositories --> DB
 ```
 
 ### このアーキテクチャを使用する理由
@@ -139,76 +144,32 @@ app.use(Sentry.Handlers.errorHandler());     // 8. Sentryエラー（最後）
 
 ---
 
-## サービス比較
+## ディレクトリ構造
 
-### Email Service（成熟パターン ✅）
+### プロジェクト全体構造
 
-**強み:**
-- Sentry統合を含む包括的なBaseController
-- クリーンなルート委譲（routesにビジネスロジックなし）
-- 一貫した依存性注入パターン
-- 良好なmiddleware構成
-- 全体的にタイプセーフ
-- 優れたエラー処理
-
-**例示構造:**
 ```
-email/src/
-├── controllers/
-│   ├── BaseController.ts          ✅ 優れたテンプレート
-│   ├── NotificationController.ts  ✅ BaseController拡張
-│   └── EmailController.ts         ✅ クリーンなパターン
-├── routes/
-│   ├── notificationRoutes.ts      ✅ クリーンな委譲
-│   └── emailRoutes.ts             ✅ ビジネスロジックなし
-├── services/
-│   ├── NotificationService.ts     ✅ 依存性注入
-│   └── BatchingService.ts         ✅ 明確な責任
-└── middleware/
-    ├── errorBoundary.ts           ✅ 包括的
-    └── DevImpersonationSSOMiddleware.ts
+backend/
+├── src/
+│   ├── routes/                # ルート定義
+│   ├── controllers/           # コントローラー
+│   ├── services/              # ビジネスロジック
+│   ├── repositories/          # データアクセス
+│   ├── middleware/            # ミドルウェア
+│   │   ├── auth.ts            # 認証ミドルウェア
+│   │   ├── errorHandler.ts    # エラーハンドリング
+│   │   └── validation.ts      # バリデーション
+│   ├── lib/                   # ユーティリティ
+│   │   ├── prisma.ts          # Prisma クライアント
+│   │   └── jwt.ts             # JWT ユーティリティ
+│   ├── types/                 # 型定義
+│   └── index.ts               # エントリーポイント
+├── prisma/
+│   ├── schema.prisma          # データベーススキーマ
+│   └── migrations/            # マイグレーション
+├── tsconfig.json
+└── package.json
 ```
-
-新しいサービスの**テンプレートとして使用**してください！
-
-### Form Service（移行中 ⚠️）
-
-**強み:**
-- 優れたworkflowアーキテクチャ（イベントソーシング）
-- 良好なSentry統合
-- 革新的なaudit middleware（AsyncLocalStorage）
-- 包括的な権限システム
-
-**弱み:**
-- 一部のroutesに200行以上のビジネスロジック
-- 一貫性のないcontroller命名
-- 直接的なprocess.env使用（60個以上発生）
-- 最小限のrepositoryパターン使用
-
-**例示:**
-```
-form/src/
-├── routes/
-│   ├── responseRoutes.ts          ❌ routesにビジネスロジック
-│   └── proxyRoutes.ts             ✅ 良好なバリデーションパターン
-├── controllers/
-│   ├── formController.ts          ⚠️ 小文字命名
-│   └── UserProfileController.ts   ✅ PascalCase命名
-├── workflow/                      ✅ 優れたアーキテクチャ！
-│   ├── core/
-│   │   ├── WorkflowEngineV3.ts   ✅ イベントソーシング
-│   │   └── DryRunWrapper.ts      ✅ 革新的
-│   └── services/
-└── middleware/
-    └── auditMiddleware.ts         ✅ AsyncLocalStorageパターン
-```
-
-**参考にすべき:** workflow/、middleware/auditMiddleware.ts
-**避けるべき:** responseRoutes.ts、直接的なprocess.env
-
----
-
-## ディレクトリ構造の根拠
 
 ### Controllersディレクトリ
 

@@ -2,6 +2,78 @@
 
 アプリケーションで保守可能でスケーラブルなフロントエンドコードのための正しいファイルおよびディレクトリ構造です。
 
+## プロジェクト概要
+
+**RealWorld (Conduit)** - Medium.comクローンのソーシャルブログプラットフォーム
+
+| 技術 | バージョン | 用途 |
+|------|-----------|------|
+| **React** | 19.x | UI フレームワーク |
+| **TypeScript** | 5.x | 型安全性 |
+| **Vite** | 6.x | ビルドツール・開発サーバー |
+| **TanStack Query** | 5.x | サーバー状態管理、データフェッチ |
+| **TanStack Router** | 1.x | ファイルベースルーティング |
+| **MUI (Material UI)** | 7.x | UIコンポーネント |
+
+---
+
+## RealWorld フロントエンド構造
+
+```
+frontend/
+├── src/
+│   ├── features/              # 機能モジュール
+│   │   ├── auth/              # 認証機能
+│   │   │   ├── components/    # 認証関連コンポーネント
+│   │   │   ├── hooks/         # 認証フック
+│   │   │   ├── api/           # 認証 API 呼び出し
+│   │   │   └── types.ts       # 型定義
+│   │   ├── articles/          # 記事機能
+│   │   │   ├── components/
+│   │   │   ├── hooks/
+│   │   │   ├── api/
+│   │   │   └── types.ts
+│   │   ├── comments/          # コメント機能
+│   │   ├── profiles/          # プロフィール機能
+│   │   └── tags/              # タグ機能
+│   │
+│   ├── components/            # 共通コンポーネント
+│   │   ├── layout/
+│   │   │   ├── Header.tsx
+│   │   │   ├── Footer.tsx
+│   │   │   └── Layout.tsx
+│   │   └── ui/
+│   │       ├── Loading.tsx
+│   │       ├── ErrorMessage.tsx
+│   │       └── Pagination.tsx
+│   │
+│   ├── hooks/                 # 共通フック
+│   │   ├── useAuth.ts
+│   │   └── useLocalStorage.ts
+│   │
+│   ├── lib/                   # ユーティリティ
+│   │   ├── api/
+│   │   │   └── client.ts      # API クライアント
+│   │   └── utils/
+│   │       └── formatDate.ts
+│   │
+│   ├── routes/                # TanStack Router
+│   │   ├── __root.tsx
+│   │   ├── index.tsx
+│   │   ├── login.tsx
+│   │   ├── register.tsx
+│   │   └── ...
+│   │
+│   ├── types/                 # 型定義
+│   ├── App.tsx
+│   └── main.tsx
+├── public/
+├── index.html
+├── vite.config.ts
+├── tsconfig.json
+└── package.json
+```
+
 ---
 
 ## features/ vs components/ の区別

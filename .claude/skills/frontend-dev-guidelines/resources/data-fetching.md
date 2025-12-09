@@ -4,6 +4,58 @@ Suspense boundaries、cache-first 戦略、中央化された API サービス�
 
 ---
 
+## RealWorld API 型定義
+
+### User / Profile
+
+```typescript
+interface User {
+  email: string;
+  token: string;
+  username: string;
+  bio: string | null;
+  image: string | null;
+}
+
+interface Profile {
+  username: string;
+  bio: string | null;
+  image: string | null;
+  following: boolean;
+}
+```
+
+### Article
+
+```typescript
+interface Article {
+  slug: string;
+  title: string;
+  description: string;
+  body: string;
+  tagList: string[];
+  createdAt: string;      // ISO 8601
+  updatedAt: string;      // ISO 8601
+  favorited: boolean;
+  favoritesCount: number;
+  author: Profile;
+}
+```
+
+### Comment
+
+```typescript
+interface Comment {
+  id: number;
+  createdAt: string;      // ISO 8601
+  updatedAt: string;      // ISO 8601
+  body: string;
+  author: Profile;
+}
+```
+
+---
+
 ## 主要パターン: useSuspenseQuery
 
 ### useSuspenseQuery を使用する理由

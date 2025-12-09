@@ -2,6 +2,15 @@
 
 Servicesでビジネスロジックを構成し、repositoriesでデータアクセスを管理する完全なガイドです。
 
+## 各レイヤーの責務
+
+| レイヤー | 責務 | 依存関係 |
+|---------|------|---------|
+| **Routes** | エンドポイント定義、ミドルウェア適用 | Controllers |
+| **Controllers** | HTTP 処理、バリデーション、レスポンス | Services |
+| **Services** | ビジネスロジック | Repositories |
+| **Repositories** | データアクセス（Prisma操作） | Prisma |
+
 ## 目次
 
 - [Service層概要](#service層概要)
