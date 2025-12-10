@@ -1,133 +1,61 @@
-# ファイル構成
+# File Organization
 
-アプリケーションで保守可能でスケーラブルなフロントエンドコードのための正しいファイルおよびディレクトリ構造です。
-
-## プロジェクト概要
-
-**RealWorld (Conduit)** - Medium.comクローンのソーシャルブログプラットフォーム
-
-| 技術 | バージョン | 用途 |
-|------|-----------|------|
-| **React** | 19.x | UI フレームワーク |
-| **TypeScript** | 5.x | 型安全性 |
-| **Vite** | 6.x | ビルドツール・開発サーバー |
-| **TanStack Query** | 5.x | サーバー状態管理、データフェッチ |
-| **TanStack Router** | 1.x | ファイルベースルーティング |
-| **MUI (Material UI)** | 7.x | UIコンポーネント |
+Proper file and directory structure for maintainable, scalable frontend code in the the application.
 
 ---
 
-## RealWorld フロントエンド構造
+## features/ vs components/ Distinction
 
-```
-frontend/
-├── src/
-│   ├── features/              # 機能モジュール
-│   │   ├── auth/              # 認証機能
-│   │   │   ├── components/    # 認証関連コンポーネント
-│   │   │   ├── hooks/         # 認証フック
-│   │   │   ├── api/           # 認証 API 呼び出し
-│   │   │   └── types.ts       # 型定義
-│   │   ├── articles/          # 記事機能
-│   │   │   ├── components/
-│   │   │   ├── hooks/
-│   │   │   ├── api/
-│   │   │   └── types.ts
-│   │   ├── comments/          # コメント機能
-│   │   ├── profiles/          # プロフィール機能
-│   │   └── tags/              # タグ機能
-│   │
-│   ├── components/            # 共通コンポーネント
-│   │   ├── layout/
-│   │   │   ├── Header.tsx
-│   │   │   ├── Footer.tsx
-│   │   │   └── Layout.tsx
-│   │   └── ui/
-│   │       ├── Loading.tsx
-│   │       ├── ErrorMessage.tsx
-│   │       └── Pagination.tsx
-│   │
-│   ├── hooks/                 # 共通フック
-│   │   ├── useAuth.ts
-│   │   └── useLocalStorage.ts
-│   │
-│   ├── lib/                   # ユーティリティ
-│   │   ├── api/
-│   │   │   └── client.ts      # API クライアント
-│   │   └── utils/
-│   │       └── formatDate.ts
-│   │
-│   ├── routes/                # TanStack Router
-│   │   ├── __root.tsx
-│   │   ├── index.tsx
-│   │   ├── login.tsx
-│   │   ├── register.tsx
-│   │   └── ...
-│   │
-│   ├── types/                 # 型定義
-│   ├── App.tsx
-│   └── main.tsx
-├── public/
-├── index.html
-├── vite.config.ts
-├── tsconfig.json
-└── package.json
-```
+### features/ Directory
 
----
+**Purpose**: Domain-specific features with their own logic, API, and components
 
-## features/ vs components/ の区別
+**When to use:**
+- Feature has multiple related components
+- Feature has its own API endpoints
+- Feature has domain-specific logic
+- Feature has custom hooks/utilities
 
-### features/ ディレクトリ
+**Examples:**
+- `features/posts/` - Project catalog/post management
+- `features/blogs/` - Blog builder and rendering
+- `features/auth/` - Authentication flows
 
-**目的**: 独自のロジック、API、コンポーネントを持つドメイン別機能
-
-**使用タイミング:**
-- 機能に複数の関連コンポーネントがあるとき
-- 機能に独自の API エンドポイントがあるとき
-- ドメイン別ロジックがあるとき
-- カスタム hooks/ユーティリティがあるとき
-
-**例:**
-- `features/posts/` - プロジェクトカタログ/ポスト管理
-- `features/blogs/` - ブログビルダーとレンダリング
-- `features/auth/` - 認証フロー
-
-**構造:**
+**Structure:**
 ```
 features/
   my-feature/
     api/
-      myFeatureApi.ts         # API サービスレイヤー
+      myFeatureApi.ts         # API service layer
     components/
-      MyFeatureMain.tsx       # メインコンポーネント
-      SubComponents/          # 関連コンポーネント
+      MyFeatureMain.tsx       # Main component
+      SubComponents/          # Related components
     hooks/
-      useMyFeature.ts         # カスタム hooks
+      useMyFeature.ts         # Custom hooks
       useSuspenseMyFeature.ts # Suspense hooks
     helpers/
-      myFeatureHelpers.ts     # ユーティリティ関数
+      myFeatureHelpers.ts     # Utility functions
     types/
-      index.ts                # TypeScript 型
+      index.ts                # TypeScript types
     index.ts                  # Public exports
 ```
 
-### components/ ディレクトリ
+### components/ Directory
 
-**目的**: 複数の機能で使用される真に再利用可能なコンポーネント
+**Purpose**: Truly reusable components used across multiple features
 
-**使用タイミング:**
-- コンポーネントが3箇所以上で使用されるとき
-- コンポーネントがジェネリック (機能別ロジックなし)
-- コンポーネントが UI プリミティブまたはパターンのとき
+**When to use:**
+- Component is used in 3+ places
+- Component is generic (no feature-specific logic)
+- Component is a UI primitive or pattern
 
-**例:**
-- `components/SuspenseLoader/` - ローディングラッパー
-- `components/CustomAppBar/` - アプリケーションヘッダー
-- `components/ErrorBoundary/` - エラー処理
-- `components/LoadingOverlay/` - ローディングオーバーレイ
+**Examples:**
+- `components/SuspenseLoader/` - Loading wrapper
+- `components/CustomAppBar/` - Application header
+- `components/ErrorBoundary/` - Error handling
+- `components/LoadingOverlay/` - Loading overlay
 
-**構造:**
+**Structure:**
 ```
 components/
   SuspenseLoader/
@@ -140,20 +68,20 @@ components/
 
 ---
 
-## Feature ディレクトリ構造 (詳細)
+## Feature Directory Structure (Detailed)
 
-### 完全な Feature 例
+### Complete Feature Example
 
-`features/posts/` 構造に基づく:
+Based on `features/posts/` structure:
 
 ```
 features/
   posts/
     api/
-      postApi.ts              # API サービスレイヤー (GET, POST, PUT, DELETE)
+      postApi.ts              # API service layer (GET, POST, PUT, DELETE)
 
     components/
-      PostTable.tsx           # メインコンテナコンポーネント
+      PostTable.tsx           # Main container component
       grids/
         PostDataGrid/
           PostDataGrid.tsx
@@ -169,37 +97,37 @@ features/
         CustomToolbar.tsx
 
     hooks/
-      usePostQueries.ts       # 一般クエリ
-      useSuspensePost.ts      # Suspense クエリ
+      usePostQueries.ts       # Regular queries
+      useSuspensePost.ts      # Suspense queries
       usePostMutations.ts     # Mutations
-      useGridLayout.ts        # 機能別 hooks
+      useGridLayout.ts              # Feature-specific hooks
 
     helpers/
-      postHelpers.ts          # ユーティリティ関数
-      validation.ts           # バリデーションロジック
+      postHelpers.ts          # Utility functions
+      validation.ts                 # Validation logic
 
     types/
-      index.ts                # TypeScript 型/インターフェース
+      index.ts                      # TypeScript types/interfaces
 
     queries/
-      postQueries.ts          # クエリキーファクトリ (オプション)
+      postQueries.ts          # Query key factories (optional)
 
     context/
-      PostContext.tsx         # React context (必要な場合)
+      PostContext.tsx         # React context (if needed)
 
-    index.ts                  # Public API exports
+    index.ts                        # Public API exports
 ```
 
-### サブディレクトリガイドライン
+### Subdirectory Guidelines
 
-#### api/ ディレクトリ
+#### api/ Directory
 
-**目的**: 機能に対する中央化された API 呼び出し
+**Purpose**: Centralized API calls for the feature
 
-**ファイル:**
-- `{feature}Api.ts` - メイン API サービス
+**Files:**
+- `{feature}Api.ts` - Main API service
 
-**パターン:**
+**Pattern:**
 ```typescript
 // features/my-feature/api/myFeatureApi.ts
 import apiClient from '@/lib/apiClient';
@@ -216,22 +144,22 @@ export const myFeatureApi = {
 };
 ```
 
-#### components/ ディレクトリ
+#### components/ Directory
 
-**目的**: 機能別コンポーネント
+**Purpose**: Feature-specific components
 
-**構成:**
-- 5個未満のコンポーネントならフラット構造
-- 5個以上のコンポーネントなら責任別サブディレクトリ
+**Organization:**
+- Flat structure if <5 components
+- Subdirectories by responsibility if >5 components
 
-**例:**
+**Examples:**
 ```
 components/
-  MyFeatureMain.tsx           # メインコンポーネント
-  MyFeatureHeader.tsx         # サポートコンポーネント
+  MyFeatureMain.tsx           # Main component
+  MyFeatureHeader.tsx         # Supporting components
   MyFeatureFooter.tsx
 
-  # またはサブディレクトリ:
+  # OR with subdirectories:
   containers/
     MyFeatureContainer.tsx
   presentational/
@@ -240,91 +168,91 @@ components/
     MyFeatureBlog.tsx
 ```
 
-#### hooks/ ディレクトリ
+#### hooks/ Directory
 
-**目的**: 機能に対するカスタム hooks
+**Purpose**: Custom hooks for the feature
 
-**ネーミング:**
-- `use` プレフィックス (camelCase)
-- 機能を説明する名前
+**Naming:**
+- `use` prefix (camelCase)
+- Descriptive of what they do
 
-**例:**
+**Examples:**
 ```
 hooks/
-  useMyFeature.ts               # メイン hook
-  useSuspenseMyFeature.ts       # Suspense バージョン
+  useMyFeature.ts               # Main hook
+  useSuspenseMyFeature.ts       # Suspense version
   useMyFeatureMutations.ts      # Mutations
-  useMyFeatureFilters.ts        # フィルター/検索
+  useMyFeatureFilters.ts        # Filters/search
 ```
 
-#### helpers/ ディレクトリ
+#### helpers/ Directory
 
-**目的**: 機能に特化したユーティリティ関数
+**Purpose**: Utility functions specific to the feature
 
-**例:**
+**Examples:**
 ```
 helpers/
-  myFeatureHelpers.ts           # 一般ユーティリティ
-  validation.ts                 # バリデーションロジック
-  transformers.ts               # データ変換
-  constants.ts                  # 定数
+  myFeatureHelpers.ts           # General utilities
+  validation.ts                 # Validation logic
+  transblogers.ts               # Data transblogations
+  constants.ts                  # Constants
 ```
 
-#### types/ ディレクトリ
+#### types/ Directory
 
-**目的**: TypeScript 型定義
+**Purpose**: TypeScript types and interfaces
 
-**ファイル:**
+**Files:**
 ```
 types/
-  index.ts                      # メイン型、エクスポート
-  internal.ts                   # 内部型 (エクスポートしない)
+  index.ts                      # Main types, exported
+  internal.ts                   # Internal types (not exported)
 ```
 
 ---
 
-## Import エイリアス (Vite 設定)
+## Import Aliases (Vite Configuration)
 
-### 利用可能なエイリアス
+### Available Aliases
 
-`vite.config.ts` 180-185行参照:
+From `vite.config.ts` lines 180-185:
 
-| エイリアス | 解決先 | 用途 |
+| Alias | Resolves To | Use For |
 |-------|-------------|---------|
-| `@/` | `src/` | src ルートからの絶対パス import |
-| `~types` | `src/types` | 共有 TypeScript 型 |
-| `~components` | `src/components` | 再利用可能コンポーネント |
+| `@/` | `src/` | Absolute imports from src root |
+| `~types` | `src/types` | Shared TypeScript types |
+| `~components` | `src/components` | Reusable components |
 | `~features` | `src/features` | Feature imports |
 
-### 使用例
+### Usage Examples
 
 ```typescript
-// ✅ 推奨 - 絶対パス import にエイリアス使用
+// ✅ PREFERRED - Use aliases for absolute imports
 import { apiClient } from '@/lib/apiClient';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 import { postApi } from '~features/posts/api/postApi';
 import type { User } from '~types/user';
 
-// ❌ 避ける - 深いネストでの相対パス
+// ❌ AVOID - Relative paths from deep nesting
 import { apiClient } from '../../../lib/apiClient';
 import { SuspenseLoader } from '../../../components/SuspenseLoader';
 ```
 
-### どのエイリアスを使うか
+### When to Use Which Alias
 
-**@/ (一般)**:
-- Lib ユーティリティ: `@/lib/apiClient`
+**@/ (General)**:
+- Lib utilities: `@/lib/apiClient`
 - Hooks: `@/hooks/useAuth`
 - Config: `@/config/theme`
-- 共有サービス: `@/services/authService`
+- Shared services: `@/services/authService`
 
-**~types (型 Import)**:
+**~types (Type Imports)**:
 ```typescript
 import type { Post } from '~types/post';
 import type { User, UserRole } from '~types/user';
 ```
 
-**~components (再利用可能コンポーネント)**:
+**~components (Reusable Components)**:
 ```typescript
 import { SuspenseLoader } from '~components/SuspenseLoader';
 import { CustomAppBar } from '~components/CustomAppBar';
@@ -339,11 +267,11 @@ import { useAuth } from '~features/auth/hooks/useAuth';
 
 ---
 
-## ファイルネーミング規則
+## File Naming Conventions
 
-### コンポーネント
+### Components
 
-**パターン**: PascalCase + `.tsx` 拡張子
+**Pattern**: PascalCase with `.tsx` extension
 
 ```
 MyComponent.tsx
@@ -351,14 +279,14 @@ PostDataGrid.tsx
 CustomAppBar.tsx
 ```
 
-**避ける:**
+**Avoid:**
 - camelCase: `myComponent.tsx` ❌
 - kebab-case: `my-component.tsx` ❌
-- すべて大文字: `MYCOMPONENT.tsx` ❌
+- All caps: `MYCOMPONENT.tsx` ❌
 
 ### Hooks
 
-**パターン**: camelCase + `use` プレフィックス + `.ts` 拡張子
+**Pattern**: camelCase with `use` prefix, `.ts` extension
 
 ```
 useMyFeature.ts
@@ -367,9 +295,9 @@ useAuth.ts
 useGridLayout.ts
 ```
 
-### API サービス
+### API Services
 
-**パターン**: camelCase + `Api` サフィックス + `.ts` 拡張子
+**Pattern**: camelCase with `Api` suffix, `.ts` extension
 
 ```
 myFeatureApi.ts
@@ -377,20 +305,20 @@ postApi.ts
 userApi.ts
 ```
 
-### Helpers/ユーティリティ
+### Helpers/Utilities
 
-**パターン**: camelCase + 説明的な名前 + `.ts` 拡張子
+**Pattern**: camelCase with descriptive name, `.ts` extension
 
 ```
 myFeatureHelpers.ts
 validation.ts
-transformers.ts
+transblogers.ts
 constants.ts
 ```
 
-### 型
+### Types
 
-**パターン**: camelCase、`index.ts` または説明的な名前
+**Pattern**: camelCase, `index.ts` or descriptive name
 
 ```
 types/index.ts
@@ -400,118 +328,118 @@ types/user.ts
 
 ---
 
-## 新 Feature 作成タイミング
+## When to Create a New Feature
 
-### 新 Feature 作成:
+### Create New Feature When:
 
-- 複数の関連コンポーネント (3個以上)
-- 独自の API エンドポイントがある
-- ドメイン別ロジック
-- 時間とともに成長する
-- 複数の routes で再利用
+- Multiple related components (>3)
+- Has own API endpoints
+- Domain-specific logic
+- Will grow over time
+- Reused across multiple routes
 
-**例:** `features/posts/`
-- 20個以上コンポーネント
-- 独自 API サービス
-- 複雑な状態管理
-- 複数の routes で使用
+**Example:** `features/posts/`
+- 20+ components
+- Own API service
+- Complex state management
+- Used in multiple routes
 
-### 既存 Feature に追加:
+### Add to Existing Feature When:
 
-- 既存機能と関連
-- 同じ API 共有
-- 論理的にグループ化
-- 既存機能を拡張
+- Related to existing feature
+- Shares same API
+- Logically grouped
+- Extends existing functionality
 
-**例:** posts feature に export dialog 追加
+**Example:** Adding export dialog to posts feature
 
-### 再利用可能コンポーネント作成:
+### Create Reusable Component When:
 
-- 3個以上の機能で使用
-- ジェネリック、ドメインロジックなし
-- 純粋プレゼンテーション
-- 共有パターン
+- Used across 3+ features
+- Generic, no domain logic
+- Pure presentation
+- Shared pattern
 
-**例:** `components/SuspenseLoader/`
+**Example:** `components/SuspenseLoader/`
 
 ---
 
-## Import 構成
+## Import Organization
 
-### Import 順序 (推奨)
+### Import Order (Recommended)
 
 ```typescript
-// 1. React および React 関連
+// 1. React and React-related
 import React, { useState, useCallback, useMemo } from 'react';
 import { lazy } from 'react';
 
-// 2. サードパーティライブラリ (アルファベット順)
+// 2. Third-party libraries (alphabetical)
 import { Box, Paper, Button, Grid } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 
-// 3. エイリアス imports (@ を先に、次に ~)
+// 3. Alias imports (@ first, then ~)
 import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 import { postApi } from '~features/posts/api/postApi';
 
-// 4. 型 imports (グループ化)
+// 4. Type imports (grouped)
 import type { Post } from '~types/post';
 import type { User } from '~types/user';
 
-// 5. 相対パス imports (同じ feature)
+// 5. Relative imports (same feature)
 import { MySubComponent } from './MySubComponent';
 import { useMyFeature } from '../hooks/useMyFeature';
 import { myFeatureHelpers } from '../helpers/myFeatureHelpers';
 ```
 
-すべての imports に **シングルクォート** 使用 (プロジェクト標準)
+**Use single quotes** for all imports (project standard)
 
 ---
 
-## Public API パターン
+## Public API Pattern
 
 ### feature/index.ts
 
-クリーンな imports のために feature から public API エクスポート:
+Export public API from feature for clean imports:
 
 ```typescript
 // features/my-feature/index.ts
 
-// メインコンポーネントエクスポート
+// Export main components
 export { MyFeatureMain } from './components/MyFeatureMain';
 export { MyFeatureHeader } from './components/MyFeatureHeader';
 
-// Hooks エクスポート
+// Export hooks
 export { useMyFeature } from './hooks/useMyFeature';
 export { useSuspenseMyFeature } from './hooks/useSuspenseMyFeature';
 
-// API エクスポート
+// Export API
 export { myFeatureApi } from './api/myFeatureApi';
 
-// 型エクスポート
+// Export types
 export type { MyFeatureData, MyFeatureConfig } from './types';
 ```
 
-**使用:**
+**Usage:**
 ```typescript
-// ✅ feature index からクリーンな import
+// ✅ Clean import from feature index
 import { MyFeatureMain, useMyFeature } from '~features/my-feature';
 
-// ❌ 深い imports は避ける (必要なら OK)
+// ❌ Avoid deep imports (but OK if needed)
 import { MyFeatureMain } from '~features/my-feature/components/MyFeatureMain';
 ```
 
 ---
 
-## ディレクトリ構造視覚化
+## Directory Structure Visualization
 
 ```
 src/
-├── features/                    # ドメイン別機能
+├── features/                    # Domain-specific features
 │   ├── posts/
 │   │   ├── api/
 │   │   ├── components/
@@ -522,7 +450,7 @@ src/
 │   ├── blogs/
 │   └── auth/
 │
-├── components/                  # 再利用可能コンポーネント
+├── components/                  # Reusable components
 │   ├── SuspenseLoader/
 │   ├── CustomAppBar/
 │   ├── ErrorBoundary/
@@ -536,39 +464,39 @@ src/
 │   │   └── create/
 │   └── blogs/
 │
-├── hooks/                       # 共有 hooks
+├── hooks/                       # Shared hooks
 │   ├── useAuth.ts
 │   ├── useMuiSnackbar.ts
 │   └── useDebounce.ts
 │
-├── lib/                         # 共有ユーティリティ
+├── lib/                         # Shared utilities
 │   ├── apiClient.ts
 │   └── utils.ts
 │
-├── types/                       # 共有 TypeScript 型
+├── types/                       # Shared TypeScript types
 │   ├── user.ts
 │   ├── post.ts
 │   └── common.ts
 │
-├── config/                      # 設定
+├── config/                      # Configuration
 │   └── theme.ts
 │
-└── App.tsx                      # ルートコンポーネント
+└── App.tsx                      # Root component
 ```
 
 ---
 
-## まとめ
+## Summary
 
-**核心原則:**
-1. **features/** ドメイン別コード用
-2. **components/** 真に再利用可能な UI 用
-3. サブディレクトリ使用: api/, components/, hooks/, helpers/, types/
-4. クリーンな imports のための Import エイリアス (@/, ~types, ~components, ~features)
-5. 一貫したネーミング: PascalCase コンポーネント、camelCase ユーティリティ
-6. feature index.ts で public API エクスポート
+**Key Principles:**
+1. **features/** for domain-specific code
+2. **components/** for truly reusable UI
+3. Use subdirectories: api/, components/, hooks/, helpers/, types/
+4. Import aliases for clean imports (@/, ~types, ~components, ~features)
+5. Consistent naming: PascalCase components, camelCase utilities
+6. Export public API from feature index.ts
 
-**参考:**
-- [component-patterns.md](component-patterns.md) - コンポーネント構造
-- [data-fetching.md](data-fetching.md) - API サービスパターン
-- [complete-examples.md](complete-examples.md) - 完全 feature 例
+**See Also:**
+- [component-patterns.md](component-patterns.md) - Component structure
+- [data-fetching.md](data-fetching.md) - API service patterns
+- [complete-examples.md](complete-examples.md) - Full feature example

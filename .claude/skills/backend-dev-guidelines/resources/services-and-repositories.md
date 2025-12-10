@@ -1,79 +1,70 @@
-# ServicesとRepositories - ビジネスロジック層
+# Services and Repositories - Business Logic Layer
 
-Servicesでビジネスロジックを構成し、repositoriesでデータアクセスを管理する完全なガイドです。
+Complete guide to organizing business logic with services and data access with repositories.
 
-## 各レイヤーの責務
+## Table of Contents
 
-| レイヤー | 責務 | 依存関係 |
-|---------|------|---------|
-| **Routes** | エンドポイント定義、ミドルウェア適用 | Controllers |
-| **Controllers** | HTTP 処理、バリデーション、レスポンス | Services |
-| **Services** | ビジネスロジック | Repositories |
-| **Repositories** | データアクセス（Prisma操作） | Prisma |
-
-## 目次
-
-- [Service層概要](#service層概要)
-- [依存性注入パターン](#依存性注入パターン)
-- [Singletonパターン](#singletonパターン)
-- [Repositoryパターン](#repositoryパターン)
-- [Service設計原則](#service設計原則)
-- [キャッシング戦略](#キャッシング戦略)
-- [Servicesのテスト](#servicesのテスト)
+- [Service Layer Overview](#service-layer-overview)
+- [Dependency Injection Pattern](#dependency-injection-pattern)
+- [Singleton Pattern](#singleton-pattern)
+- [Repository Pattern](#repository-pattern)
+- [Service Design Principles](#service-design-principles)
+- [Caching Strategies](#caching-strategies)
+- [Testing Services](#testing-services)
 
 ---
 
-## Service層概要
+## Service Layer Overview
 
-### Servicesの目的
+### Purpose of Services
 
-**Servicesはビジネスロジックを含む** - アプリケーションの'何を'と'なぜ':
+**Services contain business logic** - the 'what' and 'why' of your application:
 
 ```
-Controllerの質問: "これを行うべきですか？"
-Serviceの回答: "はい/いいえ、理由はこれで、これが発生します"
-Repositoryの実行: "要求されたデータです"
+Controller asks: "Should I do this?"
+Service answers: "Yes/No, here's why, and here's what happens"
+Repository executes: "Here's the data you requested"
 ```
 
-**Servicesの責任:**
-- ✅ ビジネスルール適用
-- ✅ 複数のrepositoriesのオーケストレーション
-- ✅ トランザクション管理
-- ✅ 複雑な計算
-- ✅ 外部サービス統合
-- ✅ ビジネスバリデーション
+**Services are responsible for:**
+- ✅ Business rules enforcement
+- ✅ Orchestrating multiple repositories
+- ✅ Transaction management
+- ✅ Complex calculations
+- ✅ External service integration
+- ✅ Business validations
 
-**Servicesがすべきでないこと:**
-- ❌ HTTPを知ること（Request/Response）
-- ❌ Prisma直接アクセス（repositories使用）
-- ❌ Route専用ロジック処理
-- ❌ HTTPレスポンスフォーマット
+**Services should NOT:**
+- ❌ Know about HTTP (Request/Response)
+- ❌ Direct Prisma access (use repositories)
+- ❌ Handle route-specific logic
+- ❌ Format HTTP responses
 
 ---
 
-## 依存性注入パターン
+## Dependency Injection Pattern
 
-### 依存性注入を使用する理由
+### Why Dependency Injection?
 
-**利点:**
-- テストしやすい（mock注入）
-- 明確な依存関係
-- 柔軟な設定
-- 疎結合を促進
+**Benefits:**
+- Easy to test (inject mocks)
+- Clear dependencies
+- Flexible configuration
+- Promotes loose coupling
 
-### 優れた例: NotificationService
+### Excellent Example: NotificationService
 
-**ファイル:** `/blog-api/src/services/NotificationService.ts`
+**File:** `/blog-api/src/services/NotificationService.ts`
 
 ```typescript
-// 明確さのための依存性インターフェース定義
+// Define dependencies interface for clarity
 export interface NotificationServiceDependencies {
     prisma: PrismaClient;
     batchingService: BatchingService;
     emailComposer: EmailComposer;
 }
 
-// 依存性注入があるService
+// Service with dependency injection
 export class NotificationService {
     private prisma: PrismaClient;
     private batchingService: BatchingService;
@@ -81,7 +72,7 @@ export class NotificationService {
     private preferencesCache: Map<string, { preferences: UserPreference; timestamp: number }> = new Map();
     private CACHE_TTL = (notificationConfig.preferenceCacheTTLMinutes || 5) * 60 * 1000;
 
-    // コンストラクタを通じて依存性注入
+    // Dependencies injected via constructor
     constructor(dependencies: NotificationServiceDependencies) {
         this.prisma = dependencies.prisma;
         this.batchingService = dependencies.batchingService;
@@ -89,17 +80,17 @@ export class NotificationService {
     }
 
     /**
-     * 通知を作成し適切にルーティング
+     * Create a notification and route it appropriately
      */
     async createNotification(params: CreateNotificationParams) {
         const { recipientID, type, title, message, link, context = {}, channel = 'both', priority = NotificationPriority.NORMAL } = params;
 
         try {
-            // テンプレートを取得してコンテンツをレンダリング
+            // Get template and render content
             const template = getNotificationTemplate(type);
             const rendered = renderNotificationContent(template, context);
 
-            // インアプリ通知レコードを作成
+            // Create in-app notification record
             const notificationId = await createNotificationRecord({
                 instanceId: parseInt(context.instanceId || '0', 10),
                 template: type,
@@ -111,7 +102,7 @@ export class NotificationService {
                 link: finalLink,
             });
 
-            // チャンネルに応じて通知をルーティング
+            // Route notification based on channel
             if (channel === 'email' || channel === 'both') {
                 await this.routeNotification({
                     notificationId,
@@ -140,13 +131,13 @@ export class NotificationService {
     }
 
     /**
-     * ユーザー設定に基づいて通知をルーティング
+     * Route notification based on user preferences
      */
     private async routeNotification(params: { notificationId: number; userId: string; type: string; priority: NotificationPriority; title: string; message: string; link?: string; context?: Record<string, any> }) {
-        // キャッシングとともにユーザー設定を取得
+        // Get user preferences with caching
         const preferences = await this.getUserPreferences(params.userId);
 
-        // バッチするか即時送信するか確認
+        // Check if we should batch or send immediately
         if (this.shouldBatchEmail(preferences, params.type, params.priority)) {
             await this.batchingService.queueNotificationForBatch({
                 notificationId: params.notificationId,
@@ -155,7 +146,7 @@ export class NotificationService {
                 priority: params.priority,
             });
         } else {
-            // EmailComposerを通じて即時送信
+            // Send immediately via EmailComposer
             await this.sendImmediateEmail({
                 userId: params.userId,
                 title: params.title,
@@ -168,24 +159,24 @@ export class NotificationService {
     }
 
     /**
-     * メールをバッチすべきかを決定
+     * Determine if email should be batched
      */
     shouldBatchEmail(preferences: UserPreference, notificationType: string, priority: NotificationPriority): boolean {
-        // HIGH優先度は常に即時
+        // HIGH priority always immediate
         if (priority === NotificationPriority.HIGH) {
             return false;
         }
 
-        // バッチモードを確認
+        // Check batch mode
         const batchMode = preferences.emailBatchMode || BatchMode.IMMEDIATE;
         return batchMode !== BatchMode.IMMEDIATE;
     }
 
     /**
-     * キャッシングとともにユーザー設定を取得
+     * Get user preferences with caching
      */
     async getUserPreferences(userId: string): Promise<UserPreference> {
-        // まずキャッシュを確認
+        // Check cache first
         const cached = this.preferencesCache.get(userId);
         if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
             return cached.preferences;
@@ -197,7 +188,7 @@ export class NotificationService {
 
         const finalPreferences = preference || DEFAULT_PREFERENCES;
 
-        // キャッシュを更新
+        // Update cache
         this.preferencesCache.set(userId, {
             preferences: finalPreferences,
             timestamp: Date.now(),
@@ -208,17 +199,17 @@ export class NotificationService {
 }
 ```
 
-**Controllerでの使用:**
+**Usage in Controller:**
 
 ```typescript
-// 依存性とともにインスタンス化
+// Instantiate with dependencies
 const notificationService = new NotificationService({
     prisma: PrismaService.main,
     batchingService: new BatchingService(PrismaService.main),
     emailComposer: new EmailComposer(),
 });
 
-// Controllerで使用
+// Use in controller
 const notification = await notificationService.createNotification({
     recipientID: 'user-123',
     type: 'AFRLWorkflowNotification',
@@ -226,29 +217,29 @@ const notification = await notificationService.createNotification({
 });
 ```
 
-**キーポイント:**
-- コンストラクタを通じて依存性を渡す
-- 明確なインターフェースが必要な依存性を定義
-- テストしやすい（mock注入）
-- カプセル化されたキャッシングロジック
-- HTTPから分離されたビジネスルール
+**Key Takeaways:**
+- Dependencies passed via constructor
+- Clear interface defines required dependencies
+- Easy to test (inject mocks)
+- Encapsulated caching logic
+- Business rules isolated from HTTP
 
 ---
 
-## Singletonパターン
+## Singleton Pattern
 
-### Singletonを使用すべき場合
+### When to Use Singletons
 
-**使用対象:**
-- 高コストな初期化があるServices
-- 共有状態があるServices（キャッシング）
-- 複数の場所からアクセスされるServices
+**Use for:**
+- Services with expensive initialization
+- Services with shared state (caching)
+- Services accessed from many places
 - Permission services
 - Configuration services
 
-### 例: PermissionService（Singleton）
+### Example: PermissionService (Singleton)
 
-**ファイル:** `/blog-api/src/services/permissionService.ts`
+**File:** `/blog-api/src/services/permissionService.ts`
 
 ```typescript
 import { PrismaClient } from '@prisma/client';
@@ -257,14 +248,14 @@ class PermissionService {
     private static instance: PermissionService;
     private prisma: PrismaClient;
     private permissionCache: Map<string, { canAccess: boolean; timestamp: number }> = new Map();
-    private CACHE_TTL = 5 * 60 * 1000; // 5分
+    private CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
-    // privateコンストラクタで直接インスタンス化を防止
+    // Private constructor prevents direct instantiation
     private constructor() {
         this.prisma = PrismaService.main;
     }
 
-    // Singletonインスタンスを取得
+    // Get singleton instance
     public static getInstance(): PermissionService {
         if (!PermissionService.instance) {
             PermissionService.instance = new PermissionService();
@@ -273,12 +264,12 @@ class PermissionService {
     }
 
     /**
-     * ユーザーがworkflowステップを完了できるか確認
+     * Check if user can complete a workflow step
      */
     async canCompleteStep(userId: string, stepInstanceId: number): Promise<boolean> {
         const cacheKey = `${userId}:${stepInstanceId}`;
 
-        // キャッシュ確認
+        // Check cache
         const cached = this.permissionCache.get(cacheKey);
         if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
             return cached.canAccess;
@@ -301,11 +292,11 @@ class PermissionService {
                 return false;
             }
 
-            // ユーザーに権限があるか確認
+            // Check if user has permission
             const canEdit = post.authorId === userId ||
                 await this.isUserAdmin(userId);
 
-            // 結果をキャッシュ
+            // Cache result
             this.permissionCache.set(cacheKey, {
                 canAccess: isAssigned,
                 timestamp: Date.now(),
@@ -319,7 +310,7 @@ class PermissionService {
     }
 
     /**
-     * ユーザーキャッシュをクリア
+     * Clear cache for user
      */
     clearUserCache(userId: string): void {
         for (const [key] of this.permissionCache) {
@@ -330,23 +321,23 @@ class PermissionService {
     }
 
     /**
-     * 全キャッシュをクリア
+     * Clear all cache
      */
     clearCache(): void {
         this.permissionCache.clear();
     }
 }
 
-// Singletonインスタンスをexport
+// Export singleton instance
 export const permissionService = PermissionService.getInstance();
 ```
 
-**使用:**
+**Usage:**
 
 ```typescript
 import { permissionService } from '../services/permissionService';
 
-// コードベースのどこからでも使用
+// Use anywhere in the codebase
 const canComplete = await permissionService.canCompleteStep(userId, stepId);
 
 if (!canComplete) {
@@ -356,30 +347,30 @@ if (!canComplete) {
 
 ---
 
-## Repositoryパターン
+## Repository Pattern
 
-### Repositoriesの目的
+### Purpose of Repositories
 
-**Repositoriesはデータアクセスを抽象化** - データ操作の'どのように':
+**Repositories abstract data access** - the 'how' of data operations:
 
 ```
-Service: "名前順にソートされたすべてのアクティブユーザーをください"
-Repository: "これを実行するPrismaクエリです"
+Service: "Get me all active users sorted by name"
+Repository: "Here's the Prisma query that does that"
 ```
 
-**Repositoriesの責任:**
-- ✅ すべてのPrisma操作
-- ✅ クエリ構築
-- ✅ クエリ最適化（select、include）
-- ✅ データベースエラー処理
-- ✅ データベース結果のキャッシング
+**Repositories are responsible for:**
+- ✅ All Prisma operations
+- ✅ Query construction
+- ✅ Query optimization (select, include)
+- ✅ Database error handling
+- ✅ Caching database results
 
-**Repositoriesがすべきでないこと:**
-- ❌ ビジネスロジックの含有
-- ❌ HTTPを知ること
-- ❌ 決定を下すこと（それはservice層）
+**Repositories should NOT:**
+- ❌ Contain business logic
+- ❌ Know about HTTP
+- ❌ Make decisions (that's service layer)
 
-### Repositoryテンプレート
+### Repository Template
 
 ```typescript
 // repositories/UserRepository.ts
@@ -388,7 +379,7 @@ import type { User, Prisma } from '@project-lifecycle-portal/database';
 
 export class UserRepository {
     /**
-     * 最適化されたクエリでIDでユーザーを見つける
+     * Find user by ID with optimized query
      */
     async findById(userId: string): Promise<User | null> {
         try {
@@ -411,7 +402,7 @@ export class UserRepository {
     }
 
     /**
-     * すべてのアクティブユーザーを見つける
+     * Find all active users
      */
     async findActive(options?: { orderBy?: Prisma.UserOrderByWithRelationInput }): Promise<User[]> {
         try {
@@ -432,7 +423,7 @@ export class UserRepository {
     }
 
     /**
-     * メールでユーザーを見つける
+     * Find user by email
      */
     async findByEmail(email: string): Promise<User | null> {
         try {
@@ -446,7 +437,7 @@ export class UserRepository {
     }
 
     /**
-     * 新しいユーザーを作成
+     * Create new user
      */
     async create(data: Prisma.UserCreateInput): Promise<User> {
         try {
@@ -458,7 +449,7 @@ export class UserRepository {
     }
 
     /**
-     * ユーザーを更新
+     * Update user
      */
     async update(userId: string, data: Prisma.UserUpdateInput): Promise<User> {
         try {
@@ -473,7 +464,7 @@ export class UserRepository {
     }
 
     /**
-     * ユーザーを削除（isActive = falseでsoft delete）
+     * Delete user (soft delete by setting isActive = false)
      */
     async delete(userId: string): Promise<User> {
         try {
@@ -488,7 +479,7 @@ export class UserRepository {
     }
 
     /**
-     * メール存在確認
+     * Check if email exists
      */
     async emailExists(email: string): Promise<boolean> {
         try {
@@ -503,11 +494,11 @@ export class UserRepository {
     }
 }
 
-// Singletonインスタンスをexport
+// Export singleton instance
 export const userRepository = new UserRepository();
 ```
 
-**ServiceでRepositoryを使用:**
+**Using Repository in Service:**
 
 ```typescript
 // services/userService.ts
@@ -516,23 +507,23 @@ import { ConflictError, NotFoundError } from '../utils/errors';
 
 export class UserService {
     /**
-     * ビジネスルールとともに新しいユーザーを作成
+     * Create new user with business rules
      */
     async createUser(data: { email: string; name: string; roles: string[] }): Promise<User> {
-        // ビジネスルール: メールが既に存在するか確認
+        // Business rule: Check if email already exists
         const emailExists = await userRepository.emailExists(data.email);
         if (emailExists) {
             throw new ConflictError('Email already exists');
         }
 
-        // ビジネスルール: ロール検証
+        // Business rule: Validate roles
         const validRoles = ['admin', 'operations', 'user'];
         const invalidRoles = data.roles.filter((role) => !validRoles.includes(role));
         if (invalidRoles.length > 0) {
             throw new ValidationError(`Invalid roles: ${invalidRoles.join(', ')}`);
         }
 
-        // Repositoryを通じてユーザー作成
+        // Create user via repository
         return await userRepository.create({
             email: data.email,
             name: data.name,
@@ -542,7 +533,7 @@ export class UserService {
     }
 
     /**
-     * IDでユーザーを取得
+     * Get user by ID
      */
     async getUser(userId: string): Promise<User> {
         const user = await userRepository.findById(userId);
@@ -558,14 +549,14 @@ export class UserService {
 
 ---
 
-## Service設計原則
+## Service Design Principles
 
-### 1. 単一責任
+### 1. Single Responsibility
 
-各serviceは1つの明確な目的を持つべき:
+Each service should have ONE clear purpose:
 
 ```typescript
-// ✅ 良い - 単一責任
+// ✅ GOOD - Single responsibility
 class UserService {
     async createUser() {}
     async updateUser() {}
@@ -577,53 +568,53 @@ class EmailService {
     async sendBulkEmails() {}
 }
 
-// ❌ 悪い - 責任が多すぎる
+// ❌ BAD - Too many responsibilities
 class UserService {
     async createUser() {}
-    async sendWelcomeEmail() {}  // EmailServiceであるべき
-    async logUserActivity() {}   // AuditServiceであるべき
-    async processPayment() {}    // PaymentServiceであるべき
+    async sendWelcomeEmail() {}  // Should be EmailService
+    async logUserActivity() {}   // Should be AuditService
+    async processPayment() {}    // Should be PaymentService
 }
 ```
 
-### 2. 明確なメソッド名
+### 2. Clear Method Names
 
-メソッド名は何をするか説明すべき:
+Method names should describe WHAT they do:
 
 ```typescript
-// ✅ 良い - 明確な意図
+// ✅ GOOD - Clear intent
 async createNotification()
 async getUserPreferences()
 async shouldBatchEmail()
 async routeNotification()
 
-// ❌ 悪い - 曖昧または誤解を招く
+// ❌ BAD - Vague or misleading
 async process()
 async handle()
 async doIt()
 async execute()
 ```
 
-### 3. 戻り値の型
+### 3. Return Types
 
-常に明示的な戻り値の型を使用:
+Always use explicit return types:
 
 ```typescript
-// ✅ 良い - 明示的な型
+// ✅ GOOD - Explicit types
 async createUser(data: CreateUserDTO): Promise<User> {}
 async findUsers(): Promise<User[]> {}
 async deleteUser(id: string): Promise<void> {}
 
-// ❌ 悪い - 暗黙のany
-async createUser(data) {}  // 型なし！
+// ❌ BAD - Implicit any
+async createUser(data) {}  // No types!
 ```
 
-### 4. エラー処理
+### 4. Error Handling
 
-Servicesは意味のあるエラーをスローすべき:
+Services should throw meaningful errors:
 
 ```typescript
-// ✅ 良い - 意味のあるエラー
+// ✅ GOOD - Meaningful errors
 if (!user) {
     throw new NotFoundError(`User not found: ${userId}`);
 }
@@ -632,29 +623,29 @@ if (emailExists) {
     throw new ConflictError('Email already exists');
 }
 
-// ❌ 悪い - 一般的なエラー
+// ❌ BAD - Generic errors
 if (!user) {
-    throw new Error('Error');  // 何のエラー？
+    throw new Error('Error');  // What error?
 }
 ```
 
-### 5. God Servicesを避ける
+### 5. Avoid God Services
 
-すべてを行うservicesを作らない:
+Don't create services that do everything:
 
 ```typescript
-// ❌ 悪い - God service
+// ❌ BAD - God service
 class WorkflowService {
     async startWorkflow() {}
     async completeStep() {}
     async assignRoles() {}
-    async sendNotifications() {}  // NotificationServiceであるべき
-    async validatePermissions() {}  // PermissionServiceであるべき
-    async logAuditTrail() {}  // AuditServiceであるべき
-    // ... 50以上のメソッド
+    async sendNotifications() {}  // Should be NotificationService
+    async validatePermissions() {}  // Should be PermissionService
+    async logAuditTrail() {}  // Should be AuditService
+    // ... 50 more methods
 }
 
-// ✅ 良い - 集中したservices
+// ✅ GOOD - Focused services
 class WorkflowService {
     constructor(
         private notificationService: NotificationService,
@@ -663,7 +654,7 @@ class WorkflowService {
     ) {}
 
     async startWorkflow() {
-        // 他のservicesをオーケストレーション
+        // Orchestrate other services
         await this.permissionService.checkPermission();
         await this.workflowRepository.create();
         await this.notificationService.notify();
@@ -674,26 +665,26 @@ class WorkflowService {
 
 ---
 
-## キャッシング戦略
+## Caching Strategies
 
-### 1. インメモリキャッシング
+### 1. In-Memory Caching
 
 ```typescript
 class UserService {
     private cache: Map<string, { user: User; timestamp: number }> = new Map();
-    private CACHE_TTL = 5 * 60 * 1000; // 5分
+    private CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
     async getUser(userId: string): Promise<User> {
-        // キャッシュ確認
+        // Check cache
         const cached = this.cache.get(userId);
         if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
             return cached.user;
         }
 
-        // データベースから取得
+        // Fetch from database
         const user = await userRepository.findById(userId);
 
-        // キャッシュ更新
+        // Update cache
         if (user) {
             this.cache.set(userId, { user, timestamp: Date.now() });
         }
@@ -707,15 +698,15 @@ class UserService {
 }
 ```
 
-### 2. キャッシュ無効化
+### 2. Cache Invalidation
 
 ```typescript
 class UserService {
     async updateUser(userId: string, data: UpdateUserDTO): Promise<User> {
-        // データベースで更新
+        // Update in database
         const user = await userRepository.update(userId, data);
 
-        // キャッシュ無効化
+        // Invalidate cache
         this.clearUserCache(userId);
 
         return user;
@@ -725,9 +716,9 @@ class UserService {
 
 ---
 
-## Servicesのテスト
+## Testing Services
 
-### 単体テスト
+### Unit Tests
 
 ```typescript
 // tests/userService.test.ts
@@ -735,7 +726,7 @@ import { UserService } from '../services/userService';
 import { userRepository } from '../repositories/UserRepository';
 import { ConflictError } from '../utils/errors';
 
-// Repositoryをモック
+// Mock repository
 jest.mock('../repositories/UserRepository');
 
 describe('UserService', () => {
@@ -747,7 +738,7 @@ describe('UserService', () => {
     });
 
     describe('createUser', () => {
-        it('メールが存在しない場合ユーザーを作成すべき', async () => {
+        it('should create user when email does not exist', async () => {
             // Arrange
             const userData = {
                 email: 'test@example.com',
@@ -771,7 +762,7 @@ describe('UserService', () => {
             expect(userRepository.create).toHaveBeenCalled();
         });
 
-        it('メールが存在する場合ConflictErrorをスローすべき', async () => {
+        it('should throw ConflictError when email exists', async () => {
             // Arrange
             const userData = {
                 email: 'existing@example.com',
@@ -791,8 +782,8 @@ describe('UserService', () => {
 
 ---
 
-**関連ファイル:**
-- [SKILL.md](SKILL.md) - メインガイド
-- [routing-and-controllers.md](routing-and-controllers.md) - Servicesを使用するControllers
-- [database-patterns.md](database-patterns.md) - Prismaとrepositoryパターン
-- [complete-examples.md](complete-examples.md) - 完全なservice/repository例
+**Related Files:**
+- [SKILL.md](SKILL.md) - Main guide
+- [routing-and-controllers.md](routing-and-controllers.md) - Controllers that use services
+- [database-patterns.md](database-patterns.md) - Prisma and repository patterns
+- [complete-examples.md](complete-examples.md) - Full service/repository examples

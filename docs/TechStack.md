@@ -1,168 +1,168 @@
-# RealWorld (Conduit) - 技術スタック
+# RealWorld (Conduit) - Tech Stack
 
-## 1. 概要
+## 1. Overview
 
-本プロジェクトは、モノレポ構成で Frontend と Backend を統合管理する。
-Claude Code との効率的な開発を最優先とし、検証済みのツールチェーンを採用する。
+This project uses a monorepo structure to integrate Frontend and Backend management.
+We adopt a proven toolchain with efficient development with Claude Code as the top priority.
 
 ---
 
-## 2. フロントエンド技術スタック
+## 2. Frontend Tech Stack
 
-### 2.1 コアフレームワーク
+### 2.1 Core Framework
 
-| 技術 | バージョン | 用途 |
-|------|-----------|------|
-| **React** | 19.x | UI フレームワーク |
-| **TypeScript** | 5.x | 型安全性 |
-| **Vite** | 6.x | ビルドツール・開発サーバー |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **React** | 19.x | UI Framework |
+| **TypeScript** | 5.x | Type Safety |
+| **Vite** | 6.x | Build Tool & Dev Server |
 
-### 2.2 状態管理・データフェッチ
+### 2.2 State Management & Data Fetching
 
-| 技術 | バージョン | 用途 |
-|------|-----------|------|
-| **TanStack Query** | 5.x | サーバー状態管理、データフェッチ |
-| **TanStack Router** | 1.x | ファイルベースルーティング |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **TanStack Query** | 5.x | Server State Management, Data Fetching |
+| **TanStack Router** | 1.x | File-based Routing |
 
-### 2.3 UI ライブラリ
+### 2.3 UI Library
 
-| 技術 | バージョン | 用途 |
-|------|-----------|------|
-| **MUI (Material UI)** | 7.x | UIコンポーネント |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **MUI (Material UI)** | 7.x | UI Components |
 | **@emotion/react** | 11.x | CSS-in-JS |
-| **@emotion/styled** | 11.x | スタイルドコンポーネント |
+| **@emotion/styled** | 11.x | Styled Components |
 
-### 2.4 ユーティリティ
+### 2.4 Utilities
 
-| 技術 | 用途 |
-|------|------|
-| **react-markdown** | Markdown レンダリング |
-| **date-fns** | 日付フォーマット |
-| **zod** | スキーマバリデーション |
+| Technology | Purpose |
+|------------|---------|
+| **react-markdown** | Markdown Rendering |
+| **date-fns** | Date Formatting |
+| **zod** | Schema Validation |
 
-### 2.5 選定理由
+### 2.5 Selection Rationale
 
-- **React 19**: 最新の Suspense、並行レンダリング機能を活用
-- **TanStack Query**: useSuspenseQuery による宣言的データフェッチ
-- **TanStack Router**: 型安全なファイルベースルーティング
-- **MUI v7**: 最新のデザインシステム、良好なアクセシビリティ
-- **Vite**: 高速な HMR、最適化されたビルド
+- **React 19**: Leverage latest Suspense, concurrent rendering features
+- **TanStack Query**: Declarative data fetching with useSuspenseQuery
+- **TanStack Router**: Type-safe file-based routing
+- **MUI v7**: Latest design system, good accessibility
+- **Vite**: Fast HMR, optimized builds
 
 ---
 
-## 3. バックエンド技術スタック
+## 3. Backend Tech Stack
 
-### 3.1 ランタイム・フレームワーク
+### 3.1 Runtime & Framework
 
-| 技術 | バージョン | 用途 |
-|------|-----------|------|
-| **Node.js** | 20.x LTS | JavaScript ランタイム |
-| **Express** | 4.x | Web フレームワーク |
-| **TypeScript** | 5.x | 型安全性 |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Node.js** | 20.x LTS | JavaScript Runtime |
+| **Express** | 4.x | Web Framework |
+| **TypeScript** | 5.x | Type Safety |
 
-### 3.2 データベース・ORM
+### 3.2 Database & ORM
 
-| 技術 | バージョン | 用途 |
-|------|-----------|------|
-| **SQLite** | 3.x | データベース |
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **SQLite** | 3.x | Database |
 | **Prisma** | 5.x | ORM |
 
-### 3.3 認証・セキュリティ
+### 3.3 Authentication & Security
 
-| 技術 | 用途 |
-|------|------|
-| **jsonwebtoken** | JWT トークン生成・検証 |
-| **bcryptjs** | パスワードハッシュ化 |
-| **cors** | CORS 設定 |
-| **helmet** | セキュリティヘッダー |
+| Technology | Purpose |
+|------------|---------|
+| **jsonwebtoken** | JWT Token Generation & Verification |
+| **bcryptjs** | Password Hashing |
+| **cors** | CORS Configuration |
+| **helmet** | Security Headers |
 
-### 3.4 バリデーション・ユーティリティ
+### 3.4 Validation & Utilities
 
-| 技術 | 用途 |
-|------|------|
-| **zod** | リクエストバリデーション |
-| **slugify** | URL スラッグ生成 |
-| **uuid** | 一意識別子生成 |
+| Technology | Purpose |
+|------------|---------|
+| **zod** | Request Validation |
+| **slugify** | URL Slug Generation |
+| **uuid** | Unique Identifier Generation |
 
-### 3.5 アーキテクチャパターン
+### 3.5 Architecture Pattern
 
-**レイヤードアーキテクチャ**を採用:
+Adopting **Layered Architecture**:
 
 ```
 Routes → Controllers → Services → Repositories → Database
 ```
 
-| レイヤー | 責務 |
-|---------|------|
-| **Routes** | エンドポイント定義、ミドルウェア適用 |
-| **Controllers** | リクエスト/レスポンス処理、バリデーション |
-| **Services** | ビジネスロジック |
-| **Repositories** | データアクセス（Prisma 操作） |
+| Layer | Responsibility |
+|-------|----------------|
+| **Routes** | Endpoint Definition, Middleware Application |
+| **Controllers** | Request/Response Processing, Validation |
+| **Services** | Business Logic |
+| **Repositories** | Data Access (Prisma Operations) |
 
-### 3.6 選定理由
+### 3.6 Selection Rationale
 
-- **Express**: シンプルで柔軟、豊富なエコシステム
-- **Prisma**: 型安全な ORM、マイグレーション管理
-- **SQLite**: 開発環境でのセットアップ簡略化
-- **レイヤードアーキテクチャ**: 関心の分離、テスタビリティ向上
-
----
-
-## 4. 共通ツール
-
-### 4.1 開発ツール
-
-| 技術 | 用途 |
-|------|------|
-| **pnpm** | パッケージマネージャー（ワークスペース対応） |
-| **ESLint** | コード品質チェック |
-| **Prettier** | コードフォーマット |
-| **tsx** | TypeScript 実行（開発時） |
-
-### 4.2 テスト
-
-| 技術 | 用途 |
-|------|------|
-| **Vitest** | ユニットテスト・統合テスト |
-| **Testing Library** | React コンポーネントテスト |
-| **Supertest** | API エンドポイントテスト |
-
-### 4.3 プロセス管理・監視
-
-| 技術 | 用途 |
-|------|------|
-| **PM2** | プロセス管理、ログ監視 |
-| **Sentry** | エラートラッキング、パフォーマンス監視 |
+- **Express**: Simple and flexible, rich ecosystem
+- **Prisma**: Type-safe ORM, migration management
+- **SQLite**: Simplified setup for development environment
+- **Layered Architecture**: Separation of concerns, improved testability
 
 ---
 
-## 5. ディレクトリ構成
+## 4. Common Tools
+
+### 4.1 Development Tools
+
+| Technology | Purpose |
+|------------|---------|
+| **pnpm** | Package Manager (Workspace Support) |
+| **ESLint** | Code Quality Check |
+| **Prettier** | Code Formatting |
+| **tsx** | TypeScript Execution (Development) |
+
+### 4.2 Testing
+
+| Technology | Purpose |
+|------------|---------|
+| **Vitest** | Unit Tests & Integration Tests |
+| **Testing Library** | React Component Testing |
+| **Supertest** | API Endpoint Testing |
+
+### 4.3 Process Management & Monitoring
+
+| Technology | Purpose |
+|------------|---------|
+| **PM2** | Process Management, Log Monitoring |
+| **Sentry** | Error Tracking, Performance Monitoring |
+
+---
+
+## 5. Directory Structure
 
 ```
 claude-code-demo/
-├── docs/                          # プロジェクトドキュメント
+├── docs/                          # Project Documentation
 │   ├── PRD.md
 │   ├── TechStack.md
 │   ├── Architecture.md
 │   └── API-Spec.md
 │
-├── frontend/                      # フロントエンドアプリケーション
+├── frontend/                      # Frontend Application
 │   ├── src/
-│   │   ├── features/              # 機能別モジュール
-│   │   │   ├── auth/              # 認証機能
-│   │   │   ├── articles/          # 記事機能
-│   │   │   ├── comments/          # コメント機能
-│   │   │   ├── profiles/          # プロフィール機能
-│   │   │   └── tags/              # タグ機能
-│   │   ├── components/            # 共通コンポーネント
-│   │   │   ├── layout/            # レイアウト
-│   │   │   └── ui/                # UI パーツ
-│   │   ├── hooks/                 # カスタムフック
-│   │   ├── lib/                   # ユーティリティ
-│   │   │   ├── api/               # API クライアント
-│   │   │   └── utils/             # ヘルパー関数
-│   │   ├── routes/                # ルート定義（TanStack Router）
-│   │   ├── types/                 # 型定義
+│   │   ├── features/              # Feature-based Modules
+│   │   │   ├── auth/              # Authentication Feature
+│   │   │   ├── articles/          # Articles Feature
+│   │   │   ├── comments/          # Comments Feature
+│   │   │   ├── profiles/          # Profiles Feature
+│   │   │   └── tags/              # Tags Feature
+│   │   ├── components/            # Shared Components
+│   │   │   ├── layout/            # Layout
+│   │   │   └── ui/                # UI Parts
+│   │   ├── hooks/                 # Custom Hooks
+│   │   ├── lib/                   # Utilities
+│   │   │   ├── api/               # API Client
+│   │   │   └── utils/             # Helper Functions
+│   │   ├── routes/                # Route Definitions (TanStack Router)
+│   │   ├── types/                 # Type Definitions
 │   │   ├── App.tsx
 │   │   └── main.tsx
 │   ├── public/
@@ -171,75 +171,75 @@ claude-code-demo/
 │   ├── tsconfig.json
 │   └── package.json
 │
-├── backend/                       # バックエンドアプリケーション
+├── backend/                       # Backend Application
 │   ├── src/
-│   │   ├── routes/                # ルート定義
-│   │   ├── controllers/           # コントローラー
-│   │   ├── services/              # ビジネスロジック
-│   │   ├── repositories/          # データアクセス
-│   │   ├── middleware/            # ミドルウェア
-│   │   │   ├── auth.ts            # 認証ミドルウェア
-│   │   │   ├── errorHandler.ts    # エラーハンドリング
-│   │   │   └── validation.ts      # バリデーション
-│   │   ├── lib/                   # ユーティリティ
-│   │   │   ├── prisma.ts          # Prisma クライアント
-│   │   │   └── jwt.ts             # JWT ユーティリティ
-│   │   ├── types/                 # 型定義
-│   │   └── index.ts               # エントリーポイント
+│   │   ├── routes/                # Route Definitions
+│   │   ├── controllers/           # Controllers
+│   │   ├── services/              # Business Logic
+│   │   ├── repositories/          # Data Access
+│   │   ├── middleware/            # Middleware
+│   │   │   ├── auth.ts            # Authentication Middleware
+│   │   │   ├── errorHandler.ts    # Error Handling
+│   │   │   └── validation.ts      # Validation
+│   │   ├── lib/                   # Utilities
+│   │   │   ├── prisma.ts          # Prisma Client
+│   │   │   └── jwt.ts             # JWT Utilities
+│   │   ├── types/                 # Type Definitions
+│   │   └── index.ts               # Entry Point
 │   ├── prisma/
-│   │   ├── schema.prisma          # データベーススキーマ
-│   │   └── migrations/            # マイグレーション
+│   │   ├── schema.prisma          # Database Schema
+│   │   └── migrations/            # Migrations
 │   ├── tsconfig.json
 │   └── package.json
 │
-├── .claude/                       # Claude Code 設定（既存）
-├── dev/                           # Dev Docs（既存）
-├── pnpm-workspace.yaml            # ワークスペース設定
-├── package.json                   # ルート package.json
-├── .prettierrc                    # Prettier 設定
-├── .eslintrc.js                   # ESLint 設定
-└── CLAUDE.md                      # プロジェクト設定（既存）
+├── .claude/                       # Claude Code Configuration (Existing)
+├── dev/                           # Dev Docs (Existing)
+├── pnpm-workspace.yaml            # Workspace Configuration
+├── package.json                   # Root package.json
+├── .prettierrc                    # Prettier Configuration
+├── .eslintrc.js                   # ESLint Configuration
+└── CLAUDE.md                      # Project Configuration (Existing)
 ```
 
 ---
 
-## 6. 開発環境セットアップ
+## 6. Development Environment Setup
 
-### 6.1 前提条件
+### 6.1 Prerequisites
 
-- Node.js 20.x 以上
-- pnpm 8.x 以上
+- Node.js 20.x or higher
+- pnpm 8.x or higher
 
-### 6.2 初期セットアップ
+### 6.2 Initial Setup
 
 ```bash
-# 依存関係インストール
+# Install dependencies
 pnpm install
 
-# データベースマイグレーション
+# Database migration
 pnpm --filter backend prisma migrate dev
 
-# 開発サーバー起動（フロントエンド + バックエンド）
+# Start development server (Frontend + Backend)
 pnpm dev
 ```
 
-### 6.3 利用可能なスクリプト
+### 6.3 Available Scripts
 
-| コマンド | 説明 |
-|---------|------|
-| `pnpm dev` | 開発サーバー起動（全体） |
-| `pnpm --filter frontend dev` | フロントエンドのみ起動 |
-| `pnpm --filter backend dev` | バックエンドのみ起動 |
-| `pnpm build` | プロダクションビルド |
-| `pnpm test` | テスト実行 |
-| `pnpm lint` | Lint チェック |
-| `pnpm format` | コードフォーマット |
+| Command | Description |
+|---------|-------------|
+| `pnpm dev` | Start development server (all) |
+| `pnpm --filter frontend dev` | Start frontend only |
+| `pnpm --filter backend dev` | Start backend only |
+| `pnpm build` | Production build |
+| `pnpm test` | Run tests |
+| `pnpm lint` | Lint check |
+| `pnpm format` | Code formatting |
 
 ---
 
-## 7. 環境変数
+## 7. Environment Variables
 
-### 7.1 バックエンド (.env)
+### 7.1 Backend (.env)
 
 ```env
 # Database
@@ -257,7 +257,7 @@ NODE_ENV="development"
 SENTRY_DSN=""
 ```
 
-### 7.2 フロントエンド (.env)
+### 7.2 Frontend (.env)
 
 ```env
 # API
@@ -266,9 +266,9 @@ VITE_API_URL="http://localhost:3000/api"
 
 ---
 
-## 8. 依存関係一覧
+## 8. Dependency List
 
-### 8.1 フロントエンド
+### 8.1 Frontend
 
 ```json
 {
@@ -296,7 +296,7 @@ VITE_API_URL="http://localhost:3000/api"
 }
 ```
 
-### 8.2 バックエンド
+### 8.2 Backend
 
 ```json
 {
@@ -327,22 +327,22 @@ VITE_API_URL="http://localhost:3000/api"
 
 ---
 
-## 9. Claude Code 統合
+## 9. Claude Code Integration
 
-### 9.1 既存スキル活用
+### 9.1 Using Existing Skills
 
-本プロジェクトは既存の Claude Code スキルと統合:
+This project integrates with existing Claude Code skills:
 
-- **backend-dev-guidelines**: Express/TypeScript パターン
-- **frontend-dev-guidelines**: React/MUI パターン
-- **error-tracking**: Sentry 統合
-- **route-tester**: API テスト
+- **backend-dev-guidelines**: Express/TypeScript patterns
+- **frontend-dev-guidelines**: React/MUI patterns
+- **error-tracking**: Sentry integration
+- **route-tester**: API testing
 
-### 9.2 開発フロー
+### 9.2 Development Flow
 
-1. 機能要件の確認（PRD 参照）
-2. API 設計（API-Spec 参照）
-3. バックエンド実装（レイヤードアーキテクチャ）
-4. フロントエンド実装（機能ベースモジュール）
-5. テスト実行
-6. Dev Docs 更新
+1. Review functional requirements (refer to PRD)
+2. API design (refer to API-Spec)
+3. Backend implementation (Layered Architecture)
+4. Frontend implementation (Feature-based modules)
+5. Run tests
+6. Update Dev Docs

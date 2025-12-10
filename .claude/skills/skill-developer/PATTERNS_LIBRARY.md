@@ -1,127 +1,127 @@
-# 共通パターンライブラリ
+# Common Patterns Library
 
-Skillトリガーのためのすぐに使えるregexおよびglobパターンです。コピーしてカスタマイズしてください。
+Ready-to-use regex and glob patterns for skill triggers. Copy and customize for your skills.
 
 ---
 
-## Intentパターン（Regex）
+## Intent Patterns (Regex)
 
-### 機能/エンドポイント作成
+### Feature/Endpoint Creation
 ```regex
 (add|create|implement|build).*?(feature|endpoint|route|service|controller)
 ```
 
-### コンポーネント作成
+### Component Creation
 ```regex
 (create|add|make|build).*?(component|UI|page|modal|dialog|form)
 ```
 
-### データベース作業
+### Database Work
 ```regex
 (add|create|modify|update).*?(user|table|column|field|schema|migration)
 (database|prisma).*?(change|update|query)
 ```
 
-### エラー処理
+### Error Handling
 ```regex
 (fix|handle|catch|debug).*?(error|exception|bug)
 (add|implement).*?(try|catch|error.*?handling)
 ```
 
-### 説明リクエスト
+### Explanation Requests
 ```regex
 (how does|how do|explain|what is|describe|tell me about).*?
 ```
 
-### ワークフロー作業
+### Workflow Operations
 ```regex
 (create|add|modify|update).*?(workflow|step|branch|condition)
 (debug|troubleshoot|fix).*?workflow
 ```
 
-### テスト
+### Testing
 ```regex
 (write|create|add).*?(test|spec|unit.*?test)
 ```
 
 ---
 
-## ファイルパスパターン（Glob）
+## File Path Patterns (Glob)
 
-### フロントエンド
+### Frontend
 ```glob
-frontend/src/**/*.tsx        # すべてのReactコンポーネント
-frontend/src/**/*.ts         # すべてのTypeScriptファイル
-frontend/src/components/**   # componentsディレクトリのみ
+frontend/src/**/*.tsx        # All React components
+frontend/src/**/*.ts         # All TypeScript files
+frontend/src/components/**   # Only components directory
 ```
 
-### バックエンドサービス
+### Backend Services
 ```glob
-form/src/**/*.ts            # Formサービス
-email/src/**/*.ts           # Emailサービス
-users/src/**/*.ts           # Usersサービス
-projects/src/**/*.ts        # Projectsサービス
+form/src/**/*.ts            # Form service
+email/src/**/*.ts           # Email service
+users/src/**/*.ts           # Users service
+projects/src/**/*.ts        # Projects service
 ```
 
-### データベース
+### Database
 ```glob
-**/schema.prisma            # Prismaスキーマ（どこでも）
-**/migrations/**/*.sql      # マイグレーションファイル
-database/src/**/*.ts        # データベーススクリプト
+**/schema.prisma            # Prisma schema (anywhere)
+**/migrations/**/*.sql      # Migration files
+database/src/**/*.ts        # Database scripts
 ```
 
-### ワークフロー
+### Workflows
 ```glob
-form/src/workflow/**/*.ts              # ワークフローエンジン
-form/src/workflow-definitions/**/*.json # ワークフロー定義
+form/src/workflow/**/*.ts              # Workflow engine
+form/src/workflow-definitions/**/*.json # Workflow definitions
 ```
 
-### テスト除外
+### Test Exclusions
 ```glob
-**/*.test.ts                # TypeScriptテスト
-**/*.test.tsx               # Reactコンポーネントテスト
-**/*.spec.ts                # Specファイル
+**/*.test.ts                # TypeScript tests
+**/*.test.tsx               # React component tests
+**/*.spec.ts                # Spec files
 ```
 
 ---
 
-## コンテンツパターン（Regex）
+## Content Patterns (Regex)
 
-### Prisma/データベース
+### Prisma/Database
 ```regex
-import.*[Pp]risma                # Prisma import
-PrismaService                    # PrismaService使用
+import.*[Pp]risma                # Prisma imports
+PrismaService                    # PrismaService usage
 prisma\.                         # prisma.something
-\.findMany\(                     # Prismaクエリメソッド
+\.findMany\(                     # Prisma query methods
 \.create\(
 \.update\(
 \.delete\(
 ```
 
-### コントローラー/ルート
+### Controllers/Routes
 ```regex
-export class.*Controller         # Controllerクラス
+export class.*Controller         # Controller classes
 router\.                         # Express router
-app\.(get|post|put|delete|patch) # Express appルート
+app\.(get|post|put|delete|patch) # Express app routes
 ```
 
-### エラー処理
+### Error Handling
 ```regex
-try\s*\{                        # Tryブロック
-catch\s*\(                      # Catchブロック
-throw new                        # Throw文
+try\s*\{                        # Try blocks
+catch\s*\(                      # Catch blocks
+throw new                        # Throw statements
 ```
 
-### React/コンポーネント
+### React/Components
 ```regex
-export.*React\.FC               # React関数コンポーネント
-export default function.*       # デフォルト関数export
+export.*React\.FC               # React functional components
+export default function.*       # Default function exports
 useState|useEffect              # React hooks
 ```
 
 ---
 
-**使用例:**
+**Usage Example:**
 
 ```json
 {
@@ -146,7 +146,7 @@ useState|useEffect              # React hooks
 
 ---
 
-**関連ファイル:**
-- [SKILL.md](SKILL.md) - メインskillガイド
-- [TRIGGER_TYPES.md](TRIGGER_TYPES.md) - 詳細トリガードキュメント
-- [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - 完全スキーマ
+**Related Files:**
+- [SKILL.md](SKILL.md) - Main skill guide
+- [TRIGGER_TYPES.md](TRIGGER_TYPES.md) - Detailed trigger documentation
+- [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - Complete schema

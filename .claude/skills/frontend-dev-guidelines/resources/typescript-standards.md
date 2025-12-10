@@ -1,14 +1,14 @@
-# TypeScript 標準
+# TypeScript Standards
 
-React フロントエンドコードの型安全と保守性のための TypeScript ベストプラクティスです。
+TypeScript best practices for type safety and maintainability in React frontend code.
 
 ---
 
-## Strict モード
+## Strict Mode
 
-### 設定
+### Configuration
 
-プロジェクトで TypeScript strict モードが**有効化**されています:
+TypeScript strict mode is **enabled** in the project:
 
 ```json
 // tsconfig.json
@@ -21,24 +21,24 @@ React フロントエンドコードの型安全と保守性のための TypeScr
 }
 ```
 
-**意味:**
-- 暗黙的な `any` 型禁止
-- Null/undefined を明示的に処理する必要あり
-- 型安全を強制
+**This means:**
+- No implicit `any` types
+- Null/undefined must be handled explicitly
+- Type safety enforced
 
 ---
 
-## `any` 型禁止
+## No `any` Type
 
-### ルール
+### The Rule
 
 ```typescript
-// ❌ 絶対 any 使用禁止
+// ❌ NEVER use any
 function handleData(data: any) {
     return data.something;
 }
 
-// ✅ 特定の型使用
+// ✅ Use specific types
 interface MyData {
     something: string;
 }
@@ -47,7 +47,7 @@ function handleData(data: MyData) {
     return data.something;
 }
 
-// ✅ または本当に不明なデータには unknown 使用
+// ✅ Or use unknown for truly unknown data
 function handleUnknown(data: unknown) {
     if (typeof data === 'object' && data !== null && 'something' in data) {
         return (data as MyData).something;
@@ -55,19 +55,19 @@ function handleUnknown(data: unknown) {
 }
 ```
 
-**型が本当に分からない場合:**
-- `unknown` 使用 (型チェック強制)
-- Type guards で絞り込む
-- 型が不明な理由をドキュメント化
+**If you truly don't know the type:**
+- Use `unknown` (forces type checking)
+- Use type guards to narrow
+- Document why type is unknown
 
 ---
 
-## 明示的戻り値型
+## Explicit Return Types
 
-### 関数戻り値型
+### Function Return Types
 
 ```typescript
-// ✅ 正しい - 明示的戻り値型
+// ✅ CORRECT - Explicit return type
 function getUser(id: number): Promise<User> {
     return apiClient.get(`/users/${id}`);
 }
@@ -76,21 +76,21 @@ function calculateTotal(items: Item[]): number {
     return items.reduce((sum, item) => sum + item.price, 0);
 }
 
-// ❌ 避ける - 暗黙的戻り値型 (不明確)
+// ❌ AVOID - Implicit return type (less clear)
 function getUser(id: number) {
     return apiClient.get(`/users/${id}`);
 }
 ```
 
-### コンポーネント戻り値型
+### Component Return Types
 
 ```typescript
-// React.FC が既に戻り値型提供 (ReactElement)
+// React.FC already provides return type (ReactElement)
 export const MyComponent: React.FC<Props> = ({ prop }) => {
     return <div>{prop}</div>;
 };
 
-// カスタム hooks の場合
+// For custom hooks
 function useMyData(id: number): { data: Data; isLoading: boolean } {
     const [data, setData] = useState<Data | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -101,67 +101,67 @@ function useMyData(id: number): { data: Data; isLoading: boolean } {
 
 ---
 
-## 型 Imports
+## Type Imports
 
-### 'type' キーワード使用
+### Use 'type' Keyword
 
 ```typescript
-// ✅ 正しい - 型 import 明示的に表示
+// ✅ CORRECT - Explicitly mark as type import
 import type { User } from '~types/user';
 import type { Post } from '~types/post';
 import type { SxProps, Theme } from '@mui/material';
 
-// ❌ 避ける - 値と型 import 混合
-import { User } from '~types/user';  // 型か値か不明確
+// ❌ AVOID - Mixed value and type imports
+import { User } from '~types/user';  // Unclear if type or value
 ```
 
-**利点:**
-- 型と値を明確に分離
-- より良い tree-shaking
-- 循環依存防止
-- TypeScript コンパイラ最適化
+**Benefits:**
+- Clearly separates types from values
+- Better tree-shaking
+- Prevents circular dependencies
+- TypeScript compiler optimization
 
 ---
 
-## コンポーネント Prop インターフェース
+## Component Prop Interfaces
 
-### インターフェースパターン
+### Interface Pattern
 
 ```typescript
 /**
- * MyComponent の Props
+ * Props for MyComponent
  */
 interface MyComponentProps {
-    /** 表示するユーザー ID */
+    /** The user ID to display */
     userId: number;
 
-    /** アクション完了時の選択的コールバック */
+    /** Optional callback when action completes */
     onComplete?: () => void;
 
-    /** コンポーネント表示モード */
+    /** Display mode for the component */
     mode?: 'view' | 'edit';
 
-    /** 追加 CSS クラス */
+    /** Additional CSS classes */
     className?: string;
 }
 
 export const MyComponent: React.FC<MyComponentProps> = ({
     userId,
     onComplete,
-    mode = 'view',  // デフォルト値
+    mode = 'view',  // Default value
     className,
 }) => {
     return <div>...</div>;
 };
 ```
 
-**キーポイント:**
-- props のための別インターフェース
-- 各 prop に JSDoc コメント
-- 選択的 props は `?` 使用
-- 分割代入でデフォルト値提供
+**Key Points:**
+- Separate interface for props
+- JSDoc comments for each prop
+- Optional props use `?`
+- Provide defaults in destructuring
 
-### Children 付き Props
+### Props with Children
 
 ```typescript
 interface ContainerProps {
@@ -169,7 +169,7 @@ interface ContainerProps {
     title: string;
 }
 
-// React.FC は自動的に children 型含むが、明示的に記述
+// React.FC automatically includes children type, but be explicit
 export const Container: React.FC<ContainerProps> = ({ children, title }) => {
     return (
         <div>
@@ -182,64 +182,64 @@ export const Container: React.FC<ContainerProps> = ({ children, title }) => {
 
 ---
 
-## ユーティリティ型
+## Utility Types
 
 ### Partial<T>
 
 ```typescript
-// すべてのプロパティを選択的に
+// Make all properties optional
 type UserUpdate = Partial<User>;
 
 function updateUser(id: number, updates: Partial<User>) {
-    // updates は User プロパティの任意の部分集合可能
+    // updates can have any subset of User properties
 }
 ```
 
 ### Pick<T, K>
 
 ```typescript
-// 特定プロパティ選択
+// Select specific properties
 type UserPreview = Pick<User, 'id' | 'name' | 'email'>;
 
 const preview: UserPreview = {
     id: 1,
     name: 'John',
     email: 'john@example.com',
-    // 他の User プロパティ許可されない
+    // Other User properties not allowed
 };
 ```
 
 ### Omit<T, K>
 
 ```typescript
-// 特定プロパティ除外
+// Exclude specific properties
 type UserWithoutPassword = Omit<User, 'password' | 'passwordHash'>;
 
 const publicUser: UserWithoutPassword = {
     id: 1,
     name: 'John',
     email: 'john@example.com',
-    // password と passwordHash 許可されない
+    // password and passwordHash not allowed
 };
 ```
 
 ### Required<T>
 
 ```typescript
-// すべてのプロパティを必須に
-type RequiredConfig = Required<Config>;  // すべての選択的 props が必須に
+// Make all properties required
+type RequiredConfig = Required<Config>;  // All optional props become required
 ```
 
 ### Record<K, V>
 
 ```typescript
-// 型安全オブジェクト/マップ
+// Type-safe object/map
 const userMap: Record<string, User> = {
     'user1': { id: 1, name: 'John' },
     'user2': { id: 2, name: 'Jane' },
 };
 
-// スタイル用
+// For styles
 import type { SxProps, Theme } from '@mui/material';
 
 const styles: Record<string, SxProps<Theme>> = {
@@ -252,7 +252,7 @@ const styles: Record<string, SxProps<Theme>> = {
 
 ## Type Guards
 
-### 基本 Type Guards
+### Basic Type Guards
 
 ```typescript
 function isUser(data: unknown): data is User {
@@ -264,9 +264,9 @@ function isUser(data: unknown): data is User {
     );
 }
 
-// 使用
+// Usage
 if (isUser(response)) {
-    console.log(response.name);  // TypeScript が User として認識
+    console.log(response.name);  // TypeScript knows it's User
 }
 ```
 
@@ -280,13 +280,13 @@ type LoadingState =
     | { status: 'error'; error: Error };
 
 function Component({ state }: { state: LoadingState }) {
-    // TypeScript が status に基づいて型絞り込み
+    // TypeScript narrows type based on status
     if (state.status === 'success') {
-        return <Display data={state.data} />;  // ここで data 使用可能
+        return <Display data={state.data} />;  // data available here
     }
 
     if (state.status === 'error') {
-        return <Error error={state.error} />;  // ここで error 使用可能
+        return <Error error={state.error} />;  // error available here
     }
 
     return <Loading />;
@@ -295,21 +295,21 @@ function Component({ state }: { state: LoadingState }) {
 
 ---
 
-## ジェネリック型
+## Generic Types
 
-### ジェネリック関数
+### Generic Functions
 
 ```typescript
 function getById<T>(items: T[], id: number): T | undefined {
     return items.find(item => (item as any).id === id);
 }
 
-// 型推論と共に使用
+// Usage with type inference
 const users: User[] = [...];
-const user = getById(users, 123);  // 型: User | undefined
+const user = getById(users, 123);  // Type: User | undefined
 ```
 
-### ジェネリックコンポーネント
+### Generic Components
 
 ```typescript
 interface ListProps<T> {
@@ -327,7 +327,7 @@ export function List<T>({ items, renderItem }: ListProps<T>): React.ReactElement
     );
 }
 
-// 使用
+// Usage
 <List<User>
     items={users}
     renderItem={(user) => <UserCard user={user} />}
@@ -336,83 +336,83 @@ export function List<T>({ items, renderItem }: ListProps<T>): React.ReactElement
 
 ---
 
-## 型アサーション (慎重に使用)
+## Type Assertions (Use Sparingly)
 
-### 使用すべきとき
+### When to Use
 
 ```typescript
-// ✅ OK - TypeScript より詳しく知っているとき
+// ✅ OK - When you know more than TypeScript
 const element = document.getElementById('my-element') as HTMLInputElement;
 const value = element.value;
 
-// ✅ OK - 検証した API レスポンス
+// ✅ OK - API response that you've validated
 const response = await api.getData();
-const user = response.data as User;  // 形状を知っている
+const user = response.data as User;  // You know the shape
 ```
 
-### 使用すべきでないとき
+### When NOT to Use
 
 ```typescript
-// ❌ 避ける - 型安全をバイパス
-const data = getData() as any;  // 間違い - TypeScript 無効化
+// ❌ AVOID - Circumventing type safety
+const data = getData() as any;  // WRONG - defeats TypeScript
 
-// ❌ 避ける - 安全でないアサーション
-const value = unknownValue as string;  // 実際に string でないかもしれない
+// ❌ AVOID - Unsafe assertion
+const value = unknownValue as string;  // Might not actually be string
 ```
 
 ---
 
-## Null/Undefined 処理
+## Null/Undefined Handling
 
 ### Optional Chaining
 
 ```typescript
-// ✅ 正しい
+// ✅ CORRECT
 const name = user?.profile?.name;
 
-// 同等のコード:
+// Equivalent to:
 const name = user && user.profile && user.profile.name;
 ```
 
 ### Nullish Coalescing
 
 ```typescript
-// ✅ 正しい
+// ✅ CORRECT
 const displayName = user?.name ?? 'Anonymous';
 
-// null または undefined のときのみデフォルト値使用
-// (|| と異なる - '' や 0、false ではトリガーしない)
+// Only uses default if null or undefined
+// (Different from || which triggers on '', 0, false)
 ```
 
-### Non-Null Assertion (慎重に使用)
+### Non-Null Assertion (Use Carefully)
 
 ```typescript
-// ✅ OK - 値が存在すると確信しているとき
+// ✅ OK - When you're certain value exists
 const data = queryClient.getQueryData<Data>(['data'])!;
 
-// ⚠️ 注意 - null でないと分かっているときのみ使用
-// 明示的チェックがより良い:
+// ⚠️ CAREFUL - Only use when you KNOW it's not null
+// Better to check explicitly:
 const data = queryClient.getQueryData<Data>(['data']);
 if (data) {
-    // data 使用
+    // Use data
 }
 ```
 
 ---
 
-## まとめ
+## Summary
 
-**TypeScript チェックリスト:**
-- ✅ Strict モード有効化
-- ✅ `any` 型禁止 (必要なら `unknown` 使用)
-- ✅ 関数に明示的戻り値型
-- ✅ 型 imports に `import type` 使用
-- ✅ prop インターフェースに JSDoc コメント
-- ✅ ユーティリティ型 (Partial, Pick, Omit, Required, Record)
-- ✅ 絞り込みのための Type guards
-- ✅ Optional chaining と nullish coalescing
-- ❌ どうしても必要な場合以外は型アサーション避ける
+**TypeScript Checklist:**
+- ✅ Strict mode enabled
+- ✅ No `any` type (use `unknown` if needed)
+- ✅ Explicit return types on functions
+- ✅ Use `import type` for type imports
+- ✅ JSDoc comments on prop interfaces
+- ✅ Utility types (Partial, Pick, Omit, Required, Record)
+- ✅ Type guards for narrowing
+- ✅ Optional chaining and nullish coalescing
+- ❌ Avoid type assertions unless necessary
 
-**参考:**
-- [component-patterns.md](component-patterns.md) - コンポーネント型付け
-- [data-fetching.md](data-fetching.md) - API 型付け
+**See Also:**
+- [component-patterns.md](component-patterns.md) - Component typing
+- [data-fetching.md](data-fetching.md) - API typing

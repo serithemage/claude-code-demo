@@ -1,17 +1,17 @@
-# 完全な例
+# Complete Examples
 
-React.FC、lazy loading、Suspense、useSuspenseQuery、スタイリング、ルーティング、エラー処理など、すべての最新パターンを組み合わせた完全な動作例です。
+Full working examples combining all modern patterns: React.FC, lazy loading, Suspense, useSuspenseQuery, styling, routing, and error handling.
 
 ---
 
-## 例 1: 完全な最新コンポーネント
+## Example 1: Complete Modern Component
 
-組み合わせ: React.FC、useSuspenseQuery、cache-first、useCallback、スタイリング、エラー処理
+Combines: React.FC, useSuspenseQuery, cache-first, useCallback, styling, error handling
 
 ```typescript
 /**
- * ユーザープロファイル表示コンポーネント
- * Suspense と TanStack Query を使用した最新パターンのデモ
+ * User profile display component
+ * Demonstrates modern patterns with Suspense and TanStack Query
  */
 import React, { useState, useCallback, useMemo } from 'react';
 import { Box, Paper, Typography, Button, Avatar } from '@mui/material';
@@ -21,7 +21,7 @@ import { userApi } from '../api/userApi';
 import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 import type { User } from '~types/user';
 
-// スタイルオブジェクト
+// Styles object
 const componentStyles: Record<string, SxProps<Theme>> = {
     container: {
         p: 3,
@@ -56,7 +56,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId, onUpdate }) =>
     const { showSuccess, showError } = useMuiSnackbar();
     const [isEditing, setIsEditing] = useState(false);
 
-    // Suspense クエリ - isLoading 不要！
+    // Suspense query - no isLoading needed!
     const { data: user } = useSuspenseQuery({
         queryKey: ['user', userId],
         queryFn: () => userApi.getUser(userId),
@@ -80,12 +80,12 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId, onUpdate }) =>
         },
     });
 
-    // Memoized 計算値
+    // Memoized computed value
     const fullName = useMemo(() => {
         return `${user.firstName} ${user.lastName}`;
     }, [user.firstName, user.lastName]);
 
-    // useCallback を使用したイベントハンドラ
+    // Event handlers with useCallback
     const handleEdit = useCallback(() => {
         setIsEditing(true);
     }, []);
@@ -145,7 +145,7 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId, onUpdate }) =>
 export default UserProfile;
 ```
 
-**使用法:**
+**Usage:**
 ```typescript
 <SuspenseLoader>
     <UserProfile userId='123' onUpdate={() => console.log('Updated')} />
@@ -154,34 +154,34 @@ export default UserProfile;
 
 ---
 
-## 例 2: 完全な Feature 構造
+## Example 2: Complete Feature Structure
 
-`features/posts/` ベースの実際の例:
+Real example based on `features/posts/`:
 
 ```
 features/
   users/
     api/
-      userApi.ts                # API サービスレイヤー
+      userApi.ts                # API service layer
     components/
-      UserProfile.tsx           # メインコンポーネント (例 1 より)
-      UserList.tsx              # リストコンポーネント
-      UserForm.tsx              # フォームコンポーネント
+      UserProfile.tsx           # Main component (from Example 1)
+      UserList.tsx              # List component
+      UserBlog.tsx              # Blog component
       modals/
-        DeleteUserModal.tsx     # モーダルコンポーネント
+        DeleteUserModal.tsx     # Modal component
     hooks/
-      useSuspenseUser.ts        # Suspense クエリ hook
+      useSuspenseUser.ts        # Suspense query hook
       useUserMutations.ts       # Mutation hooks
-      useUserPermissions.ts     # Feature 別 hook
+      useUserPermissions.ts     # Feature-specific hook
     helpers/
-      userHelpers.ts            # ユーティリティ関数
-      validation.ts             # 検証ロジック
+      userHelpers.ts            # Utility functions
+      validation.ts             # Validation logic
     types/
-      index.ts                  # TypeScript インターフェース
+      index.ts                  # TypeScript interfaces
     index.ts                    # Public API exports
 ```
 
-### API サービス (userApi.ts)
+### API Service (userApi.ts)
 
 ```typescript
 import apiClient from '@/lib/apiClient';
@@ -234,12 +234,12 @@ export function useSuspenseUsers() {
     return useSuspenseQuery<User[], Error>({
         queryKey: ['users'],
         queryFn: () => userApi.getUsers(),
-        staleTime: 1 * 60 * 1000,  // リストにはより短く
+        staleTime: 1 * 60 * 1000,  // Shorter for list
     });
 }
 ```
 
-### 型 (types/index.ts)
+### Types (types/index.ts)
 
 ```typescript
 export interface User {
@@ -267,36 +267,36 @@ export type UpdateUserPayload = Partial<Omit<User, 'id' | 'createdAt' | 'updated
 ### Public Exports (index.ts)
 
 ```typescript
-// コンポーネント export
+// Export components
 export { UserProfile } from './components/UserProfile';
 export { UserList } from './components/UserList';
 
-// Hooks export
+// Export hooks
 export { useSuspenseUser, useSuspenseUsers } from './hooks/useSuspenseUser';
 export { useUserMutations } from './hooks/useUserMutations';
 
-// API export
+// Export API
 export { userApi } from './api/userApi';
 
-// 型 export
+// Export types
 export type { User, CreateUserPayload, UpdateUserPayload } from './types';
 ```
 
 ---
 
-## 例 3: Lazy Loading がある完全な Route
+## Example 3: Complete Route with Lazy Loading
 
 ```typescript
 /**
- * ユーザープロファイル route
- * パス: /users/:userId
+ * User profile route
+ * Path: /users/:userId
  */
 
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy } from 'react';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 
-// UserProfile コンポーネント lazy load
+// Lazy load the UserProfile component
 const UserProfile = lazy(() =>
     import('@/features/users/components/UserProfile').then(
         (module) => ({ default: module.UserProfile })
@@ -328,7 +328,7 @@ export default UserProfilePage;
 
 ---
 
-## 例 4: 検索とフィルタリングがあるリスト
+## Example 4: List with Search and Filtering
 
 ```typescript
 import React, { useState, useMemo } from 'react';
@@ -346,7 +346,7 @@ export const UserList: React.FC = () => {
         queryFn: () => userApi.getUsers(),
     });
 
-    // Memoized フィルタリング
+    // Memoized filtering
     const filteredUsers = useMemo(() => {
         if (!debouncedSearch) return users;
 
@@ -380,13 +380,13 @@ export const UserList: React.FC = () => {
 
 ---
 
-## 例 5: 検証がある Form
+## Example 5: Blog with Validation
 
 ```typescript
 import React from 'react';
 import { Box, TextField, Button, Paper } from '@mui/material';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useBlog } from 'react-hook-blog';
+import { zodResolver } from '@hookblog/resolvers/zod';
 import { z } from 'zod';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { userApi } from '../api/userApi';
@@ -399,17 +399,17 @@ const userSchema = z.object({
     lastName: z.string().min(1),
 });
 
-type UserFormData = z.infer<typeof userSchema>;
+type UserBlogData = z.infer<typeof userSchema>;
 
-interface CreateUserFormProps {
+interface CreateUserBlogProps {
     onSuccess?: () => void;
 }
 
-export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess }) => {
+export const CreateUserBlog: React.FC<CreateUserBlogProps> = ({ onSuccess }) => {
     const queryClient = useQueryClient();
     const { showSuccess, showError } = useMuiSnackbar();
 
-    const { register, handleSubmit, formState: { errors }, reset } = useForm<UserFormData>({
+    const { register, handleSubmit, blogState: { errors }, reset } = useBlog<UserBlogData>({
         resolver: zodResolver(userSchema),
         defaultValues: {
             username: '',
@@ -420,7 +420,7 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess }) => 
     });
 
     const createMutation = useMutation({
-        mutationFn: (data: UserFormData) => userApi.createUser(data),
+        mutationFn: (data: UserBlogData) => userApi.createUser(data),
 
         onSuccess: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
@@ -434,13 +434,13 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess }) => 
         },
     });
 
-    const onSubmit = (data: UserFormData) => {
+    const onSubmit = (data: UserBlogData) => {
         createMutation.mutate(data);
     };
 
     return (
         <Paper sx={{ p: 3, maxWidth: 500 }}>
-            <form onSubmit={handleSubmit(onSubmit)}>
+            <blog onSubmit={handleSubmit(onSubmit)}>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                     <TextField
                         {...register('username')}
@@ -483,24 +483,24 @@ export const CreateUserForm: React.FC<CreateUserFormProps> = ({ onSuccess }) => 
                         {createMutation.isPending ? 'Creating...' : 'Create User'}
                     </Button>
                 </Box>
-            </form>
+            </blog>
         </Paper>
     );
 };
 
-export default CreateUserForm;
+export default CreateUserBlog;
 ```
 
 ---
 
-## 例 6: Lazy Loading がある親コンテナ
+## Example 2: Parent Container with Lazy Loading
 
 ```typescript
 import React from 'react';
 import { Box } from '@mui/material';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 
-// 重いコンポーネント lazy load
+// Lazy load heavy components
 const UserList = React.lazy(() => import('./UserList'));
 const UserStats = React.lazy(() => import('./UserStats'));
 const ActivityFeed = React.lazy(() => import('./ActivityFeed'));
@@ -532,16 +532,16 @@ export const UserDashboard: React.FC = () => {
 export default UserDashboard;
 ```
 
-**利点:**
-- 各セクションが独立してロード
-- ユーザーが部分コンテンツをより早く見れる
-- より良い体感パフォーマンス
+**Benefits:**
+- Each section loads independently
+- User sees partial content sooner
+- Better perceived perblogance
 
 ---
 
-## 例 7: Cache-First 戦略実装
+## Example 3: Cache-First Strategy Implementation
 
-useSuspensePost.ts ベースの完全な例:
+Complete example based on useSuspensePost.ts:
 
 ```typescript
 import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
@@ -549,8 +549,8 @@ import { postApi } from '../api/postApi';
 import type { Post } from '../types';
 
 /**
- * Cache-first 戦略があるスマート post hook
- * 可能な場合グリッドキャッシュのデータ再利用
+ * Smart post hook with cache-first strategy
+ * Reuses data from grid cache when available
  */
 export function useSuspensePost(blogId: number, postId: number) {
     const queryClient = useQueryClient();
@@ -558,7 +558,7 @@ export function useSuspensePost(blogId: number, postId: number) {
     return useSuspenseQuery<Post, Error>({
         queryKey: ['post', blogId, postId],
         queryFn: async () => {
-            // 戦略 1: グリッドキャッシュをまず確認 (API 呼び出し防止)
+            // Strategy 1: Check grid cache first (avoids API call)
             const gridCache = queryClient.getQueryData<{ rows: Post[] }>([
                 'posts-v2',
                 blogId,
@@ -575,54 +575,54 @@ export function useSuspensePost(blogId: number, postId: number) {
                 );
 
                 if (cached) {
-                    return cached;  // キャッシュから返す - API 呼び出しなし！
+                    return cached;  // Return from cache - no API call!
                 }
             }
 
-            // 戦略 2: キャッシュにない、API から fetch
+            // Strategy 2: Not in cache, fetch from API
             return postApi.getPost(blogId, postId);
         },
-        staleTime: 5 * 60 * 1000,       // 5分間 fresh
-        gcTime: 10 * 60 * 1000,          // 10分間キャッシュ
-        refetchOnWindowFocus: false,     // フォーカス時 refetch しない
+        staleTime: 5 * 60 * 1000,       // Fresh for 5 minutes
+        gcTime: 10 * 60 * 1000,          // Cache for 10 minutes
+        refetchOnWindowFocus: false,     // Don't refetch on focus
     });
 }
 ```
 
-**このパターンを使用する理由:**
-- API 前にグリッドキャッシュ確認
-- ユーザーがグリッドから来たら即座にデータ
-- キャッシュにない場合は API へ fallback
-- 設定可能なキャッシュ時間
+**Why this pattern:**
+- Checks grid cache before API
+- Instant data if user came from grid
+- Falls back to API if not cached
+- Configurable cache times
 
 ---
 
-## 例 8: 完全な Route ファイル
+## Example 4: Complete Route File
 
 ```typescript
 /**
  * Project catalog route
- * パス: /project-catalog
+ * Path: /project-catalog
  */
 
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy } from 'react';
 
-// PostTable コンポーネント lazy load
+// Lazy load the PostTable component
 const PostTable = lazy(() =>
     import('@/features/posts/components/PostTable').then(
         (module) => ({ default: module.PostTable })
     )
 );
 
-// Route 定数
+// Route constants
 const PROJECT_CATALOG_FORM_ID = 744;
 const PROJECT_CATALOG_PROJECT_ID = 225;
 
 export const Route = createFileRoute('/project-catalog/')({
     component: ProjectCatalogPage,
     loader: () => ({
-        crumb: 'Projects',  // Breadcrumb タイトル
+        crumb: 'Projects',  // Breadcrumb title
     }),
 });
 
@@ -632,7 +632,7 @@ function ProjectCatalogPage() {
             blogId={PROJECT_CATALOG_FORM_ID}
             projectId={PROJECT_CATALOG_PROJECT_ID}
             tableType='active_projects'
-            title='Form Dashboard'
+            title='Blog Dashboard'
         />
     );
 }
@@ -642,7 +642,7 @@ export default ProjectCatalogPage;
 
 ---
 
-## 例 9: Form がある Dialog
+## Example 5: Dialog with Blog
 
 ```typescript
 import React from 'react';
@@ -657,21 +657,21 @@ import {
     IconButton,
 } from '@mui/material';
 import { Close, PersonAdd } from '@mui/icons-material';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useBlog } from 'react-hook-blog';
+import { zodResolver } from '@hookblog/resolvers/zod';
 import { z } from 'zod';
 
-const formSchema = z.object({
+const blogSchema = z.object({
     name: z.string().min(1),
     email: z.string().email(),
 });
 
-type FormData = z.infer<typeof formSchema>;
+type BlogData = z.infer<typeof blogSchema>;
 
 interface AddUserDialogProps {
     open: boolean;
     onClose: () => void;
-    onSubmit: (data: FormData) => Promise<void>;
+    onSubmit: (data: BlogData) => Promise<void>;
 }
 
 export const AddUserDialog: React.FC<AddUserDialogProps> = ({
@@ -679,8 +679,8 @@ export const AddUserDialog: React.FC<AddUserDialogProps> = ({
     onClose,
     onSubmit,
 }) => {
-    const { register, handleSubmit, formState: { errors }, reset } = useForm<FormData>({
-        resolver: zodResolver(formSchema),
+    const { register, handleSubmit, blogState: { errors }, reset } = useBlog<BlogData>({
+        resolver: zodResolver(blogSchema),
     });
 
     const handleClose = () => {
@@ -688,7 +688,7 @@ export const AddUserDialog: React.FC<AddUserDialogProps> = ({
         onClose();
     };
 
-    const handleFormSubmit = async (data: FormData) => {
+    const handleBlogSubmit = async (data: BlogData) => {
         await onSubmit(data);
         handleClose();
     };
@@ -707,7 +707,7 @@ export const AddUserDialog: React.FC<AddUserDialogProps> = ({
                 </Box>
             </DialogTitle>
 
-            <form onSubmit={handleSubmit(handleFormSubmit)}>
+            <blog onSubmit={handleSubmit(handleBlogSubmit)}>
                 <DialogContent>
                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                         <TextField
@@ -736,7 +736,7 @@ export const AddUserDialog: React.FC<AddUserDialogProps> = ({
                         Add User
                     </Button>
                 </DialogActions>
-            </form>
+            </blog>
         </Dialog>
     );
 };
@@ -744,7 +744,7 @@ export const AddUserDialog: React.FC<AddUserDialogProps> = ({
 
 ---
 
-## 例 10: 並列データ Fetching
+## Example 6: Parallel Data Fetching
 
 ```typescript
 import React from 'react';
@@ -755,7 +755,7 @@ import { statsApi } from '../api/statsApi';
 import { activityApi } from '../api/activityApi';
 
 export const Dashboard: React.FC = () => {
-    // Suspense ですべてのデータを並列で fetch
+    // Fetch all data in parallel with Suspense
     const [statsQuery, usersQuery, activityQuery] = useSuspenseQueries({
         queries: [
             {
@@ -801,7 +801,7 @@ export const Dashboard: React.FC = () => {
     );
 };
 
-// Suspense と一緒に使用
+// Usage with Suspense
 <SuspenseLoader>
     <Dashboard />
 </SuspenseLoader>
@@ -809,7 +809,7 @@ export const Dashboard: React.FC = () => {
 
 ---
 
-## 例 11: Optimistic Update
+## Example 7: Optimistic Update
 
 ```typescript
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -823,13 +823,13 @@ export const useToggleUserStatus = () => {
 
         // Optimistic update
         onMutate: async (userId) => {
-            // 進行中の refetch キャンセル
+            // Cancel outgoing refetches
             await queryClient.cancelQueries({ queryKey: ['users'] });
 
-            // 以前の値のスナップショット
+            // Snapshot previous value
             const previousUsers = queryClient.getQueryData<User[]>(['users']);
 
-            // Optimistically UI 更新
+            // Optimistically update UI
             queryClient.setQueryData<User[]>(['users'], (old) => {
                 return old?.map(user =>
                     user.id === userId
@@ -841,12 +841,12 @@ export const useToggleUserStatus = () => {
             return { previousUsers };
         },
 
-        // エラー時ロールバック
+        // Rollback on error
         onError: (err, userId, context) => {
             queryClient.setQueryData(['users'], context?.previousUsers);
         },
 
-        // mutation 後 refetch
+        // Refetch after mutation
         onSettled: () => {
             queryClient.invalidateQueries({ queryKey: ['users'] });
         },
@@ -856,17 +856,17 @@ export const useToggleUserStatus = () => {
 
 ---
 
-## まとめ
+## Summary
 
-**核心ポイント:**
+**Key Takeaways:**
 
-1. **コンポーネントパターン**: React.FC + lazy + Suspense + useSuspenseQuery
-2. **Feature 構造**: 構成されたサブディレクトリ (api/, components/, hooks/ など)
-3. **ルーティング**: Lazy loading があるフォルダベース
-4. **データ Fetching**: Cache-first 戦略がある useSuspenseQuery
-5. **Forms**: React Hook Form + Zod 検証
-6. **エラー処理**: useMuiSnackbar + onError コールバック
-7. **パフォーマンス**: useMemo、useCallback、React.memo、debouncing
-8. **スタイリング**: 100行未満インライン、sx prop、MUI v7 文法
+1. **Component Pattern**: React.FC + lazy + Suspense + useSuspenseQuery
+2. **Feature Structure**: Organized subdirectories (api/, components/, hooks/, etc.)
+3. **Routing**: Folder-based with lazy loading
+4. **Data Fetching**: useSuspenseQuery with cache-first strategy
+5. **Blogs**: React Hook Blog + Zod validation
+6. **Error Handling**: useMuiSnackbar + onError callbacks
+7. **Perblogance**: useMemo, useCallback, React.memo, debouncing
+8. **Styling**: Inline <100 lines, sx prop, MUI v7 syntax
 
-**各パターンの詳細説明は他のリソース参照。**
+**See other resources for detailed explanations of each pattern.**

@@ -1,78 +1,78 @@
-# 設定管理 - UnifiedConfigパターン
+# Configuration Management - UnifiedConfig Pattern
 
-バックエンドマイクロサービスの設定管理の完全なガイドです。
+Complete guide to managing configuration in backend microservices.
 
-## 目次
+## Table of Contents
 
-- [UnifiedConfig概要](#unifiedconfig概要)
-- [process.env直接使用禁止](#processenv直接使用禁止)
-- [設定構造](#設定構造)
-- [環境別設定](#環境別設定)
-- [シークレット管理](#シークレット管理)
-- [マイグレーションガイド](#マイグレーションガイド)
-
----
-
-## UnifiedConfig概要
-
-### UnifiedConfigを使用する理由
-
-**process.envの問題点:**
-- ❌ タイプセーフティなし
-- ❌ バリデーションなし
-- ❌ テストしにくい
-- ❌ コード全体に分散
-- ❌ デフォルト値なし
-- ❌ タイポに対するランタイムエラー
-
-**unifiedConfigの利点:**
-- ✅ タイプセーフな設定
-- ✅ 単一の信頼できるソース
-- ✅ 起動時のバリデーション
-- ✅ モックで簡単にテスト
-- ✅ 明確な構造
-- ✅ 環境変数へのフォールバック
+- [UnifiedConfig Overview](#unifiedconfig-overview)
+- [NEVER Use process.env Directly](#never-use-processenv-directly)
+- [Configuration Structure](#configuration-structure)
+- [Environment-Specific Configs](#environment-specific-configs)
+- [Secrets Management](#secrets-management)
+- [Migration Guide](#migration-guide)
 
 ---
 
-## process.env直接使用禁止
+## UnifiedConfig Overview
 
-### ルール
+### Why UnifiedConfig?
+
+**Problems with process.env:**
+- ❌ No type safety
+- ❌ No validation
+- ❌ Hard to test
+- ❌ Scattered throughout code
+- ❌ No default values
+- ❌ Runtime errors for typos
+
+**Benefits of unifiedConfig:**
+- ✅ Type-safe configuration
+- ✅ Single source of truth
+- ✅ Validated at startup
+- ✅ Easy to test with mocks
+- ✅ Clear structure
+- ✅ Fallback to environment variables
+
+---
+
+## NEVER Use process.env Directly
+
+### The Rule
 
 ```typescript
-// ❌ 絶対にこうしないでください
+// ❌ NEVER DO THIS
 const timeout = parseInt(process.env.TIMEOUT_MS || '5000');
 const dbHost = process.env.DB_HOST || 'localhost';
 
-// ✅ 常にこうしてください
+// ✅ ALWAYS DO THIS
 import { config } from './config/unifiedConfig';
 const timeout = config.timeouts.default;
 const dbHost = config.database.host;
 ```
 
-### これが重要な理由
+### Why This Matters
 
-**問題例:**
+**Example of problems:**
 ```typescript
-// 環境変数名のタイポ
-const host = process.env.DB_HSOT; // undefined！エラーなし！
+// Typo in environment variable name
+const host = process.env.DB_HSOT; // undefined! No error!
 
-// タイプセーフティ
-const port = process.env.PORT; // 文字列！parseInt必要
-const timeout = parseInt(process.env.TIMEOUT); // 設定なしだとNaN！
+// Type safety
+const port = process.env.PORT; // string! Need parseInt
+const timeout = parseInt(process.env.TIMEOUT); // NaN if not set!
 ```
 
-**unifiedConfig使用時:**
+**With unifiedConfig:**
 ```typescript
-const port = config.server.port; // number、保証される
-const timeout = config.timeouts.default; // number、フォールバック含む
+const port = config.server.port; // number, guaranteed
+const timeout = config.timeouts.default; // number, with fallback
 ```
 
 ---
 
-## 設定構造
+## Configuration Structure
 
-### UnifiedConfigインターフェース
+### UnifiedConfig Interface
 
 ```typescript
 export interface UnifiedConfig {
@@ -109,13 +109,13 @@ export interface UnifiedConfig {
         environment: string;
         tracesSampleRate: number;
     };
-    // ... その他のセクション
+    // ... more sections
 }
 ```
 
-### 実装パターン
+### Implementation Pattern
 
-**ファイル:** `/blog-api/src/config/unifiedConfig.ts`
+**File:** `/blog-api/src/config/unifiedConfig.ts`
 
 ```typescript
 import * as fs from 'fs';
@@ -137,27 +137,27 @@ export const config: UnifiedConfig = {
         port: parseInt(iniConfig.server?.port || process.env.PORT || '3002'),
         sessionSecret: iniConfig.server?.sessionSecret || process.env.SESSION_SECRET || 'dev-secret',
     },
-    // ... その他の設定
+    // ... more configuration
 };
 
-// 重要な設定のバリデーション
+// Validate critical config
 if (!config.tokens.jwt) {
     throw new Error('JWT secret not configured!');
 }
 ```
 
-**キーポイント:**
-- config.iniから最初に読み取り
-- process.envへフォールバック
-- 開発用デフォルト値
-- 起動時のバリデーション
-- タイプセーフなアクセス
+**Key Points:**
+- Read from config.ini first
+- Fallback to process.env
+- Default values for development
+- Validation at startup
+- Type-safe access
 
 ---
 
-## 環境別設定
+## Environment-Specific Configs
 
-### config.ini構造
+### config.ini Structure
 
 ```ini
 [database]
@@ -188,25 +188,25 @@ environment = development
 tracesSampleRate = 0.1
 ```
 
-### 環境オーバーライド
+### Environment Overrides
 
 ```bash
-# .envファイル（オプションのオーバーライド）
+# .env file (optional overrides)
 DB_HOST=production-db.example.com
 DB_PASSWORD=secure-password
 PORT=80
 ```
 
-**優先順位:**
-1. config.ini（最高優先）
-2. process.env変数
-3. ハードコードされたデフォルト値（最低優先）
+**Precedence:**
+1. config.ini (highest priority)
+2. process.env variables
+3. Hard-coded defaults (lowest priority)
 
 ---
 
-## シークレット管理
+## Secrets Management
 
-### シークレットをコミットしない
+### DO NOT Commit Secrets
 
 ```gitignore
 # .gitignore
@@ -217,11 +217,11 @@ sentry.ini
 *.key
 ```
 
-### 本番環境で環境変数使用
+### Use Environment Variables in Production
 
 ```typescript
-// 開発: config.ini
-// 本番: 環境変数
+// Development: config.ini
+// Production: Environment variables
 
 export const config: UnifiedConfig = {
     database: {
@@ -235,25 +235,25 @@ export const config: UnifiedConfig = {
 
 ---
 
-## マイグレーションガイド
+## Migration Guide
 
-### すべてのprocess.env使用を見つける
+### Find All process.env Usage
 
 ```bash
 grep -r "process.env" blog-api/src/ --include="*.ts" | wc -l
 ```
 
-### マイグレーション例
+### Migration Example
 
-**以前:**
+**Before:**
 ```typescript
-// コード全体に分散
+// Scattered throughout code
 const timeout = parseInt(process.env.OPENID_HTTP_TIMEOUT_MS || '15000');
 const keycloakUrl = process.env.KEYCLOAK_BASE_URL;
 const jwtSecret = process.env.JWT_SECRET;
 ```
 
-**以後:**
+**After:**
 ```typescript
 import { config } from './config/unifiedConfig';
 
@@ -262,14 +262,14 @@ const keycloakUrl = config.keycloak.baseUrl;
 const jwtSecret = config.tokens.jwt;
 ```
 
-**利点:**
-- タイプセーフ
-- 中央集権化
-- テストしやすい
-- 起動時のバリデーション
+**Benefits:**
+- Type-safe
+- Centralized
+- Easy to test
+- Validated at startup
 
 ---
 
-**関連ファイル:**
+**Related Files:**
 - [SKILL.md](SKILL.md)
 - [testing-guide.md](testing-guide.md)

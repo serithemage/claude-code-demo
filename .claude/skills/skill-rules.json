@@ -16,32 +16,12 @@
                     "skill rules",
                     "hook system",
                     "skill development",
-                    "skill-rules.json",
-                    "스킬 시스템",
-                    "스킬 생성",
-                    "스킬 추가",
-                    "스킬 트리거",
-                    "스킬 규칙",
-                    "훅 시스템",
-                    "스킬 개발",
-                    "スキルシステム",
-                    "スキル作成",
-                    "スキル追加",
-                    "スキルトリガー",
-                    "スキルルール",
-                    "フックシステム",
-                    "スキル開発"
+                    "skill-rules.json"
                 ],
                 "intentPatterns": [
                     "(how do|how does|explain).*?skill",
                     "(create|add|modify|build).*?skill",
-                    "skill.*?(work|trigger|activate|system)",
-                    "(어떻게|설명).*?스킬",
-                    "(만들|추가|수정|생성).*?스킬",
-                    "스킬.*?(작동|트리거|활성화|시스템)",
-                    "(どうやって|説明).*?スキル",
-                    "(作成|追加|修正|構築).*?スキル",
-                    "スキル.*?(動作|トリガー|活性化|システム)"
+                    "skill.*?(work|trigger|activate|system)"
                 ]
             }
         },
@@ -71,50 +51,14 @@
                     "BaseController",
                     "dependency injection",
                     "unifiedConfig",
-                    "configuration",
-                    "백엔드",
-                    "백엔드 개발",
-                    "마이크로서비스",
-                    "컨트롤러",
-                    "서비스",
-                    "레포지토리",
-                    "라우트",
-                    "라우팅",
-                    "엔드포인트",
-                    "미들웨어",
-                    "유효성 검사",
-                    "데이터베이스 접근",
-                    "의존성 주입",
-                    "설정",
-                    "バックエンド",
-                    "バックエンド開発",
-                    "マイクロサービス",
-                    "コントローラー",
-                    "サービス",
-                    "リポジトリ",
-                    "ルート",
-                    "ルーティング",
-                    "エンドポイント",
-                    "ミドルウェア",
-                    "検証",
-                    "データベースアクセス",
-                    "依存性注入",
-                    "設定"
+                    "configuration"
                 ],
                 "intentPatterns": [
                     "(create|add|implement|build).*?(route|endpoint|API|controller|service|repository)",
                     "(fix|handle|debug).*?(error|exception|backend)",
                     "(add|implement).*?(middleware|validation|error.*?handling)",
                     "(organize|structure|refactor).*?(backend|service|API)",
-                    "(how to|best practice).*?(backend|route|controller|service)",
-                    "(만들|추가|구현|생성).*?(라우트|엔드포인트|API|컨트롤러|서비스|레포지토리)",
-                    "(수정|처리|디버그).*?(에러|예외|백엔드)",
-                    "(추가|구현).*?(미들웨어|유효성.*?검사|에러.*?처리)",
-                    "(정리|구조화|리팩토링).*?(백엔드|서비스|API)",
-                    "(作成|追加|実装|構築).*?(ルート|エンドポイント|API|コントローラー|サービス|リポジトリ)",
-                    "(修正|処理|デバッグ).*?(エラー|例外|バックエンド)",
-                    "(追加|実装).*?(ミドルウェア|検証|エラー.*?処理)",
-                    "(整理|構造化|リファクタリング).*?(バックエンド|サービス|API)"
+                    "(how to|best practice).*?(backend|route|controller|service)"
                 ]
             },
             "fileTriggers": {
@@ -160,36 +104,12 @@
                     "Grid",
                     "styling",
                     "frontend",
-                    "React",
-                    "컴포넌트",
-                    "리액트 컴포넌트",
-                    "인터페이스",
-                    "페이지",
-                    "모달",
-                    "다이얼로그",
-                    "폼",
-                    "스타일링",
-                    "프론트엔드",
-                    "コンポーネント",
-                    "リアクトコンポーネント",
-                    "インターフェース",
-                    "ページ",
-                    "モーダル",
-                    "ダイアログ",
-                    "フォーム",
-                    "スタイリング",
-                    "フロントエンド"
+                    "React"
                 ],
                 "intentPatterns": [
                     "(create|add|make|build|update|modify|edit).*?(component|UI|page|modal|dialog|form)",
                     "(how to|best practice).*?(component|react|MUI)",
-                    "(style|design|layout).*?(component|UI)",
-                    "(만들|추가|생성|수정|편집).*?(컴포넌트|UI|페이지|모달|다이얼로그|폼)",
-                    "(어떻게|모범.*?사례).*?(컴포넌트|리액트|MUI)",
-                    "(스타일|디자인|레이아웃).*?(컴포넌트|UI)",
-                    "(作成|追加|構築|更新|修正|編集).*?(コンポーネント|UI|ページ|モーダル|ダイアログ|フォーム)",
-                    "(どうやって|ベストプラクティス).*?(コンポーネント|リアクト|MUI)",
-                    "(スタイル|デザイン|レイアウト).*?(コンポーネント|UI)"
+                    "(style|design|layout).*?(component|UI)"
                 ]
             },
             "fileTriggers": {
@@ -243,32 +163,12 @@
                     "authenticated route",
                     "JWT testing",
                     "cookie auth",
-                    "test with auth",
-                    "라우트 테스트",
-                    "엔드포인트 테스트",
-                    "API 테스트",
-                    "인증된 라우트",
-                    "JWT 테스트",
-                    "쿠키 인증",
-                    "인증 테스트",
-                    "ルートテスト",
-                    "エンドポイントテスト",
-                    "APIテスト",
-                    "認証ルート",
-                    "JWTテスト",
-                    "クッキー認証",
-                    "認証テスト"
+                    "test with auth"
                 ],
                 "intentPatterns": [
                     "(test|debug|verify).*?(route|endpoint|API)",
                     "(how to|how do I).*?test.*?(route|endpoint|API)",
-                    "test.*?(authenticated|auth|JWT|cookie)",
-                    "(테스트|디버그|검증).*?(라우트|엔드포인트|API)",
-                    "(어떻게).*?테스트.*?(라우트|엔드포인트|API)",
-                    "테스트.*?(인증|JWT|쿠키)",
-                    "(テスト|デバッグ|検証).*?(ルート|エンドポイント|API)",
-                    "(どうやって).*?テスト.*?(ルート|エンドポイント|API)",
-                    "テスト.*?(認証|JWT|クッキー)"
+                    "test.*?(authenticated|auth|JWT|cookie)"
                 ]
             },
             "fileTriggers": {
@@ -296,30 +196,12 @@
                     "error tracking",
                     "captureException",
                     "monitoring",
-                    "performance tracking",
-                    "에러 핸들링",
-                    "에러 처리",
-                    "예외",
-                    "에러 추적",
-                    "모니터링",
-                    "성능 추적",
-                    "エラーハンドリング",
-                    "エラー処理",
-                    "例外",
-                    "エラー追跡",
-                    "モニタリング",
-                    "パフォーマンス追跡"
+                    "performance tracking"
                 ],
                 "intentPatterns": [
                     "(add|create|implement|setup).*?(error handling|sentry|error tracking)",
                     "(fix|handle|catch).*?(error|exception)",
-                    "(how to|best practice).*?(error|sentry|monitoring)",
-                    "(추가|생성|구현|설정).*?(에러.*?처리|센트리|에러.*?추적)",
-                    "(수정|처리|잡).*?(에러|예외)",
-                    "(어떻게|모범.*?사례).*?(에러|센트리|모니터링)",
-                    "(追加|作成|実装|設定).*?(エラー.*?処理|Sentry|エラー.*?追跡)",
-                    "(修正|処理|キャッチ).*?(エラー|例外)",
-                    "(どうやって|ベストプラクティス).*?(エラー|Sentry|モニタリング)"
+                    "(how to|best practice).*?(error|sentry|monitoring)"
                 ]
             },
             "fileTriggers": {

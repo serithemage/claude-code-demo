@@ -1,21 +1,21 @@
-# テストガイド - バックエンドテスト戦略
+# Testing Guide - Backend Testing Strategies
 
-Jestとモベストプラクティスを使用したバックエンドサービステストの完全なガイドです。
+Complete guide to testing backend services with Jest and best practices.
 
-## 目次
+## Table of Contents
 
-- [単体テスト](#単体テスト)
-- [統合テスト](#統合テスト)
-- [モッキング戦略](#モッキング戦略)
-- [テストデータ管理](#テストデータ管理)
-- [認証されたルートテスト](#認証されたルートテスト)
-- [カバレッジ目標](#カバレッジ目標)
+- [Unit Testing](#unit-testing)
+- [Integration Testing](#integration-testing)
+- [Mocking Strategies](#mocking-strategies)
+- [Test Data Management](#test-data-management)
+- [Testing Authenticated Routes](#testing-authenticated-routes)
+- [Coverage Targets](#coverage-targets)
 
 ---
 
-## 単体テスト
+## Unit Testing
 
-### テスト構造
+### Test Structure
 
 ```typescript
 // services/userService.test.ts
@@ -43,7 +43,7 @@ describe('UserService', () => {
     });
 
     describe('create', () => {
-        it('メールが存在する場合エラーをスローすべき', async () => {
+        it('should throw error if email exists', async () => {
             mockRepository.findByEmail.mockResolvedValue({ id: '123' } as any);
 
             await expect(
@@ -51,7 +51,7 @@ describe('UserService', () => {
             ).rejects.toThrow('Email already in use');
         });
 
-        it('メールがユニークな場合ユーザーを作成すべき', async () => {
+        it('should create user if email is unique', async () => {
             mockRepository.findByEmail.mockResolvedValue(null);
             mockRepository.create.mockResolvedValue({ id: '123' } as any);
 
@@ -74,9 +74,9 @@ describe('UserService', () => {
 
 ---
 
-## 統合テスト
+## Integration Testing
 
-### 実際のデータベースでテスト
+### Test with Real Database
 
 ```typescript
 import { PrismaService } from '@project-lifecycle-portal/database';
@@ -85,7 +85,7 @@ describe('UserService Integration', () => {
     let testUser: any;
 
     beforeAll(async () => {
-        // テストデータ作成
+        // Create test data
         testUser = await PrismaService.main.user.create({
             data: {
                 email: 'test@test.com',
@@ -95,11 +95,11 @@ describe('UserService Integration', () => {
     });
 
     afterAll(async () => {
-        // クリーンアップ
+        // Cleanup
         await PrismaService.main.user.delete({ where: { id: testUser.id } });
     });
 
-    it('メールでユーザーを見つけるべき', async () => {
+    it('should find user by email', async () => {
         const user = await userService.findByEmail('test@test.com');
         expect(user).toBeDefined();
         expect(user?.email).toBe('test@test.com');
@@ -109,9 +109,9 @@ describe('UserService Integration', () => {
 
 ---
 
-## モッキング戦略
+## Mocking Strategies
 
-### PrismaServiceモッキング
+### Mock PrismaService
 
 ```typescript
 jest.mock('@project-lifecycle-portal/database', () => ({
@@ -129,7 +129,7 @@ jest.mock('@project-lifecycle-portal/database', () => ({
 }));
 ```
 
-### Servicesモッキング
+### Mock Services
 
 ```typescript
 const mockUserService = {
@@ -141,16 +141,16 @@ const mockUserService = {
 
 ---
 
-## テストデータ管理
+## Test Data Management
 
-### SetupとTeardown
+### Setup and Teardown
 
 ```typescript
 describe('PermissionService', () => {
     let instanceId: number;
 
     beforeAll(async () => {
-        // テストpost作成
+        // Create test post
         const post = await PrismaService.main.post.create({
             data: { title: 'Test Post', content: 'Test', authorId: 'test-user' },
         });
@@ -158,18 +158,18 @@ describe('PermissionService', () => {
     });
 
     afterAll(async () => {
-        // クリーンアップ
+        // Cleanup
         await PrismaService.main.post.delete({
             where: { id: instanceId },
         });
     });
 
     beforeEach(() => {
-        // キャッシュクリア
+        // Clear caches
         permissionService.clearCache();
     });
 
-    it('権限を確認すべき', async () => {
+    it('should check permissions', async () => {
         const hasPermission = await permissionService.checkPermission(
             'user-id',
             instanceId,
@@ -182,22 +182,22 @@ describe('PermissionService', () => {
 
 ---
 
-## 認証されたルートテスト
+## Testing Authenticated Routes
 
-### test-auth-route.jsを使用
+### Using test-auth-route.js
 
 ```bash
-# 認証されたエンドポイントをテスト
+# Test authenticated endpoint
 node scripts/test-auth-route.js http://localhost:3002/form/api/users
 
-# POSTデータでテスト
+# Test with POST data
 node scripts/test-auth-route.js http://localhost:3002/form/api/users POST '{"email":"test@test.com"}'
 ```
 
-### テストで認証をモック
+### Mock Authentication in Tests
 
 ```typescript
-// auth middlewareをモック
+// Mock auth middleware
 jest.mock('../middleware/SSOMiddleware', () => ({
     SSOMiddlewareClient: {
         verifyLoginStatus: (req, res, next) => {
@@ -213,15 +213,15 @@ jest.mock('../middleware/SSOMiddleware', () => ({
 
 ---
 
-## カバレッジ目標
+## Coverage Targets
 
-### 推奨カバレッジ
+### Recommended Coverage
 
-- **単体テスト**: 70%以上カバレッジ
-- **統合テスト**: クリティカルパスをカバー
-- **E2Eテスト**: 成功パスをカバー
+- **Unit Tests**: 70%+ coverage
+- **Integration Tests**: Critical paths covered
+- **E2E Tests**: Happy paths covered
 
-### カバレッジ実行
+### Run Coverage
 
 ```bash
 npm test -- --coverage
@@ -229,7 +229,7 @@ npm test -- --coverage
 
 ---
 
-**関連ファイル:**
+**Related Files:**
 - [SKILL.md](SKILL.md)
 - [services-and-repositories.md](services-and-repositories.md)
 - [complete-examples.md](complete-examples.md)

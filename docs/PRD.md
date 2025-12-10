@@ -1,275 +1,275 @@
-# RealWorld (Conduit) - 製品要求仕様書
+# RealWorld (Conduit) - Product Requirements Document
 
-## 1. プロジェクト概要
+## 1. Project Overview
 
-### 1.1 プロジェクト名
-**Conduit** - ソーシャルブログプラットフォーム
+### 1.1 Project Name
+**Conduit** - Social Blogging Platform
 
-### 1.2 プロジェクトの目的
-Medium.com クローンとして、記事の投稿・閲覧、ユーザー間のソーシャル機能を提供するフルスタックウェブアプリケーション。RealWorld 仕様に準拠した実装により、実践的なアプリケーション開発スキルを習得する。
+### 1.2 Project Purpose
+A full-stack web application that provides article posting/viewing and social features between users as a Medium.com clone. Acquire practical application development skills through implementation compliant with the RealWorld specification.
 
-### 1.3 参照仕様
-- RealWorld 公式ドキュメント: https://realworld-docs.netlify.app/
-- RealWorld API 仕様: https://github.com/gothinkster/realworld/tree/main/api
-
----
-
-## 2. 機能要件
-
-### 2.1 認証・ユーザー管理
-
-#### 2.1.1 ユーザー登録
-- メールアドレス、ユーザー名、パスワードによる新規登録
-- 登録完了後、JWT トークンを発行
-- トークンは localStorage に保存
-
-#### 2.1.2 ログイン
-- メールアドレスとパスワードによる認証
-- 認証成功時に JWT トークンを発行
-- トークンは localStorage に保存
-
-#### 2.1.3 ログアウト
-- 設定ページからログアウト可能
-- localStorage からトークンを削除
-
-#### 2.1.4 ユーザー情報管理
-- **作成**: 登録時に自動作成
-- **読取**: 現在のユーザー情報を取得
-- **更新**: プロフィール画像、ユーザー名、自己紹介、メールアドレス、パスワードの変更
-- **削除**: 不要（仕様対象外）
-
-### 2.2 記事管理
-
-#### 2.2.1 記事作成
-- タイトル、説明、本文（Markdown）、タグリストを入力
-- 作成時に自動的に slug を生成
-- 作成者情報を自動付与
-
-#### 2.2.2 記事閲覧
-- グローバルフィード: 全記事を最新順で表示
-- ユーザーフィード: フォロー中のユーザーの記事のみ表示
-- タグフィルター: 特定タグの記事のみ表示
-- ページネーション対応（デフォルト: 10件/ページ）
-
-#### 2.2.3 記事更新
-- タイトル、説明、本文の編集
-- 作成者のみ編集可能
-
-#### 2.2.4 記事削除
-- 作成者のみ削除可能
-- 関連するコメント、お気に入りも削除
-
-### 2.3 コメント機能
-
-#### 2.3.1 コメント作成
-- 記事に対してコメントを投稿
-- ログインユーザーのみ投稿可能
-
-#### 2.3.2 コメント閲覧
-- 記事ごとのコメント一覧を表示
-- 作成日時順で表示
-
-#### 2.3.3 コメント削除
-- コメント作成者のみ削除可能
-- **更新機能は不要**（仕様対象外）
-
-### 2.4 ソーシャル機能
-
-#### 2.4.1 フォロー/アンフォロー
-- 他のユーザーをフォロー可能
-- フォロー中のユーザーの記事をフィードで表示
-- フォロー解除可能
-
-#### 2.4.2 お気に入り（いいね）
-- 記事にお気に入りを追加
-- お気に入り解除可能
-- 記事ごとのお気に入り数を表示
-
-### 2.5 タグ機能
-- 記事作成時にタグを付与
-- 人気タグ一覧を表示
-- タグによる記事フィルタリング
+### 1.3 Reference Specifications
+- RealWorld Official Documentation: https://realworld-docs.netlify.app/
+- RealWorld API Specification: https://github.com/gothinkster/realworld/tree/main/api
 
 ---
 
-## 3. 画面構成
+## 2. Functional Requirements
 
-### 3.1 共通レイアウト
+### 2.1 Authentication & User Management
 
-#### ヘッダー（未ログイン時）
-- Conduit ロゴ（ホームへのリンク）
+#### 2.1.1 User Registration
+- New registration with email address, username, and password
+- Issue JWT token after registration completion
+- Store token in localStorage
+
+#### 2.1.2 Login
+- Authentication with email address and password
+- Issue JWT token on successful authentication
+- Store token in localStorage
+
+#### 2.1.3 Logout
+- Logout available from settings page
+- Delete token from localStorage
+
+#### 2.1.4 User Information Management
+- **Create**: Automatically created during registration
+- **Read**: Get current user information
+- **Update**: Change profile image, username, bio, email address, password
+- **Delete**: Not required (out of scope)
+
+### 2.2 Article Management
+
+#### 2.2.1 Article Creation
+- Input title, description, body (Markdown), tag list
+- Automatically generate slug on creation
+- Automatically assign author information
+
+#### 2.2.2 Article Viewing
+- Global Feed: Display all articles in chronological order
+- User Feed: Display only articles from followed users
+- Tag Filter: Display only articles with specific tags
+- Pagination support (default: 10 items/page)
+
+#### 2.2.3 Article Update
+- Edit title, description, body
+- Only author can edit
+
+#### 2.2.4 Article Deletion
+- Only author can delete
+- Also delete related comments and favorites
+
+### 2.3 Comment Feature
+
+#### 2.3.1 Comment Creation
+- Post comments on articles
+- Only logged-in users can post
+
+#### 2.3.2 Comment Viewing
+- Display comment list per article
+- Display in chronological order
+
+#### 2.3.3 Comment Deletion
+- Only comment author can delete
+- **Update feature not required** (out of scope)
+
+### 2.4 Social Features
+
+#### 2.4.1 Follow/Unfollow
+- Can follow other users
+- Display followed users' articles in feed
+- Can unfollow
+
+#### 2.4.2 Favorite (Like)
+- Add favorite to articles
+- Can unfavorite
+- Display favorite count per article
+
+### 2.5 Tag Feature
+- Assign tags during article creation
+- Display popular tags list
+- Filter articles by tag
+
+---
+
+## 3. Screen Structure
+
+### 3.1 Common Layout
+
+#### Header (When Not Logged In)
+- Conduit logo (link to home)
 - Home
 - Sign in
 - Sign up
 
-#### ヘッダー（ログイン時）
-- Conduit ロゴ（ホームへのリンク）
+#### Header (When Logged In)
+- Conduit logo (link to home)
 - Home
 - New Article
 - Settings
-- プロフィール（ユーザー名 + アイコン）
+- Profile (username + icon)
 
-#### フッター
-- Conduit ブランド
-- 著作権表示
+#### Footer
+- Conduit brand
+- Copyright notice
 
-### 3.2 ページ一覧
+### 3.2 Page List
 
-| ルート | ページ名 | 説明 |
-|--------|---------|------|
-| `/#/` | ホーム | 記事フィード、人気タグ |
-| `/#/login` | ログイン | ログインフォーム |
-| `/#/register` | 新規登録 | 登録フォーム |
-| `/#/settings` | 設定 | ユーザー設定、ログアウト |
-| `/#/editor` | 新規記事 | 記事作成フォーム |
-| `/#/editor/:slug` | 記事編集 | 記事編集フォーム |
-| `/#/article/:slug` | 記事詳細 | 記事本文、コメント |
-| `/#/profile/:username` | プロフィール | ユーザー情報、投稿記事 |
-| `/#/profile/:username/favorites` | お気に入り | ユーザーのお気に入り記事 |
+| Route | Page Name | Description |
+|-------|-----------|-------------|
+| `/#/` | Home | Article feed, popular tags |
+| `/#/login` | Login | Login form |
+| `/#/register` | Register | Registration form |
+| `/#/settings` | Settings | User settings, logout |
+| `/#/editor` | New Article | Article creation form |
+| `/#/editor/:slug` | Edit Article | Article edit form |
+| `/#/article/:slug` | Article Detail | Article body, comments |
+| `/#/profile/:username` | Profile | User info, posted articles |
+| `/#/profile/:username/favorites` | Favorites | User's favorite articles |
 
-### 3.3 各ページ詳細
+### 3.3 Page Details
 
-#### 3.3.1 ホームページ (`/#/`)
-- バナー（Conduit ロゴと説明）
-- フィードタブ
-  - Your Feed（ログイン時のみ、フォロー中のユーザーの記事）
-  - Global Feed（全記事）
-  - #タグ名（タグ選択時）
-- 記事プレビュー一覧
-  - 著者アイコン、名前、投稿日
-  - お気に入りボタンと数
-  - タイトル、説明
-  - タグリスト
-- ページネーション
-- サイドバー: 人気タグ一覧
+#### 3.3.1 Home Page (`/#/`)
+- Banner (Conduit logo and description)
+- Feed Tabs
+  - Your Feed (logged in only, articles from followed users)
+  - Global Feed (all articles)
+  - #TagName (when tag selected)
+- Article Preview List
+  - Author icon, name, post date
+  - Favorite button and count
+  - Title, description
+  - Tag list
+- Pagination
+- Sidebar: Popular tags list
 
-#### 3.3.2 認証ページ (`/#/login`, `/#/register`)
-- ページタイトル
-- 別ページへのリンク（Sign in ↔ Sign up）
-- エラーメッセージ一覧
-- フォーム
-  - 登録: ユーザー名、メール、パスワード
-  - ログイン: メール、パスワード
-- 送信ボタン
+#### 3.3.2 Authentication Pages (`/#/login`, `/#/register`)
+- Page title
+- Link to other page (Sign in ↔ Sign up)
+- Error message list
+- Form
+  - Registration: username, email, password
+  - Login: email, password
+- Submit button
 
-#### 3.3.3 設定ページ (`/#/settings`)
-- プロフィール画像 URL
-- ユーザー名
-- 自己紹介（textarea）
-- メールアドレス
-- 新しいパスワード
-- Update Settings ボタン
-- ログアウトボタン
+#### 3.3.3 Settings Page (`/#/settings`)
+- Profile image URL
+- Username
+- Bio (textarea)
+- Email address
+- New password
+- Update Settings button
+- Logout button
 
-#### 3.3.4 エディターページ (`/#/editor`, `/#/editor/:slug`)
-- 記事タイトル
-- 記事の説明（What's this article about?）
-- 本文（Markdown）
-- タグ入力（Enter で追加）
-- Publish Article ボタン
+#### 3.3.4 Editor Page (`/#/editor`, `/#/editor/:slug`)
+- Article title
+- Article description (What's this article about?)
+- Body (Markdown)
+- Tag input (add with Enter)
+- Publish Article button
 
-#### 3.3.5 記事詳細ページ (`/#/article/:slug`)
-- 記事バナー
-  - タイトル
-  - 著者情報とフォロー/お気に入りボタン
-  - 編集/削除ボタン（作成者のみ）
-- 記事本文（Markdown レンダリング）
-- タグリスト
-- 著者情報セクション（下部）
-- コメントセクション
-  - コメント入力フォーム
-  - コメント一覧（削除ボタン付き）
+#### 3.3.5 Article Detail Page (`/#/article/:slug`)
+- Article Banner
+  - Title
+  - Author info and follow/favorite buttons
+  - Edit/delete buttons (author only)
+- Article body (Markdown rendering)
+- Tag list
+- Author info section (bottom)
+- Comment Section
+  - Comment input form
+  - Comment list (with delete button)
 
-#### 3.3.6 プロフィールページ (`/#/profile/:username`)
-- ユーザー情報
-  - プロフィール画像
-  - ユーザー名
-  - 自己紹介
-  - フォローボタン / 設定編集ボタン
-- 記事タブ
-  - My Articles（投稿記事）
-  - Favorited Articles（お気に入り記事）
-- 記事一覧
-
----
-
-## 4. API エンドポイント概要
-
-### 4.1 認証
-| メソッド | エンドポイント | 説明 | 認証 |
-|---------|---------------|------|------|
-| POST | `/api/users/login` | ログイン | 不要 |
-| POST | `/api/users` | ユーザー登録 | 不要 |
-| GET | `/api/user` | 現在のユーザー取得 | 必須 |
-| PUT | `/api/user` | ユーザー情報更新 | 必須 |
-
-### 4.2 プロフィール
-| メソッド | エンドポイント | 説明 | 認証 |
-|---------|---------------|------|------|
-| GET | `/api/profiles/:username` | プロフィール取得 | 任意 |
-| POST | `/api/profiles/:username/follow` | フォロー | 必須 |
-| DELETE | `/api/profiles/:username/follow` | アンフォロー | 必須 |
-
-### 4.3 記事
-| メソッド | エンドポイント | 説明 | 認証 |
-|---------|---------------|------|------|
-| GET | `/api/articles` | 記事一覧取得 | 任意 |
-| GET | `/api/articles/feed` | フィード取得 | 必須 |
-| GET | `/api/articles/:slug` | 記事詳細取得 | 任意 |
-| POST | `/api/articles` | 記事作成 | 必須 |
-| PUT | `/api/articles/:slug` | 記事更新 | 必須 |
-| DELETE | `/api/articles/:slug` | 記事削除 | 必須 |
-
-### 4.4 コメント
-| メソッド | エンドポイント | 説明 | 認証 |
-|---------|---------------|------|------|
-| GET | `/api/articles/:slug/comments` | コメント一覧取得 | 任意 |
-| POST | `/api/articles/:slug/comments` | コメント作成 | 必須 |
-| DELETE | `/api/articles/:slug/comments/:id` | コメント削除 | 必須 |
-
-### 4.5 お気に入り
-| メソッド | エンドポイント | 説明 | 認証 |
-|---------|---------------|------|------|
-| POST | `/api/articles/:slug/favorite` | お気に入り追加 | 必須 |
-| DELETE | `/api/articles/:slug/favorite` | お気に入り解除 | 必須 |
-
-### 4.6 タグ
-| メソッド | エンドポイント | 説明 | 認証 |
-|---------|---------------|------|------|
-| GET | `/api/tags` | タグ一覧取得 | 不要 |
+#### 3.3.6 Profile Page (`/#/profile/:username`)
+- User Info
+  - Profile image
+  - Username
+  - Bio
+  - Follow button / Edit settings button
+- Article Tabs
+  - My Articles (posted articles)
+  - Favorited Articles (favorite articles)
+- Article list
 
 ---
 
-## 5. 非機能要件
+## 4. API Endpoint Overview
 
-### 5.1 パフォーマンス
-- ページ読み込み時間: 3秒以内
-- API レスポンス時間: 500ms 以内
+### 4.1 Authentication
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/api/users/login` | Login | Not required |
+| POST | `/api/users` | User registration | Not required |
+| GET | `/api/user` | Get current user | Required |
+| PUT | `/api/user` | Update user info | Required |
 
-### 5.2 セキュリティ
-- JWT トークンによる認証
-- パスワードのハッシュ化（bcrypt）
-- CORS 設定
-- XSS 対策
-- SQL インジェクション対策（Prisma ORM）
+### 4.2 Profile
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/profiles/:username` | Get profile | Optional |
+| POST | `/api/profiles/:username/follow` | Follow | Required |
+| DELETE | `/api/profiles/:username/follow` | Unfollow | Required |
 
-### 5.3 ユーザビリティ
-- レスポンシブデザイン対応
-- エラーメッセージの明確な表示
-- ローディング状態の表示
+### 4.3 Articles
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/articles` | Get article list | Optional |
+| GET | `/api/articles/feed` | Get feed | Required |
+| GET | `/api/articles/:slug` | Get article detail | Optional |
+| POST | `/api/articles` | Create article | Required |
+| PUT | `/api/articles/:slug` | Update article | Required |
+| DELETE | `/api/articles/:slug` | Delete article | Required |
 
-### 5.4 互換性
-- モダンブラウザ対応（Chrome, Firefox, Safari, Edge）
-- RealWorld API 仕様との完全互換
+### 4.4 Comments
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/articles/:slug/comments` | Get comment list | Optional |
+| POST | `/api/articles/:slug/comments` | Create comment | Required |
+| DELETE | `/api/articles/:slug/comments/:id` | Delete comment | Required |
+
+### 4.5 Favorites
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| POST | `/api/articles/:slug/favorite` | Add favorite | Required |
+| DELETE | `/api/articles/:slug/favorite` | Remove favorite | Required |
+
+### 4.6 Tags
+| Method | Endpoint | Description | Auth |
+|--------|----------|-------------|------|
+| GET | `/api/tags` | Get tag list | Not required |
 
 ---
 
-## 6. 用語集
+## 5. Non-Functional Requirements
 
-| 用語 | 説明 |
-|------|------|
-| Conduit | RealWorld プロジェクトのアプリケーション名 |
-| Slug | URL に使用される記事の識別子（例: how-to-train-your-dragon） |
-| Feed | ユーザーがフォローしている著者の記事一覧 |
-| Global Feed | すべてのユーザーの記事一覧 |
-| Favorite | 記事のお気に入り（いいね）機能 |
+### 5.1 Performance
+- Page load time: Within 3 seconds
+- API response time: Within 500ms
+
+### 5.2 Security
+- Authentication with JWT tokens
+- Password hashing (bcrypt)
+- CORS configuration
+- XSS protection
+- SQL injection protection (Prisma ORM)
+
+### 5.3 Usability
+- Responsive design support
+- Clear error message display
+- Loading state display
+
+### 5.4 Compatibility
+- Modern browser support (Chrome, Firefox, Safari, Edge)
+- Full compatibility with RealWorld API specification
+
+---
+
+## 6. Glossary
+
+| Term | Description |
+|------|-------------|
+| Conduit | Application name for the RealWorld project |
+| Slug | Article identifier used in URLs (e.g., how-to-train-your-dragon) |
+| Feed | List of articles from authors the user follows |
+| Global Feed | List of articles from all users |
+| Favorite | Article like/favorite feature |

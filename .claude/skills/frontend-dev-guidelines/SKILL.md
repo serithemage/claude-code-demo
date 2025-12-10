@@ -1,73 +1,73 @@
 ---
 name: frontend-dev-guidelines
-description: React/TypeScript アプリケーションのためのフロントエンド開発ガイドライン。Suspense、lazy loading、useSuspenseQuery、features ディレクトリを使用したファイル構成、MUI v7 styling、TanStack Router、パフォーマンス最適化、TypeScript ベストプラクティスを含む最新パターン。コンポーネント、ページ、機能作成、データfetching、styling、routing またはフロントエンドコード作業時に使用。
+description: Frontend development guidelines for the RealWorld (Conduit) React/TypeScript application. Modern patterns including Suspense, lazy loading, useSuspenseQuery, feature-based file organization, MUI v7 styling, TanStack Router, performance optimization, and TypeScript best practices. Use when creating components, pages, features, fetching data, styling, routing, or working with frontend code.
 ---
 
-# フロントエンド開発ガイドライン
+# Frontend Development Guidelines
 
-## 目的
+## Purpose
 
-Suspense ベースのデータfetching、lazy loading、適切なファイル構成、パフォーマンス最適化を強調する最新React開発のための総合ガイドです。
+Comprehensive guide for modern React development in the RealWorld (Conduit) project, emphasizing Suspense-based data fetching, lazy loading, proper file organization, and performance optimization.
 
-## このSkill使用タイミング
+## When to Use This Skill
 
-- 新コンポーネントまたはページ作成
-- 新機能構築
-- TanStack Queryでのデータfetching
-- TanStack Routerでのrouting設定
-- MUI v7でのコンポーネントstyling
-- パフォーマンス最適化
-- フロントエンドコード構成
-- TypeScript ベストプラクティス
+- Creating new components or pages
+- Building new features
+- Fetching data with TanStack Query
+- Setting up routing with TanStack Router
+- Styling components with MUI v7
+- Performance optimization
+- Organizing frontend code
+- TypeScript best practices
 
 ---
 
-## クイックスタート
+## Quick Start
 
-### 新コンポーネントチェックリスト
+### New Component Checklist
 
-コンポーネントを作成しますか？このチェックリストに従ってください：
+Creating a component? Follow this checklist:
 
-- [ ] TypeScriptと共に `React.FC<Props>` パターン使用
-- [ ] 重いコンポーネントの場合 Lazy load: `React.lazy(() => import())`
-- [ ] Loading 状態のために `<SuspenseLoader>` でラップ
-- [ ] データfetchingに `useSuspenseQuery` 使用
+- [ ] Use `React.FC<Props>` pattern with TypeScript
+- [ ] Lazy load if heavy component: `React.lazy(() => import())`
+- [ ] Wrap in `<SuspenseLoader>` for loading states
+- [ ] Use `useSuspenseQuery` for data fetching
 - [ ] Import aliases: `@/`, `~types`, `~components`, `~features`
-- [ ] スタイル: 100行未満ならインライン、100行超なら別ファイル
-- [ ] 子に渡されるイベントハンドラーに `useCallback` 使用
-- [ ] 下部に default export
-- [ ] Loading スピナーを使用した early return 禁止
-- [ ] ユーザー通知に `useMuiSnackbar` 使用
+- [ ] Styles: Inline if <100 lines, separate file if >100 lines
+- [ ] Use `useCallback` for event handlers passed to children
+- [ ] Default export at bottom
+- [ ] No early returns with loading spinners
+- [ ] Use `useMuiSnackbar` for user notifications
 
-### 新機能チェックリスト
+### New Feature Checklist
 
-機能を作成しますか？この構造をセットアップしてください：
+Creating a feature? Set up this structure:
 
-- [ ] `features/{feature-name}/` ディレクトリ作成
-- [ ] サブディレクトリ作成: `api/`, `components/`, `hooks/`, `helpers/`, `types/`
-- [ ] API service ファイル作成: `api/{feature}Api.ts`
-- [ ] `types/` に TypeScript 型設定
-- [ ] `routes/{feature-name}/index.tsx` に route 作成
-- [ ] 機能コンポーネント Lazy load
-- [ ] Suspense boundaries 使用
-- [ ] 機能 `index.ts` で public API export
+- [ ] Create `features/{feature-name}/` directory
+- [ ] Create subdirectories: `api/`, `components/`, `hooks/`, `helpers/`, `types/`
+- [ ] Create API service file: `api/{feature}Api.ts`
+- [ ] Set up TypeScript types in `types/`
+- [ ] Create route in `routes/{feature-name}/index.tsx`
+- [ ] Lazy load feature components
+- [ ] Use Suspense boundaries
+- [ ] Export public API from feature `index.ts`
 
 ---
 
-## Import Aliases クイックリファレンス
+## Import Aliases Quick Reference
 
-| Alias | 解決先 | 例 |
+| Alias | Resolves To | Example |
 |-------|-------------|---------|
 | `@/` | `src/` | `import { apiClient } from '@/lib/apiClient'` |
 | `~types` | `src/types` | `import type { User } from '~types/user'` |
 | `~components` | `src/components` | `import { SuspenseLoader } from '~components/SuspenseLoader'` |
 | `~features` | `src/features` | `import { authApi } from '~features/auth'` |
 
-定義場所: [vite.config.ts](../../vite.config.ts) 180-185行
+Defined in: [vite.config.ts](../../vite.config.ts) lines 180-185
 
 ---
 
-## 共通 Imports チートシート
+## Common Imports Cheatsheet
 
 ```typescript
 // React & Lazy Loading
@@ -97,95 +97,105 @@ import type { Post } from '~types/post';
 
 ---
 
-## トピックガイド
+## Topic Guides
 
-### 🎨 コンポーネントパターン
+### 🎨 Component Patterns
 
-**最新 React コンポーネント使用:**
-- 型安全のための `React.FC<Props>`
-- コード分割のための `React.lazy()`
-- Loading 状態のための `SuspenseLoader`
-- Named const + default export パターン
+**Modern React components use:**
+- `React.FC<Props>` for type safety
+- `React.lazy()` for code splitting
+- `SuspenseLoader` for loading states
+- Named const + default export pattern
 
-**核心概念:**
-- 重いコンポーネント Lazy load (DataGrid、チャート、エディター)
-- Lazy コンポーネントは常に Suspense でラップ
-- SuspenseLoader コンポーネント使用 (fade アニメーション含む)
-- コンポーネント構造: Props → Hooks → Handlers → Render → Export
+**Key Concepts:**
+- Lazy load heavy components (DataGrid, charts, editors)
+- Always wrap lazy components in Suspense
+- Use SuspenseLoader component (with fade animation)
+- Component structure: Props → Hooks → Handlers → Render → Export
 
-**[📖 完全ガイド: resources/component-patterns.md](resources/component-patterns.md)**
-
----
-
-### 📊 データ Fetching
-
-**基本パターン: useSuspenseQuery**
-- Suspense boundaries と共に使用
-- Cache-first 戦略 (API 前に grid キャッシュ確認)
-- `isLoading` チェック代替
-- ジェネリックで型安全
-
-**API Service レイヤー:**
-- `features/{feature}/api/{feature}Api.ts` 作成
-- `apiClient` axios インスタンス使用
-- 機能別中央化されたメソッド
-- Route 形式: `/form/route` (`/api/form/route` ではない)
-
-**[📖 完全ガイド: resources/data-fetching.md](resources/data-fetching.md)**
+**[📖 Complete Guide: resources/component-patterns.md](resources/component-patterns.md)**
 
 ---
 
-### 📁 ファイル構成
+### 📊 Data Fetching
+
+**PRIMARY PATTERN: useSuspenseQuery**
+- Use with Suspense boundaries
+- Cache-first strategy (check grid cache before API)
+- Replaces `isLoading` checks
+- Type-safe with generics
+
+**API Service Layer:**
+- Create `features/{feature}/api/{feature}Api.ts`
+- Use `apiClient` axios instance
+- Centralized methods per feature
+- Route format: `/form/route` (NOT `/api/form/route`)
+
+**[📖 Complete Guide: resources/data-fetching.md](resources/data-fetching.md)**
+
+---
+
+### 📁 File Organization
 
 **features/ vs components/:**
-- `features/`: ドメイン特化 (posts, comments, auth)
-- `components/`: 真に再利用可能なもの (SuspenseLoader, CustomAppBar)
+- `features/`: Domain-specific (posts, comments, auth)
+- `components/`: Truly reusable (SuspenseLoader, CustomAppBar)
 
-**Feature サブディレクトリ:**
+**RealWorld Feature Modules:**
+```
+features/
+  auth/           # Authentication (login, register, settings)
+  articles/       # Article management (list, create, edit, view)
+  comments/       # Comment system
+  profiles/       # User profiles and follow
+  tags/           # Tag management
+```
+
+**Feature Subdirectories:**
 ```
 features/
   my-feature/
-    api/          # API service レイヤー
-    components/   # 機能コンポーネント
+    api/          # API service layer
+    components/   # Feature components
     hooks/        # Custom hooks
-    helpers/      # ユーティリティ関数
-    types/        # TypeScript 型
+    helpers/      # Utility functions
+    types/        # TypeScript types
 ```
 
-**[📖 完全ガイド: resources/file-organization.md](resources/file-organization.md)**
+**[📖 Complete Guide: resources/file-organization.md](resources/file-organization.md)**
 
 ---
 
 ### 🎨 Styling
 
-**インライン vs 分離:**
-- 100行未満: インライン `const styles: Record<string, SxProps<Theme>>`
-- 100行超: 別の `.styles.ts` ファイル
+**Inline vs Separate:**
+- <100 lines: Inline `const styles: Record<string, SxProps<Theme>>`
+- >100 lines: Separate `.styles.ts` file
 
-**基本方法:**
-- MUI コンポーネントに `sx` prop 使用
-- `SxProps<Theme>` で型安全
-- Theme アクセス: `(theme) => theme.palette.primary.main`
+**Primary Method:**
+- Use `sx` prop for MUI components
+- Type-safe with `SxProps<Theme>`
+- Theme access: `(theme) => theme.palette.primary.main`
 
 **MUI v7 Grid:**
 ```typescript
-<Grid size={{ xs: 12, md: 6 }}>  // ✅ v7 文法
-<Grid xs={12} md={6}>             // ❌ 以前の文法
+<Grid size={{ xs: 12, md: 6 }}>  // ✅ v7 syntax
+<Grid xs={12} md={6}>             // ❌ Old syntax
 ```
 
-**[📖 完全ガイド: resources/styling-guide.md](resources/styling-guide.md)**
+**[📖 Complete Guide: resources/styling-guide.md](resources/styling-guide.md)**
 
 ---
 
 ### 🛣️ Routing
 
-**TanStack Router - フォルダベース:**
-- ディレクトリ: `routes/my-route/index.tsx`
-- コンポーネント Lazy load
-- `createFileRoute` 使用
-- Loader に Breadcrumb データ
+**TanStack Router - Folder-Based:**
+- Directory: `routes/my-route/index.tsx`
+- Lazy load components
+- Use `createFileRoute`
+- Breadcrumb data in loader
 
-**例:**
+**Example:**
 ```typescript
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy } from 'react';
@@ -198,120 +208,120 @@ export const Route = createFileRoute('/my-route/')({
 });
 ```
 
-**[📖 完全ガイド: resources/routing-guide.md](resources/routing-guide.md)**
+**[📖 Complete Guide: resources/routing-guide.md](resources/routing-guide.md)**
 
 ---
 
-### ⏳ Loading & Error 状態
+### ⏳ Loading & Error States
 
-**核心ルール: Early Return 禁止**
+**CRITICAL RULE: No Early Returns**
 
 ```typescript
-// ❌ 絶対ダメ - レイアウトシフト誘発
+// ❌ NEVER - Causes layout shift
 if (isLoading) {
     return <LoadingSpinner />;
 }
 
-// ✅ 常に - 一貫したレイアウト
+// ✅ ALWAYS - Consistent layout
 <SuspenseLoader>
     <Content />
 </SuspenseLoader>
 ```
 
-**理由:** Cumulative Layout Shift (CLS) 防止、より良い UX
+**Why:** Prevents Cumulative Layout Shift (CLS), better UX
 
 **Error Handling:**
-- ユーザーフィードバックに `useMuiSnackbar` 使用
-- `react-toastify` 絶対使用禁止
-- TanStack Query `onError` コールバック
+- Use `useMuiSnackbar` for user feedback
+- NEVER `react-toastify`
+- TanStack Query `onError` callbacks
 
-**[📖 完全ガイド: resources/loading-and-error-states.md](resources/loading-and-error-states.md)**
+**[📖 Complete Guide: resources/loading-and-error-states.md](resources/loading-and-error-states.md)**
 
 ---
 
-### ⚡ パフォーマンス
+### ⚡ Performance
 
-**最適化パターン:**
-- `useMemo`: コストの高い計算 (filter, sort, map)
-- `useCallback`: 子に渡されるイベントハンドラー
-- `React.memo`: コストの高いコンポーネント
-- Debounced 検索 (300-500ms)
-- メモリリーク防止 (useEffect で cleanup)
+**Optimization Patterns:**
+- `useMemo`: Expensive computations (filter, sort, map)
+- `useCallback`: Event handlers passed to children
+- `React.memo`: Expensive components
+- Debounced search (300-500ms)
+- Memory leak prevention (cleanup in useEffect)
 
-**[📖 完全ガイド: resources/performance.md](resources/performance.md)**
+**[📖 Complete Guide: resources/performance.md](resources/performance.md)**
 
 ---
 
 ### 📘 TypeScript
 
-**標準:**
-- Strict モード、`any` 型禁止
-- 関数に明示的戻り値型
+**Standards:**
+- Strict mode, no `any` type
+- Explicit return types on functions
 - Type imports: `import type { User } from '~types/user'`
-- JSDoc が含まれたコンポーネント prop インターフェース
+- Component prop interfaces with JSDoc
 
-**[📖 完全ガイド: resources/typescript-standards.md](resources/typescript-standards.md)**
-
----
-
-### 🔧 共通パターン
-
-**カバーするトピック:**
-- Zod 検証と React Hook Form
-- DataGrid wrapper 契約
-- Dialog コンポーネント標準
-- 現在ユーザーのための `useAuth` hook
-- キャッシュ無効化を含む Mutation パターン
-
-**[📖 完全ガイド: resources/common-patterns.md](resources/common-patterns.md)**
+**[📖 Complete Guide: resources/typescript-standards.md](resources/typescript-standards.md)**
 
 ---
 
-### 📚 完全例
+### 🔧 Common Patterns
 
-**動作する完全例:**
-- すべてのパターンが含まれた最新コンポーネント
-- 完全な機能構造
-- API service レイヤー
-- Lazy loading が含まれた Route
+**Covered Topics:**
+- React Hook Form with Zod validation
+- DataGrid wrapper contracts
+- Dialog component standards
+- `useAuth` hook for current user
+- Mutation patterns with cache invalidation
+
+**[📖 Complete Guide: resources/common-patterns.md](resources/common-patterns.md)**
+
+---
+
+### 📚 Complete Examples
+
+**Full working examples:**
+- Modern component with all patterns
+- Complete feature structure
+- API service layer
+- Route with lazy loading
 - Suspense + useSuspenseQuery
-- 検証が含まれた Form
+- Form with validation
 
-**[📖 完全ガイド: resources/complete-examples.md](resources/complete-examples.md)**
+**[📖 Complete Guide: resources/complete-examples.md](resources/complete-examples.md)**
 
 ---
 
-## ナビゲーションガイド
+## Navigation Guide
 
-| 必要な作業... | 読むべきリソース |
+| Need to... | Read this resource |
 |------------|-------------------|
-| コンポーネント作成 | [component-patterns.md](resources/component-patterns.md) |
-| データ fetch | [data-fetching.md](resources/data-fetching.md) |
-| ファイル/フォルダ構成 | [file-organization.md](resources/file-organization.md) |
-| コンポーネントスタイリング | [styling-guide.md](resources/styling-guide.md) |
-| Routing 設定 | [routing-guide.md](resources/routing-guide.md) |
-| Loading/errors 処理 | [loading-and-error-states.md](resources/loading-and-error-states.md) |
-| パフォーマンス最適化 | [performance.md](resources/performance.md) |
-| TypeScript 型 | [typescript-standards.md](resources/typescript-standards.md) |
+| Create a component | [component-patterns.md](resources/component-patterns.md) |
+| Fetch data | [data-fetching.md](resources/data-fetching.md) |
+| Organize files/folders | [file-organization.md](resources/file-organization.md) |
+| Style components | [styling-guide.md](resources/styling-guide.md) |
+| Set up routing | [routing-guide.md](resources/routing-guide.md) |
+| Handle loading/errors | [loading-and-error-states.md](resources/loading-and-error-states.md) |
+| Optimize performance | [performance.md](resources/performance.md) |
+| TypeScript types | [typescript-standards.md](resources/typescript-standards.md) |
 | Forms/Auth/DataGrid | [common-patterns.md](resources/common-patterns.md) |
-| 完全例を見る | [complete-examples.md](resources/complete-examples.md) |
+| See full examples | [complete-examples.md](resources/complete-examples.md) |
 
 ---
 
-## 核心原則
+## Core Principles
 
-1. **重いものはすべて Lazy Load**: Routes, DataGrid, チャート, エディター
-2. **Loading に Suspense**: early return の代わりに SuspenseLoader 使用
-3. **useSuspenseQuery**: 新コードのデフォルトデータ fetching パターン
-4. **機能は整理される**: api/, components/, hooks/, helpers/ サブディレクトリ
-5. **サイズに応じたスタイル**: 100行未満インライン、100行超分離
-6. **Import Aliases**: @/, ~types, ~components, ~features 使用
-7. **Early Return 禁止**: レイアウトシフト防止
-8. **useMuiSnackbar**: すべてのユーザー通知に使用
+1. **Lazy Load Everything Heavy**: Routes, DataGrid, charts, editors
+2. **Suspense for Loading**: Use SuspenseLoader, not early returns
+3. **useSuspenseQuery**: Primary data fetching pattern for new code
+4. **Features are Organized**: api/, components/, hooks/, helpers/ subdirs
+5. **Styles Based on Size**: <100 inline, >100 separate
+6. **Import Aliases**: Use @/, ~types, ~components, ~features
+7. **No Early Returns**: Prevents layout shift
+8. **useMuiSnackbar**: For all user notifications
 
 ---
 
-## クイックリファレンス: ファイル構造
+## Quick Reference: File Structure
 
 ```
 src/
@@ -320,33 +330,33 @@ src/
       api/
         myFeatureApi.ts       # API service
       components/
-        MyFeature.tsx         # メインコンポーネント
-        SubComponent.tsx      # 関連コンポーネント
+        MyFeature.tsx         # Main component
+        SubComponent.tsx      # Related components
       hooks/
         useMyFeature.ts       # Custom hooks
         useSuspenseMyFeature.ts  # Suspense hooks
       helpers/
-        myFeatureHelpers.ts   # ユーティリティ
+        myFeatureHelpers.ts   # Utilities
       types/
-        index.ts              # TypeScript 型
+        index.ts              # TypeScript types
       index.ts                # Public exports
 
   components/
     SuspenseLoader/
-      SuspenseLoader.tsx      # 再利用可能な loader
+      SuspenseLoader.tsx      # Reusable loader
     CustomAppBar/
-      CustomAppBar.tsx        # 再利用可能な app bar
+      CustomAppBar.tsx        # Reusable app bar
 
   routes/
     my-route/
-      index.tsx               # Route コンポーネント
+      index.tsx               # Route component
       create/
-        index.tsx             # ネストされた route
+        index.tsx             # Nested route
 ```
 
 ---
 
-## 最新コンポーネントテンプレート (クイックコピー)
+## Modern Component Template (Quick Copy)
 
 ```typescript
 import React, { useState, useCallback } from 'react';
@@ -385,15 +395,15 @@ export const MyComponent: React.FC<MyComponentProps> = ({ id, onAction }) => {
 export default MyComponent;
 ```
 
-完全例は [resources/complete-examples.md](resources/complete-examples.md) を参照
+For complete examples, see [resources/complete-examples.md](resources/complete-examples.md)
 
 ---
 
-## 関連 Skills
+## Related Skills
 
-- **error-tracking**: Sentry を使用した error tracking (フロントエンドにも適用)
-- **backend-dev-guidelines**: フロントエンドが消費するバックエンド API パターン
+- **error-tracking**: Error tracking with Sentry (applies to frontend too)
+- **backend-dev-guidelines**: Backend API patterns that frontend consumes
 
 ---
 
-**Skill 状態**: 最適な context 管理のための progressive loading が含まれたモジュラー構造
+**Skill Status**: Modular structure with progressive loading for optimal context management

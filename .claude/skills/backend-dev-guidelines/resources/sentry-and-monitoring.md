@@ -1,34 +1,34 @@
-# Sentry統合とモニタリング
+# Sentry Integration and Monitoring
 
-Sentry v8を使用したエラー追跡とパフォーマンスモニタリングの完全なガイドです。
+Complete guide to error tracking and performance monitoring with Sentry v8.
 
-## 目次
+## Table of Contents
 
-- [核心原則](#核心原則)
-- [Sentry初期化](#sentry初期化)
-- [エラーキャプチャパターン](#エラーキャプチャパターン)
-- [パフォーマンスモニタリング](#パフォーマンスモニタリング)
-- [Cron Jobモニタリング](#cron-jobモニタリング)
-- [エラーコンテキストモベストプラクティス](#エラーコンテキストモベストプラクティス)
-- [一般的な間違い](#一般的な間違い)
-
----
-
-## 核心原則
-
-**必須**: すべてのエラーは必ずSentryにキャプチャされなければなりません。例外なし。
-
-**すべてのエラーはキャプチャされるべき** - すべてのサービスで包括的なエラー追跡とともにSentry v8を使用してください。
+- [Core Principles](#core-principles)
+- [Sentry Initialization](#sentry-initialization)
+- [Error Capture Patterns](#error-capture-patterns)
+- [Performance Monitoring](#performance-monitoring)
+- [Cron Job Monitoring](#cron-job-monitoring)
+- [Error Context Best Practices](#error-context-best-practices)
+- [Common Mistakes](#common-mistakes)
 
 ---
 
-## Sentry初期化
+## Core Principles
 
-### instrument.tsパターン
+**MANDATORY**: All errors MUST be captured to Sentry. No exceptions.
 
-**場所:** `src/instrument.ts`（server.tsとすべてのcron jobsで最初のimportでなければならない）
+**ALL ERRORS MUST BE CAPTURED** - Use Sentry v8 with comprehensive error tracking across all services.
 
-**マイクロサービス用テンプレート:**
+---
+
+## Sentry Initialization
+
+### instrument.ts Pattern
+
+**Location:** `src/instrument.ts` (MUST be first import in server.ts and all cron jobs)
+
+**Template for Microservices:**
 
 ```typescript
 import * as Sentry from '@sentry/node';
@@ -66,18 +66,18 @@ Sentry.init({
     ],
 
     beforeSend(event, hint) {
-        // ヘルスチェックをフィルタリング
+        // Filter health checks
         if (event.request?.url?.includes('/healthcheck')) {
             return null;
         }
 
-        // 機密ヘッダーをスクラブ
+        // Scrub sensitive headers
         if (event.request?.headers) {
             delete event.request.headers['authorization'];
             delete event.request.headers['cookie'];
         }
 
-        // PIIのためにメールをマスク
+        // Mask emails for PII
         if (event.user?.email) {
             event.user.email = event.user.email.replace(/^(.{2}).*(@.*)$/, '$1***$2');
         }
@@ -92,7 +92,7 @@ Sentry.init({
     ],
 });
 
-// サービスコンテキストを設定
+// Set service context
 Sentry.setTags({
     service: 'form',
     version: '1.0.1',
@@ -104,21 +104,21 @@ Sentry.setContext('runtime', {
 });
 ```
 
-**重要ポイント:**
-- PII保護内蔵（beforeSend）
-- 非重要エラーのフィルタリング
-- 包括的な統合
-- Prisma計装
-- サービス別タギング
+**Critical Points:**
+- PII protection built-in (beforeSend)
+- Filter non-critical errors
+- Comprehensive integrations
+- Prisma instrumentation
+- Service-specific tagging
 
 ---
 
-## エラーキャプチャパターン
+## Error Capture Patterns
 
-### 1. BaseControllerパターン
+### 1. BaseController Pattern
 
 ```typescript
-// BaseController.handleErrorを使用
+// Use BaseController.handleError
 protected handleError(error: unknown, res: Response, context: string, statusCode = 500): void {
     Sentry.withScope((scope) => {
         scope.setTag('controller', this.constructor.name);
@@ -134,7 +134,7 @@ protected handleError(error: unknown, res: Response, context: string, statusCode
 }
 ```
 
-### 2. Workflowエラー処理
+### 2. Workflow Error Handling
 
 ```typescript
 import { SentryHelper } from '../utils/sentryHelper';
@@ -152,7 +152,7 @@ try {
 }
 ```
 
-### 3. Serviceレイヤーエラー処理
+### 3. Service Layer Error Handling
 
 ```typescript
 try {
@@ -174,9 +174,9 @@ try {
 
 ---
 
-## パフォーマンスモニタリング
+## Performance Monitoring
 
-### データベースパフォーマンス追跡
+### Database Performance Tracking
 
 ```typescript
 import { DatabasePerformanceMonitor } from '../utils/databasePerformance';
@@ -190,7 +190,7 @@ const result = await DatabasePerformanceMonitor.withPerformanceTracking(
 );
 ```
 
-### APIエンドポイントSpans
+### API Endpoint Spans
 
 ```typescript
 router.post('/operation', async (req, res) => {
@@ -210,13 +210,13 @@ router.post('/operation', async (req, res) => {
 
 ---
 
-## Cron Jobモニタリング
+## Cron Job Monitoring
 
-### 必須パターン
+### Mandatory Pattern
 
 ```typescript
 #!/usr/bin/env node
-import '../instrument'; // shebang後の最初の行
+import '../instrument'; // FIRST LINE after shebang
 import * as Sentry from '@sentry/node';
 
 async function main() {
@@ -229,7 +229,7 @@ async function main() {
         }
     }, async () => {
         try {
-            // Cron jobロジック
+            // Cron job logic here
         } catch (error) {
             Sentry.captureException(error, {
                 tags: {
@@ -254,32 +254,32 @@ main().then(() => {
 
 ---
 
-## エラーコンテキストモベストプラクティス
+## Error Context Best Practices
 
-### リッチコンテキスト例
+### Rich Context Example
 
 ```typescript
 Sentry.withScope((scope) => {
-    // ユーザーコンテキスト
+    // User context
     scope.setUser({
         id: user.id,
         email: user.email,
         username: user.username
     });
 
-    // フィルタリングのためのタグ
+    // Tags for filtering
     scope.setTag('service', 'form');
     scope.setTag('endpoint', req.path);
     scope.setTag('method', req.method);
 
-    // 構造化されたコンテキスト
+    // Structured context
     scope.setContext('operation', {
         type: 'workflow.complete',
         workflowId: 123,
         stepId: 456
     });
 
-    // タイムラインのためのbreadcrumbs
+    // Breadcrumbs for timeline
     scope.addBreadcrumb({
         category: 'workflow',
         message: 'Starting step completion',
@@ -293,30 +293,30 @@ Sentry.withScope((scope) => {
 
 ---
 
-## 一般的な間違い
+## Common Mistakes
 
 ```typescript
-// ❌ エラーを飲み込む
+// ❌ Swallowing errors
 try {
     await riskyOperation();
 } catch (error) {
-    // サイレントに失敗
+    // Silent failure
 }
 
-// ❌ 一般的なエラーメッセージ
+// ❌ Generic error messages
 throw new Error('Error occurred');
 
-// ❌ 機密データの露出
+// ❌ Exposing sensitive data
 Sentry.captureException(error, {
-    extra: { password: user.password } // 絶対禁止
+    extra: { password: user.password } // NEVER
 });
 
-// ❌ asyncエラー処理の欠落
+// ❌ Missing async error handling
 async function bad() {
-    fetchData().then(data => processResult(data)); // 処理されない
+    fetchData().then(data => processResult(data)); // Unhandled
 }
 
-// ✅ 適切なasync処理
+// ✅ Proper async handling
 async function good() {
     try {
         const data = await fetchData();
@@ -330,7 +330,7 @@ async function good() {
 
 ---
 
-**関連ファイル:**
+**Related Files:**
 - [SKILL.md](SKILL.md)
 - [routing-and-controllers.md](routing-and-controllers.md)
 - [async-and-errors.md](async-and-errors.md)

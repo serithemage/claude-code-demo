@@ -1,12 +1,12 @@
-# 共通パターン
+# Common Patterns
 
-forms、認証、DataGrid、dialogs およびその他一般的な UI 要素でよく使用されるパターンです。
+Frequently used patterns for forms, authentication, DataGrid, dialogs, and other common UI elements.
 
 ---
 
-## useAuth による認証
+## Authentication with useAuth
 
-### 現在のユーザー取得
+### Getting Current User
 
 ```typescript
 import { useAuth } from '@/hooks/useAuth';
@@ -14,7 +14,7 @@ import { useAuth } from '@/hooks/useAuth';
 export const MyComponent: React.FC = () => {
     const { user } = useAuth();
 
-    // 使用可能なプロパティ:
+    // Available properties:
     // - user.id: string
     // - user.email: string
     // - user.username: string
@@ -30,13 +30,13 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-**認証のために直接 API 呼び出ししないでください** - 常に `useAuth` hook を使用してください。
+**NEVER make direct API calls for auth** - always use `useAuth` hook.
 
 ---
 
-## React Hook Form を使用した Forms
+## Forms with React Hook Form
 
-### 基本 Form
+### Basic Form
 
 ```typescript
 import { useForm } from 'react-hook-form';
@@ -45,7 +45,7 @@ import { z } from 'zod';
 import { TextField, Button } from '@mui/material';
 import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
-// 検証のための Zod スキーマ
+// Zod schema for validation
 const formSchema = z.object({
     username: z.string().min(3, 'Username must be at least 3 characters'),
     email: z.string().email('Invalid email address'),
@@ -110,14 +110,14 @@ export const MyForm: React.FC = () => {
 
 ---
 
-## Dialog コンポーネントパターン
+## Dialog Component Pattern
 
-### 標準 Dialog 構造
+### Standard Dialog Structure
 
-BEST_PRACTICES.md より - すべての dialogs は以下を含む必要があります:
-- タイトルにアイコン
-- 閉じるボタン (X)
-- 下部にアクションボタン
+From BEST_PRACTICES.md - All dialogs should have:
+- Icon in title
+- Close button (X)
+- Action buttons at bottom
 
 ```typescript
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, IconButton } from '@mui/material';
@@ -145,7 +145,7 @@ export const MyDialog: React.FC<MyDialogProps> = ({ open, onClose, onConfirm }) 
             </DialogTitle>
 
             <DialogContent>
-                {/* コンテンツ */}
+                {/* Content here */}
             </DialogContent>
 
             <DialogActions>
@@ -161,21 +161,21 @@ export const MyDialog: React.FC<MyDialogProps> = ({ open, onClose, onConfirm }) 
 
 ---
 
-## DataGrid Wrapper パターン
+## DataGrid Wrapper Pattern
 
-### Wrapper コンポーネント契約
+### Wrapper Component Contract
 
-BEST_PRACTICES.md より - DataGrid wrappers は以下を受け取る必要があります:
+From BEST_PRACTICES.md - DataGrid wrappers should accept:
 
-**必須 Props:**
-- `rows`: データ配列
-- `columns`: カラム定義
-- Loading/error 状態
+**Required Props:**
+- `rows`: Data array
+- `columns`: Column definitions
+- Loading/error states
 
-**選択的 Props:**
-- Toolbar コンポーネント
-- カスタムアクション
-- 初期状態
+**Optional Props:**
+- Toolbar components
+- Custom actions
+- Initial state
 
 ```typescript
 import { DataGridPro } from '@mui/x-data-grid-pro';
@@ -203,7 +203,7 @@ export const DataGridWrapper: React.FC<DataGridWrapperProps> = ({
             loading={loading}
             slots={{ toolbar: toolbar ? () => toolbar : undefined }}
             onRowClick={(params) => onRowClick?.(params.row)}
-            // 標準設定
+            // Standard configuration
             pagination
             pageSizeOptions={[25, 50, 100]}
             initialState={{
@@ -216,9 +216,9 @@ export const DataGridWrapper: React.FC<DataGridWrapperProps> = ({
 
 ---
 
-## Mutation パターン
+## Mutation Patterns
 
-### キャッシュ Invalidation がある Update
+### Update with Cache Invalidation
 
 ```typescript
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -233,7 +233,7 @@ export const useUpdateEntity = () => {
             api.updateEntity(id, data),
 
         onSuccess: (result, variables) => {
-            // 影響を受けるクエリを invalidate
+            // Invalidate affected queries
             queryClient.invalidateQueries({ queryKey: ['entity', variables.id] });
             queryClient.invalidateQueries({ queryKey: ['entities'] });
 
@@ -246,7 +246,7 @@ export const useUpdateEntity = () => {
     });
 };
 
-// 使用
+// Usage
 const updateEntity = useUpdateEntity();
 
 const handleSave = () => {
@@ -256,44 +256,44 @@ const handleSave = () => {
 
 ---
 
-## 状態管理パターン
+## State Management Patterns
 
-### サーバー状態のための TanStack Query (主要)
+### TanStack Query for Server State (PRIMARY)
 
-**すべてのサーバーデータ**に TanStack Query 使用:
+Use TanStack Query for **all server data**:
 - Fetching: useSuspenseQuery
 - Mutations: useMutation
-- キャッシング: 自動
-- 同期: 内蔵
+- Caching: Automatic
+- Synchronization: Built-in
 
 ```typescript
-// ✅ 正しい - サーバーデータに TanStack Query
+// ✅ CORRECT - TanStack Query for server data
 const { data: users } = useSuspenseQuery({
     queryKey: ['users'],
     queryFn: () => userApi.getUsers(),
 });
 ```
 
-### UI 状態のための useState
+### useState for UI State
 
-**ローカル UI 状態にのみ** `useState` 使用:
-- Form 入力 (uncontrolled)
-- Modal 開閉
-- 選択されたタブ
-- 一時的な UI フラグ
+Use `useState` for **local UI state only**:
+- Form inputs (uncontrolled)
+- Modal open/closed
+- Selected tab
+- Temporary UI flags
 
 ```typescript
-// ✅ 正しい - UI 状態に useState
+// ✅ CORRECT - useState for UI state
 const [modalOpen, setModalOpen] = useState(false);
 const [selectedTab, setSelectedTab] = useState(0);
 ```
 
-### グローバルクライアント状態のための Zustand (最小限に)
+### Zustand for Global Client State (Minimal)
 
-**グローバルクライアント状態にのみ** Zustand 使用:
-- テーマ設定
-- サイドバー折りたたみ状態
-- ユーザー設定 (サーバーから来ないもの)
+Use Zustand only for **global client state**:
+- Theme preference
+- Sidebar collapsed state
+- User preferences (not from server)
 
 ```typescript
 import { create } from 'zustand';
@@ -309,23 +309,23 @@ export const useAppState = create<AppState>((set) => ({
 }));
 ```
 
-**prop drilling 避ける** - 代わりに context か Zustand 使用。
+**Avoid prop drilling** - use context or Zustand instead.
 
 ---
 
-## まとめ
+## Summary
 
-**共通パターン:**
-- ✅ 現在のユーザーのための useAuth hook (id, email, roles, username)
-- ✅ forms のための React Hook Form + Zod
-- ✅ アイコン + 閉じるボタンがある Dialog
-- ✅ DataGrid wrapper 契約
-- ✅ キャッシュ invalidation がある Mutations
-- ✅ サーバー状態のための TanStack Query
-- ✅ UI 状態のための useState
-- ✅ グローバルクライアント状態のための Zustand (最小限に)
+**Common Patterns:**
+- ✅ useAuth hook for current user (id, email, roles, username)
+- ✅ React Hook Form + Zod for forms
+- ✅ Dialog with icon + close button
+- ✅ DataGrid wrapper contracts
+- ✅ Mutations with cache invalidation
+- ✅ TanStack Query for server state
+- ✅ useState for UI state
+- ✅ Zustand for global client state (minimal)
 
-**参考:**
-- [data-fetching.md](data-fetching.md) - TanStack Query パターン
-- [component-patterns.md](component-patterns.md) - コンポーネント構造
-- [loading-and-error-states.md](loading-and-error-states.md) - エラー処理
+**See Also:**
+- [data-fetching.md](data-fetching.md) - TanStack Query patterns
+- [component-patterns.md](component-patterns.md) - Component structure
+- [loading-and-error-states.md](loading-and-error-states.md) - Error handling

@@ -1,97 +1,97 @@
 ---
 name: backend-dev-guidelines
-description: Node.js/Express/TypeScriptマイクロサービスのための包括的なバックエンド開発ガイド。routes、controllers、services、repositories、middleware作成時、またはExpress API、Prismaデータベースアクセス、Sentry error tracking、Zod検証、unifiedConfig、dependency injection、asyncパターン作業時に使用。Layered architecture (routes → controllers → services → repositories)、BaseControllerパターン、error handling、performance monitoring、テスト戦略、レガシーパターンのマイグレーションをカバーします。
+description: Comprehensive backend development guide for the RealWorld (Conduit) Express/TypeScript backend. Use when creating routes, controllers, services, repositories, middleware, or working with Express APIs, Prisma database access, Sentry error tracking, Zod validation, dependency injection, or async patterns. Covers layered architecture (routes → controllers → services → repositories), BaseController pattern, error handling, performance monitoring, testing strategies, and JWT authentication.
 ---
 
-# バックエンド開発ガイドライン
+# Backend Development Guidelines
 
-## 目的
+## Purpose
 
-最新のNode.js/Express/TypeScriptパターンを使用して、バックエンドマイクロサービス(blog-api、auth-service、notifications-service)全般に一貫性とベストプラクティスを確立します。
+Establish consistency and best practices for the RealWorld (Conduit) backend using modern Node.js/Express/TypeScript patterns with Prisma and SQLite.
 
-## このSkill使用タイミング
+## When to Use This Skill
 
-以下の作業時に自動的に有効化されます：
-- Routes、endpoints、APIsの作成または修正
-- Controllers、services、repositoriesの構築
-- Middleware実装（auth、validation、error handling）
-- Prismaを使用したデータベース操作
-- Sentryを使用したerror tracking
-- Zodを使用した入力検証
-- 設定管理
-- バックエンドテストおよびリファクタリング
+Automatically activates when working on:
+- Creating or modifying routes, endpoints, APIs
+- Building controllers, services, repositories
+- Implementing middleware (auth, validation, error handling)
+- Database operations with Prisma
+- Error tracking with Sentry
+- Input validation with Zod
+- Configuration management
+- Backend testing and refactoring
 
 ---
 
-## クイックスタート
+## Quick Start
 
-### 新規バックエンド機能チェックリスト
+### New Backend Feature Checklist
 
-- [ ] **Route**: クリーンな定義、controllerに委譲
-- [ ] **Controller**: BaseController継承
-- [ ] **Service**: DIを使用したビジネスロジック
-- [ ] **Repository**: データベースアクセス（複雑な場合）
-- [ ] **Validation**: Zodスキーマ
+- [ ] **Route**: Clean definition, delegate to controller
+- [ ] **Controller**: Extend BaseController
+- [ ] **Service**: Business logic with DI
+- [ ] **Repository**: Database access (if complex)
+- [ ] **Validation**: Zod schema
 - [ ] **Sentry**: Error tracking
-- [ ] **Tests**: Unit + integration テスト
-- [ ] **Config**: unifiedConfig使用
+- [ ] **Tests**: Unit + integration tests
+- [ ] **Config**: Use unifiedConfig
 
-### 新規マイクロサービスチェックリスト
+### New Microservice Checklist
 
-- [ ] ディレクトリ構造（[architecture-overview.md](architecture-overview.md)参照）
-- [ ] Sentry用instrument.ts
-- [ ] unifiedConfig設定
-- [ ] BaseControllerクラス
-- [ ] Middlewareスタック
+- [ ] Directory structure (see [architecture-overview.md](architecture-overview.md))
+- [ ] instrument.ts for Sentry
+- [ ] unifiedConfig setup
+- [ ] BaseController class
+- [ ] Middleware stack
 - [ ] Error boundary
-- [ ] テスティングフレームワーク
+- [ ] Testing framework
 
 ---
 
-## アーキテクチャ概要
+## Architecture Overview
 
 ### Layered Architecture
 
 ```
 HTTP Request
     ↓
-Routes (routingのみ)
+Routes (routing only)
     ↓
-Controllers (リクエスト処理)
+Controllers (request handling)
     ↓
-Services (ビジネスロジック)
+Services (business logic)
     ↓
-Repositories (データアクセス)
+Repositories (data access)
     ↓
 Database (Prisma)
 ```
 
-**核心原則:** 各レイヤーは単一の責任のみを持ちます。
+**Key Principle:** Each layer has ONE responsibility.
 
-詳細は[architecture-overview.md](architecture-overview.md)を参照してください。
+See [architecture-overview.md](architecture-overview.md) for complete details.
 
 ---
 
-## ディレクトリ構造
+## Directory Structure
 
 ```
 service/src/
 ├── config/              # UnifiedConfig
-├── controllers/         # リクエストハンドラー
-├── services/            # ビジネスロジック
-├── repositories/        # データアクセス
-├── routes/              # Route定義
+├── controllers/         # Request handlers
+├── services/            # Business logic
+├── repositories/        # Data access
+├── routes/              # Route definitions
 ├── middleware/          # Express middleware
-├── types/               # TypeScript型
-├── validators/          # Zodスキーマ
-├── utils/               # ユーティリティ
-├── tests/               # テスト
-├── instrument.ts        # Sentry（最初のIMPORT）
-├── app.ts               # Express設定
-└── server.ts            # HTTPサーバー
+├── types/               # TypeScript types
+├── validators/          # Zod schemas
+├── utils/               # Utilities
+├── tests/               # Tests
+├── instrument.ts        # Sentry (FIRST IMPORT)
+├── app.ts               # Express setup
+└── server.ts            # HTTP server
 ```
 
-**命名規則:**
+**Naming Conventions:**
 - Controllers: `PascalCase` - `UserController.ts`
 - Services: `camelCase` - `userService.ts`
 - Routes: `camelCase + Routes` - `userRoutes.ts`
@@ -99,21 +99,21 @@ service/src/
 
 ---
 
-## 核心原則（7つの核心ルール）
+## Core Principles (7 Key Rules)
 
-### 1. RoutesはRoutingのみ、ControllersがControl
+### 1. Routes Only Route, Controllers Control
 
 ```typescript
-// ❌ 絶対NG: routesにビジネスロジック
+// ❌ NEVER: Business logic in routes
 router.post('/submit', async (req, res) => {
-    // 200行のロジック
+    // 200 lines of logic
 });
 
-// ✅ 常に: controllerに委譲
+// ✅ ALWAYS: Delegate to controller
 router.post('/submit', (req, res) => controller.submit(req, res));
 ```
 
-### 2. すべてのControllersはBaseController継承
+### 2. All Controllers Extend BaseController
 
 ```typescript
 export class UserController extends BaseController {
@@ -128,7 +128,7 @@ export class UserController extends BaseController {
 }
 ```
 
-### 3. すべてのエラーはSentryへ
+### 3. All Errors to Sentry
 
 ```typescript
 try {
@@ -139,32 +139,32 @@ try {
 }
 ```
 
-### 4. unifiedConfig使用、process.env絶対使用禁止
+### 4. Use unifiedConfig, NEVER process.env
 
 ```typescript
-// ❌ 絶対NG
+// ❌ NEVER
 const timeout = process.env.TIMEOUT_MS;
 
-// ✅ 常に
+// ✅ ALWAYS
 import { config } from './config/unifiedConfig';
 const timeout = config.timeouts.default;
 ```
 
-### 5. すべての入力はZodで検証
+### 5. Validate All Input with Zod
 
 ```typescript
 const schema = z.object({ email: z.string().email() });
 const validated = schema.parse(req.body);
 ```
 
-### 6. データアクセスにRepositoryパターン使用
+### 6. Use Repository Pattern for Data Access
 
 ```typescript
 // Service → Repository → Database
 const users = await userRepository.findActive();
 ```
 
-### 7. 包括的テスティング必須
+### 7. Comprehensive Testing Required
 
 ```typescript
 describe('UserService', () => {
@@ -176,7 +176,7 @@ describe('UserService', () => {
 
 ---
 
-## 共通Imports
+## Common Imports
 
 ```typescript
 // Express
@@ -202,101 +202,107 @@ import { asyncErrorWrapper } from './middleware/errorBoundary';
 
 ---
 
-## クイックリファレンス
+## Quick Reference
 
-### HTTPステータスコード
+### HTTP Status Codes
 
-| コード | ユースケース |
+| Code | Use Case |
 |------|----------|
-| 200 | 成功 |
-| 201 | 作成完了 |
-| 400 | 不正なリクエスト |
-| 401 | 認証なし |
-| 403 | 禁止 |
-| 404 | 見つからない |
-| 500 | サーバーエラー |
+| 200 | Success |
+| 201 | Created |
+| 400 | Bad Request |
+| 401 | Unauthorized |
+| 403 | Forbidden |
+| 404 | Not Found |
+| 500 | Server Error |
 
-### サービステンプレート
+### RealWorld API Endpoints
 
-**Blog API**（✅ 成熟）- REST APIテンプレートとして使用
-**Auth Service**（✅ 成熟）- 認証パターンテンプレートとして使用
-
----
-
-## 避けるべきアンチパターン
-
-❌ Routesにビジネスロジック
-❌ process.env直接使用
-❌ Error handling漏れ
-❌ 入力検証なし
-❌ すべての場所でPrisma直接使用
-❌ Sentry代わりにconsole.log
+| Category | Endpoints |
+|----------|-----------|
+| Auth | POST `/api/users`, POST `/api/users/login`, GET/PUT `/api/user` |
+| Articles | GET/POST `/api/articles`, GET/PUT/DELETE `/api/articles/:slug` |
+| Comments | GET/POST `/api/articles/:slug/comments`, DELETE `.../:id` |
+| Favorites | POST/DELETE `/api/articles/:slug/favorite` |
+| Profiles | GET `/api/profiles/:username`, POST/DELETE `.../follow` |
+| Tags | GET `/api/tags` |
 
 ---
 
-## ナビゲーションガイド
+## Anti-Patterns to Avoid
 
-| 必要な作業... | 読むべきドキュメント |
+❌ Business logic in routes
+❌ Direct process.env usage
+❌ Missing error handling
+❌ No input validation
+❌ Direct Prisma everywhere
+❌ console.log instead of Sentry
+
+---
+
+## Navigation Guide
+
+| Need to... | Read this |
 |------------|-----------|
-| アーキテクチャ理解 | [architecture-overview.md](architecture-overview.md) |
-| Routes/controllers作成 | [routing-and-controllers.md](routing-and-controllers.md) |
-| ビジネスロジック構成 | [services-and-repositories.md](services-and-repositories.md) |
-| 入力検証 | [validation-patterns.md](validation-patterns.md) |
-| Error tracking追加 | [sentry-and-monitoring.md](sentry-and-monitoring.md) |
-| Middleware作成 | [middleware-guide.md](middleware-guide.md) |
-| データベースアクセス | [database-patterns.md](database-patterns.md) |
-| 設定管理 | [configuration.md](configuration.md) |
-| Async/errors処理 | [async-and-errors.md](async-and-errors.md) |
-| テスト作成 | [testing-guide.md](testing-guide.md) |
-| 例示を見る | [complete-examples.md](complete-examples.md) |
+| Understand architecture | [architecture-overview.md](architecture-overview.md) |
+| Create routes/controllers | [routing-and-controllers.md](routing-and-controllers.md) |
+| Organize business logic | [services-and-repositories.md](services-and-repositories.md) |
+| Validate input | [validation-patterns.md](validation-patterns.md) |
+| Add error tracking | [sentry-and-monitoring.md](sentry-and-monitoring.md) |
+| Create middleware | [middleware-guide.md](middleware-guide.md) |
+| Database access | [database-patterns.md](database-patterns.md) |
+| Manage config | [configuration.md](configuration.md) |
+| Handle async/errors | [async-and-errors.md](async-and-errors.md) |
+| Write tests | [testing-guide.md](testing-guide.md) |
+| See examples | [complete-examples.md](complete-examples.md) |
 
 ---
 
-## リソースファイル
+## Resource Files
 
 ### [architecture-overview.md](architecture-overview.md)
-Layered architecture、リクエストライフサイクル、関心の分離
+Layered architecture, request lifecycle, separation of concerns
 
 ### [routing-and-controllers.md](routing-and-controllers.md)
-Route定義、BaseController、error handling、例示
+Route definitions, BaseController, error handling, examples
 
 ### [services-and-repositories.md](services-and-repositories.md)
-Serviceパターン、DI、repositoryパターン、キャッシング
+Service patterns, DI, repository pattern, caching
 
 ### [validation-patterns.md](validation-patterns.md)
-Zodスキーマ、検証、DTOパターン
+Zod schemas, validation, DTO pattern
 
 ### [sentry-and-monitoring.md](sentry-and-monitoring.md)
-Sentry初期化、エラーキャプチャ、performance monitoring
+Sentry init, error capture, performance monitoring
 
 ### [middleware-guide.md](middleware-guide.md)
-Auth、audit、error boundaries、AsyncLocalStorage
+Auth, audit, error boundaries, AsyncLocalStorage
 
 ### [database-patterns.md](database-patterns.md)
-PrismaService、repositories、トランザクション、最適化
+PrismaService, repositories, transactions, optimization
 
 ### [configuration.md](configuration.md)
-UnifiedConfig、環境設定、シークレット
+UnifiedConfig, environment configs, secrets
 
 ### [async-and-errors.md](async-and-errors.md)
-Asyncパターン、カスタムエラー、asyncErrorWrapper
+Async patterns, custom errors, asyncErrorWrapper
 
 ### [testing-guide.md](testing-guide.md)
-Unit/integrationテスト、mocking、カバレッジ
+Unit/integration tests, mocking, coverage
 
 ### [complete-examples.md](complete-examples.md)
-完全な例示、リファクタリングガイド
+Full examples, refactoring guide
 
 ---
 
-## 関連Skills
+## Related Skills
 
-- **database-verification** - カラム名およびスキーマ一貫性検証
-- **error-tracking** - Sentry統合パターン
-- **skill-developer** - Skills作成および管理のためのメタskill
+- **database-verification** - Verify column names and schema consistency
+- **error-tracking** - Sentry integration patterns
+- **skill-developer** - Meta-skill for creating and managing skills
 
 ---
 
-**Skillステータス**: 完了 ✅
-**行数**: < 500 ✅
-**Progressive Disclosure**: 11個のリソースファイル ✅
+**Skill Status**: COMPLETE ✅
+**Line Count**: < 500 ✅
+**Progressive Disclosure**: 11 resource files ✅

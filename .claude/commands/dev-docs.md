@@ -1,51 +1,51 @@
 ---
-description: 構造化された作業分解と共に包括的な戦略計画を生成
-argument-hint: 計画が必要な内容を説明してください（例：「認証システムのリファクタリング」、「マイクロサービス実装」）
+description: Create a comprehensive strategic plan with structured task breakdown
+argument-hint: Describe what you need planned (e.g., "refactor authentication system", "implement microservices")
 ---
 
-あなたは最高レベルの戦略企画専門家です。以下について包括的で実行可能な計画を作成してください：$ARGUMENTS
+You are an elite strategic planning specialist. Create a comprehensive, actionable plan for: $ARGUMENTS
 
-## 指針
+## Instructions
 
-1. **リクエストを分析**し、必要な計画範囲を決定
-2. **関連ファイルをレビュー**して現在の状態を把握
-3. **構造化された計画を作成**：
-   - 要約
-   - 現在状態の分析
-   - 提案する将来状態
-   - 実装ステップ（セクション別に分類）
-   - 詳細タスク（明確な完了基準がある実行可能項目）
-   - リスク評価と軽減戦略
-   - 成功指標
-   - 必要なリソースと依存関係
-   - スケジュール見積もり
+1. **Analyze the request** and determine the scope of planning needed
+2. **Examine relevant files** in the codebase to understand current state
+3. **Create a structured plan** with:
+   - Executive Summary
+   - Current State Analysis
+   - Proposed Future State
+   - Implementation Phases (broken into sections)
+   - Detailed Tasks (actionable items with clear acceptance criteria)
+   - Risk Assessment and Mitigation Strategies
+   - Success Metrics
+   - Required Resources and Dependencies
+   - Timeline Estimates
 
-4. **作業分解構造**：
-   - 各主要セクションはステップまたはコンポーネントを表す
-   - セクション内のタスクに番号を付けて優先順位付け
-   - 各タスクに明確な完了基準を含める
-   - タスク間の依存関係を明示
-   - 工数レベルを見積もり（S/M/L/XL）
+4. **Task Breakdown Structure**: 
+   - Each major section represents a phase or component
+   - Number and prioritize tasks within sections
+   - Include clear acceptance criteria for each task
+   - Specify dependencies between tasks
+   - Estimate effort levels (S/M/L/XL)
 
-5. **作業管理構造を作成**：
-   - ディレクトリ作成：`dev/active/[task-name]/`（プロジェクトルート基準）
-   - 3つのファイルを作成：
-     - `[task-name]-plan.md` - 包括的な計画
-     - `[task-name]-context.md` - 重要ファイル、決定事項、依存関係
-     - `[task-name]-tasks.md` - 進捗追跡用チェックリスト形式
-   - 各ファイルに「最終更新：YYYY-MM-DD」を含める
+5. **Create task management structure**:
+   - Create directory: `dev/active/[task-name]/` (relative to project root)
+   - Generate three files:
+     - `[task-name]-plan.md` - The comprehensive plan
+     - `[task-name]-context.md` - Key files, decisions, dependencies
+     - `[task-name]-tasks.md` - Checklist format for tracking progress
+   - Include "Last Updated: YYYY-MM-DD" in each file
 
-## 品質基準
-- 計画は必要なすべてのコンテキストを含んで自己完結していること
-- 明確で実行可能な言語を使用
-- 該当する場合は具体的な技術詳細を含める
-- 技術的観点とビジネス観点の両方を考慮
-- 潜在的なリスクとエッジケースを考慮
+## Quality Standards
+- Plans must be self-contained with all necessary context
+- Use clear, actionable language
+- Include specific technical details where relevant
+- Consider both technical and business perspectives
+- Account for potential risks and edge cases
 
-## コンテキスト参照
-- アーキテクチャ概要は`PROJECT_KNOWLEDGE.md`を確認（存在する場合）
-- コーディング標準は`BEST_PRACTICES.md`を参照（存在する場合）
-- 避けるべき一般的な問題は`TROUBLESHOOTING.md`を参照（存在する場合）
-- 作業管理ガイドラインは`dev/README.md`を使用（存在する場合）
+## Context References
+- Check `PROJECT_KNOWLEDGE.md` for architecture overview (if exists)
+- Consult `BEST_PRACTICES.md` for coding standards (if exists)
+- Reference `TROUBLESHOOTING.md` for common issues to avoid (if exists)
+- Use `dev/README.md` for task management guidelines (if exists)
 
-**注意**：このコマンドはplan modeを終了した後、実行する作業について明確なビジョンがある場合に使用するのが理想的です。contextリセット後も維持される永続的な作業構造を作成します。
+**Note**: This command is ideal to use AFTER exiting plan mode when you have a clear vision of what needs to be done. It will create the persistent task structure that survives context resets.

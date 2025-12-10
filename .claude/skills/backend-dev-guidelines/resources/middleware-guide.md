@@ -1,23 +1,23 @@
-# Middlewareガイド - Express Middlewareパターン
+# Middleware Guide - Express Middleware Patterns
 
-バックエンドマイクロサービスでのmiddleware作成と使用に関する完全なガイドです。
+Complete guide to creating and using middleware in backend microservices.
 
-## 目次
+## Table of Contents
 
-- [認証Middleware](#認証middleware)
-- [AsyncLocalStorageを使用したAudit Middleware](#asynclocalstorageを使用したaudit-middleware)
+- [Authentication Middleware](#authentication-middleware)
+- [Audit Middleware with AsyncLocalStorage](#audit-middleware-with-asynclocalstorage)
 - [Error Boundary Middleware](#error-boundary-middleware)
 - [Validation Middleware](#validation-middleware)
-- [組み合わせ可能なMiddleware](#組み合わせ可能なmiddleware)
-- [Middleware順序](#middleware順序)
+- [Composable Middleware](#composable-middleware)
+- [Middleware Ordering](#middleware-ordering)
 
 ---
 
-## 認証Middleware
+## Authentication Middleware
 
-### SSOMiddlewareパターン
+### SSOMiddleware Pattern
 
-**ファイル:** `/form/src/middleware/SSOMiddleware.ts`
+**File:** `/form/src/middleware/SSOMiddleware.ts`
 
 ```typescript
 export class SSOMiddlewareClient {
@@ -42,11 +42,11 @@ export class SSOMiddlewareClient {
 
 ---
 
-## AsyncLocalStorageを使用したAudit Middleware
+## Audit Middleware with AsyncLocalStorage
 
-### Blog APIの優れたパターン
+### Excellent Pattern from Blog API
 
-**ファイル:** `/form/src/middleware/auditMiddleware.ts`
+**File:** `/form/src/middleware/auditMiddleware.ts`
 
 ```typescript
 import { AsyncLocalStorage } from 'async_hooks';
@@ -76,19 +76,19 @@ export function auditMiddleware(req: Request, res: Response, next: NextFunction)
     });
 }
 
-// 現在のコンテキストgetter
+// Getter for current context
 export function getAuditContext(): AuditContext | null {
     return auditContextStorage.getStore() || null;
 }
 ```
 
-**利点:**
-- リクエスト全体にコンテキストを伝播
-- すべての関数にコンテキストを渡す必要なし
-- services、repositoriesで自動的に利用可能
-- タイプセーフなコンテキストアクセス
+**Benefits:**
+- Context propagates through entire request
+- No need to pass context through every function
+- Automatically available in services, repositories
+- Type-safe context access
 
-**Servicesでの使用:**
+**Usage in Services:**
 ```typescript
 import { getAuditContext } from '../middleware/auditMiddleware';
 
@@ -102,9 +102,9 @@ async function someOperation() {
 
 ## Error Boundary Middleware
 
-### 包括的なエラーハンドラー
+### Comprehensive Error Handler
 
-**ファイル:** `/form/src/middleware/errorBoundary.ts`
+**File:** `/form/src/middleware/errorBoundary.ts`
 
 ```typescript
 export function errorBoundary(
@@ -113,10 +113,10 @@ export function errorBoundary(
     res: Response,
     next: NextFunction
 ): void {
-    // ステータスコード決定
+    // Determine status code
     const statusCode = getStatusCodeForError(error);
 
-    // Sentryにキャプチャ
+    // Capture to Sentry
     Sentry.withScope((scope) => {
         scope.setLevel(statusCode >= 500 ? 'error' : 'warning');
         scope.setTag('error_type', error.name);
@@ -127,7 +127,7 @@ export function errorBoundary(
         Sentry.captureException(error);
     });
 
-    // ユーザーフレンドリーなレスポンス
+    // User-friendly response
     res.status(statusCode).json({
         success: false,
         error: {
@@ -138,7 +138,7 @@ export function errorBoundary(
     });
 }
 
-// Asyncラッパー
+// Async wrapper
 export function asyncErrorWrapper(
     handler: (req: Request, res: Response, next: NextFunction) => Promise<any>
 ) {
@@ -154,9 +154,9 @@ export function asyncErrorWrapper(
 
 ---
 
-## 組み合わせ可能なMiddleware
+## Composable Middleware
 
-### withAuthAndAuditパターン
+### withAuthAndAudit Pattern
 
 ```typescript
 export function withAuthAndAudit(...authMiddleware: any[]) {
@@ -166,7 +166,7 @@ export function withAuthAndAudit(...authMiddleware: any[]) {
     ];
 }
 
-// 使用法
+// Usage
 router.post('/:formID/submit',
     ...withAuthAndAudit(SSOMiddlewareClient.verifyLoginStatus),
     async (req, res) => controller.submit(req, res)
@@ -175,39 +175,39 @@ router.post('/:formID/submit',
 
 ---
 
-## Middleware順序
+## Middleware Ordering
 
-### 重要な順序（必ず従うこと）
+### Critical Order (Must Follow)
 
 ```typescript
-// 1. Sentry request handler（最初）
+// 1. Sentry request handler (FIRST)
 app.use(Sentry.Handlers.requestHandler());
 
-// 2. Bodyパース
+// 2. Body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// 3. Cookieパース
+// 3. Cookie parsing
 app.use(cookieParser());
 
-// 4. 認証初期化
+// 4. Auth initialization
 app.use(SSOMiddleware.initialize());
 
-// 5. ここでRoutesを登録
+// 5. Routes registered here
 app.use('/api/users', userRoutes);
 
-// 6. エラーハンドラー（routes以降）
+// 6. Error handler (AFTER routes)
 app.use(errorBoundary);
 
-// 7. Sentryエラーハンドラー（最後）
+// 7. Sentry error handler (LAST)
 app.use(Sentry.Handlers.errorHandler());
 ```
 
-**ルール:** エラーハンドラーは必ずすべてのroutes以降に登録すること！
+**Rule:** Error handlers MUST be registered AFTER all routes!
 
 ---
 
-**関連ファイル:**
+**Related Files:**
 - [SKILL.md](SKILL.md)
 - [routing-and-controllers.md](routing-and-controllers.md)
 - [async-and-errors.md](async-and-errors.md)

@@ -1,194 +1,194 @@
-# トラブルシューティング - Skill活性化問題
+# Troubleshooting - Skill Activation Issues
 
-Skill活性化問題のための包括的なデバッグガイドです。
+Complete debugging guide for skill activation problems.
 
-## 目次
+## Table of Contents
 
-- [Skillがトリガーされない](#skillがトリガーされない)
-  - [UserPromptSubmitが提案しない](#userpromptsubmitが提案しない)
-  - [PreToolUseがブロックしない](#pretooluse がブロックしない)
-- [誤検知](#誤検知)
-- [Hookが実行されない](#hookが実行されない)
-- [パフォーマンス問題](#パフォーマンス問題)
+- [Skill Not Triggering](#skill-not-triggering)
+  - [UserPromptSubmit Not Suggesting](#userpromptsubmit-not-suggesting)
+  - [PreToolUse Not Blocking](#pretooluse-not-blocking)
+- [False Positives](#false-positives)
+- [Hook Not Executing](#hook-not-executing)
+- [Performance Issues](#performance-issues)
 
 ---
 
-## Skillがトリガーされない
+## Skill Not Triggering
 
-### UserPromptSubmitが提案しない
+### UserPromptSubmit Not Suggesting
 
-**症状:** 質問をしたが出力にskill提案が表示されない。
+**Symptoms:** Ask a question, but no skill suggestion appears in output.
 
-**一般的な原因:**
+**Common Causes:**
 
-####  1. キーワードがマッチしない
+####  1. Keywords Don't Match
 
-**確認:**
-- skill-rules.jsonの`promptTriggers.keywords`を確認
-- プロンプトに実際にキーワードがあるか？
-- 注意: 大文字小文字を区別しない部分文字列マッチング
+**Check:**
+- Look at `promptTriggers.keywords` in skill-rules.json
+- Are the keywords actually in your prompt?
+- Remember: case-insensitive substring matching
 
-**例:**
+**Example:**
 ```json
 "keywords": ["layout", "grid"]
 ```
-- "layoutはどのように動作しますか？" → ✅ "layout"がマッチ
-- "gridシステムはどのように動作しますか？" → ✅ "grid"がマッチ
-- "layoutsはどのように動作しますか？" → ✅ "layout"がマッチ
-- "どのように動作しますか？" → ❌ マッチなし
+- "how does the layout work?" → ✅ Matches "layout"
+- "how does the grid system work?" → ✅ Matches "grid"
+- "how do layouts work?" → ✅ Matches "layout"
+- "how does it work?" → ❌ No match
 
-**解決:** skill-rules.jsonにより多くのキーワードバリエーションを追加
+**Fix:** Add more keyword variations to skill-rules.json
 
-#### 2. Intentパターンが具体的すぎる
+#### 2. Intent Patterns Too Specific
 
-**確認:**
-- `promptTriggers.intentPatterns`を確認
-- https://regex101.com/でregexをテスト
-- より広いパターンが必要かもしれない
+**Check:**
+- Look at `promptTriggers.intentPatterns`
+- Test regex at https://regex101.com/
+- May need broader patterns
 
-**例:**
+**Example:**
 ```json
 "intentPatterns": [
-  "(create|add).*?(database.*?table)"  // 具体的すぎる
+  "(create|add).*?(database.*?table)"  // Too specific
 ]
 ```
-- "database tableを作成して" → ✅ マッチ
-- "新しいtableを追加して" → ❌ マッチしない（"database"がない）
+- "create a database table" → ✅ Matches
+- "add new table" → ❌ Doesn't match (missing "database")
 
-**解決:** パターンを広げる:
+**Fix:** Broaden the pattern:
 ```json
 "intentPatterns": [
-  "(create|add).*?(table|database)"  // 改善
+  "(create|add).*?(table|database)"  // Better
 ]
 ```
 
-#### 3. Skill名のタイポ
+#### 3. Typo in Skill Name
 
-**確認:**
-- SKILL.md frontmatterのskill名
-- skill-rules.jsonのskill名
-- 正確に一致している必要がある
+**Check:**
+- Skill name in SKILL.md frontmatter
+- Skill name in skill-rules.json
+- Must match exactly
 
-**例:**
+**Example:**
 ```yaml
 # SKILL.md
 name: project-catalog-developer
 ```
 ```json
 // skill-rules.json
-"project-catalogue-developer": {  // ❌ タイポ: catalogue vs catalog
+"project-catalogue-developer": {  // ❌ Typo: catalogue vs catalog
   ...
 }
 ```
 
-**解決:** 名前が正確に一致するように修正
+**Fix:** Make names match exactly
 
-#### 4. JSON構文エラー
+#### 4. JSON Syntax Error
 
-**確認:**
+**Check:**
 ```bash
 cat .claude/skills/skill-rules.json | jq .
 ```
 
-無効なJSONの場合、jqがエラーを表示します。
+If invalid JSON, jq will show the error.
 
-**一般的なエラー:**
-- 末尾のカンマ
-- 引用符の欠落
-- ダブルクォートの代わりにシングルクォート
-- 文字列内のエスケープされていない文字
+**Common errors:**
+- Trailing commas
+- Missing quotes
+- Single quotes instead of double
+- Unescaped characters in strings
 
-**解決:** JSON構文を修正、jqで検証
+**Fix:** Correct JSON syntax, validate with jq
 
-#### デバッグコマンド
+#### Debug Command
 
-手動でhookをテスト:
+Test the hook manually:
 
 ```bash
-echo '{"session_id":"debug","prompt":"ここにテストプロンプト"}' | \
+echo '{"session_id":"debug","prompt":"your test prompt here"}' | \
   npx tsx .claude/hooks/skill-activation-prompt.ts
 ```
 
-期待: 出力にskillが表示される。
+Expected: Your skill should appear in the output.
 
 ---
 
-### PreToolUseがブロックしない
+### PreToolUse Not Blocking
 
-**症状:** guardrailをトリガーすべきファイルを編集したがブロックが発生しない。
+**Symptoms:** Edit a file that should trigger a guardrail, but no block occurs.
 
-**一般的な原因:**
+**Common Causes:**
 
-#### 1. ファイルパスがパターンとマッチしない
+#### 1. File Path Doesn't Match Patterns
 
-**確認:**
-- 編集中のファイルパス
-- skill-rules.jsonの`fileTriggers.pathPatterns`
-- Globパターン構文
+**Check:**
+- File path being edited
+- `fileTriggers.pathPatterns` in skill-rules.json
+- Glob pattern syntax
 
-**例:**
+**Example:**
 ```json
 "pathPatterns": [
   "frontend/src/**/*.tsx"
 ]
 ```
-- 編集中: `frontend/src/components/Dashboard.tsx` → ✅ マッチ
-- 編集中: `frontend/tests/Dashboard.test.tsx` → ✅ マッチ（除外を追加すべき！）
-- 編集中: `backend/src/app.ts` → ❌ マッチなし
+- Editing: `frontend/src/components/Dashboard.tsx` → ✅ Matches
+- Editing: `frontend/tests/Dashboard.test.tsx` → ✅ Matches (add exclusion!)
+- Editing: `backend/src/app.ts` → ❌ Doesn't match
 
-**解決:** globパターンを調整または欠落パスを追加
+**Fix:** Adjust glob patterns or add the missing path
 
-#### 2. pathExclusionsで除外されている
+#### 2. Excluded by pathExclusions
 
-**確認:**
-- テストファイルを編集していないか？
-- `fileTriggers.pathExclusions`を確認
+**Check:**
+- Are you editing a test file?
+- Look at `fileTriggers.pathExclusions`
 
-**例:**
+**Example:**
 ```json
 "pathExclusions": [
   "**/*.test.ts",
   "**/*.spec.ts"
 ]
 ```
-- 編集中: `services/user.test.ts` → ❌ 除外される
-- 編集中: `services/user.ts` → ✅ 除外されない
+- Editing: `services/user.test.ts` → ❌ Excluded
+- Editing: `services/user.ts` → ✅ Not excluded
 
-**解決:** テスト除外が広すぎる場合は狭めるか削除
+**Fix:** If test exclusion too broad, narrow it or remove
 
-#### 3. コンテンツパターンが見つからない
+#### 3. Content Pattern Not Found
 
-**確認:**
-- ファイルに実際にパターンが含まれているか？
-- `fileTriggers.contentPatterns`を確認
-- Regexが正しいか？
+**Check:**
+- Does the file actually contain the pattern?
+- Look at `fileTriggers.contentPatterns`
+- Is the regex correct?
 
-**例:**
+**Example:**
 ```json
 "contentPatterns": [
   "import.*[Pp]risma"
 ]
 ```
-- ファイル内容: `import { PrismaService } from './prisma'` → ✅ マッチ
-- ファイル内容: `import { Database } from './db'` → ❌ マッチなし
+- File has: `import { PrismaService } from './prisma'` → ✅ Matches
+- File has: `import { Database } from './db'` → ❌ Doesn't match
 
-**デバッグ:**
+**Debug:**
 ```bash
-# ファイルにパターンがあるか確認
+# Check if pattern exists in file
 grep -i "prisma" path/to/file.ts
 ```
 
-**解決:** コンテンツパターンを調整または欠落importを追加
+**Fix:** Adjust content patterns or add missing imports
 
-#### 4. セッションで既にSkillが使用されている
+#### 4. Session Already Used Skill
 
-**セッション状態を確認:**
+**Check session state:**
 ```bash
 ls .claude/hooks/state/
 cat .claude/hooks/state/skills-used-{session-id}.json
 ```
 
-**例:**
+**Example:**
 ```json
 {
   "skills_used": ["database-verification"],
@@ -196,42 +196,42 @@ cat .claude/hooks/state/skills-used-{session-id}.json
 }
 ```
 
-skillが`skills_used`にある場合、このセッションでは再度ブロックしない。
+If the skill is in `skills_used`, it won't block again in this session.
 
-**解決:** リセットするには状態ファイルを削除:
+**Fix:** Delete the state file to reset:
 ```bash
 rm .claude/hooks/state/skills-used-{session-id}.json
 ```
 
-#### 5. ファイルマーカーが存在する
+#### 5. File Marker Present
 
-**ファイルでスキップマーカーを確認:**
+**Check file for skip marker:**
 ```bash
 grep "@skip-validation" path/to/file.ts
 ```
 
-見つかった場合、ファイルは永久にスキップされる。
+If found, the file is permanently skipped.
 
-**解決:** 検証が再度必要な場合はマーカーを削除
+**Fix:** Remove the marker if verification is needed again
 
-#### 6. 環境変数のオーバーライド
+#### 6. Environment Variable Override
 
-**確認:**
+**Check:**
 ```bash
 echo $SKIP_DB_VERIFICATION
 echo $SKIP_SKILL_GUARDRAILS
 ```
 
-設定されている場合、skillは無効化される。
+If set, the skill is disabled.
 
-**解決:** 環境変数の設定を解除:
+**Fix:** Unset the environment variable:
 ```bash
 unset SKIP_DB_VERIFICATION
 ```
 
-#### デバッグコマンド
+#### Debug Command
 
-手動でhookをテスト:
+Test the hook manually:
 
 ```bash
 cat <<'EOF' | npx tsx .claude/hooks/skill-verification-guard.ts 2>&1
@@ -244,27 +244,27 @@ EOF
 echo "Exit code: $?"
 ```
 
-期待:
-- ブロックすべき場合は終了コード2 + stderrメッセージ
-- 許可すべき場合は終了コード0 + 出力なし
+Expected:
+- Exit code 2 + stderr message if should block
+- Exit code 0 + no output if should allow
 
 ---
 
-## 誤検知
+## False Positives
 
-**症状:** Skillがトリガーされるべきでないときにトリガーされる。
+**Symptoms:** Skill triggers when it shouldn't.
 
-**一般的な原因と解決策:**
+**Common Causes & Solutions:**
 
-### 1. キーワードが一般的すぎる
+### 1. Keywords Too Generic
 
-**問題:**
+**Problem:**
 ```json
-"keywords": ["user", "system", "create"]  // 広すぎる
+"keywords": ["user", "system", "create"]  // Too broad
 ```
-- トリガー: "user manual", "file system", "create directory"
+- Triggers on: "user manual", "file system", "create directory"
 
-**解決:** キーワードをより具体的に
+**Solution:** Make keywords more specific
 ```json
 "keywords": [
   "user authentication",
@@ -273,97 +273,97 @@ echo "Exit code: $?"
 ]
 ```
 
-### 2. Intentパターンが広すぎる
+### 2. Intent Patterns Too Broad
 
-**問題:**
+**Problem:**
 ```json
 "intentPatterns": [
-  "(create)"  // "create"を含むすべてにマッチ
+  "(create)"  // Matches everything with "create"
 ]
 ```
-- トリガー: "create file", "create folder", "create account"
+- Triggers on: "create file", "create folder", "create account"
 
-**解決:** パターンにcontextを追加
+**Solution:** Add context to patterns
 ```json
 "intentPatterns": [
-  "(create|add).*?(database|table|feature)"  // より具体的
+  "(create|add).*?(database|table|feature)"  // More specific
 ]
 ```
 
-**高度:** 否定先読みで除外
+**Advanced:** Use negative lookaheads to exclude
 ```regex
-(create)(?!.*test).*?(feature)  // "test"が出現したらマッチしない
+(create)(?!.*test).*?(feature)  // Don't match if "test" appears
 ```
 
-### 3. ファイルパスが一般的すぎる
+### 3. File Paths Too Generic
 
-**問題:**
+**Problem:**
 ```json
 "pathPatterns": [
-  "form/**"  // form/内のすべてにマッチ
+  "form/**"  // Matches everything in form/
 ]
 ```
-- トリガー: テストファイル、設定ファイル、すべて
+- Triggers on: test files, config files, everything
 
-**解決:** より狭いパターンを使用
+**Solution:** Use narrower patterns
 ```json
 "pathPatterns": [
-  "form/src/services/**/*.ts",  // サービスファイルのみ
+  "form/src/services/**/*.ts",  // Only service files
   "form/src/controllers/**/*.ts"
 ]
 ```
 
-### 4. コンテンツパターンが関連のないコードを検出
+### 4. Content Patterns Catching Unrelated Code
 
-**問題:**
+**Problem:**
 ```json
 "contentPatterns": [
-  "Prisma"  // コメント、文字列などでマッチ
+  "Prisma"  // Matches in comments, strings, etc.
 ]
 ```
-- トリガー: `// ここでPrismaを使用しないでください`
-- トリガー: `const note = "Prisma is cool"`
+- Triggers on: `// Don't use Prisma here`
+- Triggers on: `const note = "Prisma is cool"`
 
-**解決:** パターンをより具体的に
+**Solution:** Make patterns more specific
 ```json
 "contentPatterns": [
-  "import.*[Pp]risma",        // importのみ
-  "PrismaService\\.",         // 実際の使用のみ
-  "prisma\\.(findMany|create)" // 特定のメソッド
+  "import.*[Pp]risma",        // Only imports
+  "PrismaService\\.",         // Only actual usage
+  "prisma\\.(findMany|create)" // Specific methods
 ]
 ```
 
-### 5. 適用レベルの調整
+### 5. Adjust Enforcement Level
 
-**最後の手段:** 誤検知が頻繁な場合:
+**Last resort:** If false positives are frequent:
 
 ```json
 {
-  "enforcement": "block"  // "suggest"に変更
+  "enforcement": "block"  // Change to "suggest"
 }
 ```
 
-ブロックの代わりに推奨に変更される。
+This makes it advisory instead of blocking.
 
 ---
 
-## Hookが実行されない
+## Hook Not Executing
 
-**症状:** Hookが全く実行されない - 提案もブロックもない。
+**Symptoms:** Hook doesn't run at all - no suggestion, no block.
 
-**一般的な原因:**
+**Common Causes:**
 
-### 1. Hookが登録されていない
+### 1. Hook Not Registered
 
-**`.claude/settings.json`を確認:**
+**Check `.claude/settings.json`:**
 ```bash
 cat .claude/settings.json | jq '.hooks.UserPromptSubmit'
 cat .claude/settings.json | jq '.hooks.PreToolUse'
 ```
 
-期待: Hookエントリがあるはず
+Expected: Hook entries present
 
-**解決:** 欠落したhook登録を追加:
+**Fix:** Add missing hook registration:
 ```json
 {
   "hooks": {
@@ -381,116 +381,116 @@ cat .claude/settings.json | jq '.hooks.PreToolUse'
 }
 ```
 
-### 2. Bashラッパーが実行可能でない
+### 2. Bash Wrapper Not Executable
 
-**確認:**
+**Check:**
 ```bash
 ls -l .claude/hooks/*.sh
 ```
 
-期待: `-rwxr-xr-x`（実行可能）
+Expected: `-rwxr-xr-x` (executable)
 
-**解決:**
+**Fix:**
 ```bash
 chmod +x .claude/hooks/*.sh
 ```
 
-### 3. 不正なShebang
+### 3. Incorrect Shebang
 
-**確認:**
+**Check:**
 ```bash
 head -1 .claude/hooks/skill-activation-prompt.sh
 ```
 
-期待: `#!/bin/bash`
+Expected: `#!/bin/bash`
 
-**解決:** 最初の行に正しいshebangを追加
+**Fix:** Add correct shebang to first line
 
-### 4. npx/tsxが使用できない
+### 4. npx/tsx Not Available
 
-**確認:**
+**Check:**
 ```bash
 npx tsx --version
 ```
 
-期待: バージョン番号
+Expected: Version number
 
-**解決:** 依存関係をインストール:
+**Fix:** Install dependencies:
 ```bash
 cd .claude/hooks
 npm install
 ```
 
-### 5. TypeScriptコンパイルエラー
+### 5. TypeScript Compilation Error
 
-**確認:**
+**Check:**
 ```bash
 cd .claude/hooks
 npx tsc --noEmit skill-activation-prompt.ts
 ```
 
-期待: 出力なし（エラーなし）
+Expected: No output (no errors)
 
-**解決:** TypeScript構文エラーを修正
+**Fix:** Correct TypeScript syntax errors
 
 ---
 
-## パフォーマンス問題
+## Performance Issues
 
-**症状:** Hooksが遅い、プロンプト/編集前に目に見える遅延。
+**Symptoms:** Hooks are slow, noticeable delay before prompt/edit.
 
-**一般的な原因:**
+**Common Causes:**
 
-### 1. パターンが多すぎる
+### 1. Too Many Patterns
 
-**確認:**
-- skill-rules.jsonのパターン数
-- 各パターン = regexコンパイル + マッチング
+**Check:**
+- Count patterns in skill-rules.json
+- Each pattern = regex compilation + matching
 
-**解決:** パターンを減らす
-- 類似パターンを結合
-- 重複パターンを削除
-- より具体的なパターンを使用（より高速なマッチング）
+**Solution:** Reduce patterns
+- Combine similar patterns
+- Remove redundant patterns
+- Use more specific patterns (faster matching)
 
-### 2. 複雑なRegex
+### 2. Complex Regex
 
-**問題:**
+**Problem:**
 ```regex
 (create|add|modify|update|implement|build).*?(feature|endpoint|route|service|controller|component|UI|page)
 ```
-- 長い代替 = 遅い
+- Long alternations = slow
 
-**解決:** 簡略化
+**Solution:** Simplify
 ```regex
-(create|add).*?(feature|endpoint)  // より少ない代替
+(create|add).*?(feature|endpoint)  // Fewer alternatives
 ```
 
-### 3. 確認するファイルが多すぎる
+### 3. Too Many Files Checked
 
-**問題:**
+**Problem:**
 ```json
 "pathPatterns": [
-  "**/*.ts"  // すべてのTypeScriptファイルを確認
+  "**/*.ts"  // Checks ALL TypeScript files
 ]
 ```
 
-**解決:** より具体的に
+**Solution:** Be more specific
 ```json
 "pathPatterns": [
-  "form/src/services/**/*.ts",  // 特定のディレクトリのみ
+  "form/src/services/**/*.ts",  // Only specific directory
   "form/src/controllers/**/*.ts"
 ]
 ```
 
-### 4. 大きなファイル
+### 4. Large Files
 
-コンテンツパターンマッチングはファイル全体を読み取る - 大きなファイルの場合遅い。
+Content pattern matching reads entire file - slow for large files.
 
-**解決:**
-- 必要な場合のみコンテンツパターンを使用
-- ファイルサイズ制限を検討（今後の改善）
+**Solution:**
+- Only use content patterns when necessary
+- Consider file size limits (future enhancement)
 
-### パフォーマンス測定
+### Measure Performance
 
 ```bash
 # UserPromptSubmit
@@ -502,13 +502,13 @@ time cat <<'EOF' | npx tsx .claude/hooks/skill-verification-guard.ts
 EOF
 ```
 
-**目標指標:**
+**Target metrics:**
 - UserPromptSubmit: < 100ms
 - PreToolUse: < 200ms
 
 ---
 
-**関連ファイル:**
-- [SKILL.md](SKILL.md) - メインskillガイド
-- [HOOK_MECHANISMS.md](HOOK_MECHANISMS.md) - Hook動作方式
-- [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - 設定リファレンス
+**Related Files:**
+- [SKILL.md](SKILL.md) - Main skill guide
+- [HOOK_MECHANISMS.md](HOOK_MECHANISMS.md) - How hooks work
+- [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - Configuration reference

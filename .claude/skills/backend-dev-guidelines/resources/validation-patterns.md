@@ -1,51 +1,51 @@
-# バリデーションパターン - Zodを使用した入力検証
+# Validation Patterns - Input Validation with Zod
 
-タイプセーフなバリデーションのためのZodスキーマ使用に関する完全なガイドです。
+Complete guide to input validation using Zod schemas for type-safe validation.
 
-## 目次
+## Table of Contents
 
-- [Zodを使用する理由](#zodを使用する理由)
-- [基本Zodパターン](#基本zodパターン)
-- [コードベーススキーマ例](#コードベーススキーマ例)
-- [Routeレベルバリデーション](#routeレベルバリデーション)
-- [Controllerバリデーション](#controllerバリデーション)
-- [DTOパターン](#dtoパターン)
-- [エラー処理](#エラー処理)
-- [高度なパターン](#高度なパターン)
+- [Why Zod?](#why-zod)
+- [Basic Zod Patterns](#basic-zod-patterns)
+- [Schema Examples from Codebase](#schema-examples-from-codebase)
+- [Route-Level Validation](#route-level-validation)
+- [Controller Validation](#controller-validation)
+- [DTO Pattern](#dto-pattern)
+- [Error Handling](#error-handling)
+- [Advanced Patterns](#advanced-patterns)
 
 ---
 
-## Zodを使用する理由
+## Why Zod?
 
-### Joi/他のライブラリに対する利点
+### Benefits Over Joi/Other Libraries
 
-**タイプセーフティ:**
-- ✅ 完全なTypeScript推論
-- ✅ ランタイム + コンパイルタイムバリデーション
-- ✅ 自動型生成
+**Type Safety:**
+- ✅ Full TypeScript inference
+- ✅ Runtime + compile-time validation
+- ✅ Automatic type generation
 
-**開発者体験:**
-- ✅ 直感的なAPI
-- ✅ 組み合わせ可能なスキーマ
-- ✅ 優れたエラーメッセージ
+**Developer Experience:**
+- ✅ Intuitive API
+- ✅ Composable schemas
+- ✅ Excellent error messages
 
-**パフォーマンス:**
-- ✅ 高速なバリデーション
-- ✅ 小さなバンドルサイズ
+**Performance:**
+- ✅ Fast validation
+- ✅ Small bundle size
 - ✅ Tree-shakeable
 
-### Joiからのマイグレーション
+### Migration from Joi
 
-モダンなバリデーションはJoiの代わりにZodを使用します:
+Modern validation uses Zod instead of Joi:
 
 ```typescript
-// ❌ 古い - Joi（段階的に廃止中）
+// ❌ OLD - Joi (being phased out)
 const schema = Joi.object({
     email: Joi.string().email().required(),
     name: Joi.string().min(3).required(),
 });
 
-// ✅ 新しい - Zod（推奨）
+// ✅ NEW - Zod (preferred)
 const schema = z.object({
     email: z.string().email(),
     name: z.string().min(3),
@@ -54,14 +54,14 @@ const schema = z.object({
 
 ---
 
-## 基本Zodパターン
+## Basic Zod Patterns
 
-### 基本型
+### Primitive Types
 
 ```typescript
 import { z } from 'zod';
 
-// 文字列
+// Strings
 const nameSchema = z.string();
 const emailSchema = z.string().email();
 const urlSchema = z.string().url();
@@ -69,34 +69,34 @@ const uuidSchema = z.string().uuid();
 const minLengthSchema = z.string().min(3);
 const maxLengthSchema = z.string().max(100);
 
-// 数値
+// Numbers
 const ageSchema = z.number().int().positive();
 const priceSchema = z.number().positive();
 const rangeSchema = z.number().min(0).max(100);
 
-// ブール値
+// Booleans
 const activeSchema = z.boolean();
 
-// 日付
-const dateSchema = z.string().datetime(); // ISO 8601文字列
-const nativeDateSchema = z.date(); // ネイティブDateオブジェクト
+// Dates
+const dateSchema = z.string().datetime(); // ISO 8601 string
+const nativeDateSchema = z.date(); // Native Date object
 
-// 列挙型
+// Enums
 const roleSchema = z.enum(['admin', 'operations', 'user']);
 const statusSchema = z.enum(['PENDING', 'APPROVED', 'REJECTED']);
 ```
 
-### オブジェクト
+### Objects
 
 ```typescript
-// シンプルなオブジェクト
+// Simple object
 const userSchema = z.object({
     email: z.string().email(),
     name: z.string(),
     age: z.number().int().positive(),
 });
 
-// ネストされたオブジェクト
+// Nested objects
 const addressSchema = z.object({
     street: z.string(),
     city: z.string(),
@@ -108,28 +108,28 @@ const userWithAddressSchema = z.object({
     address: addressSchema,
 });
 
-// オプショナルフィールド
+// Optional fields
 const userSchema = z.object({
     name: z.string(),
     email: z.string().email().optional(),
     phone: z.string().optional(),
 });
 
-// Nullableフィールド
+// Nullable fields
 const userSchema = z.object({
     name: z.string(),
     middleName: z.string().nullable(),
 });
 ```
 
-### 配列
+### Arrays
 
 ```typescript
-// 基本型の配列
+// Array of primitives
 const rolesSchema = z.array(z.string());
 const numbersSchema = z.array(z.number());
 
-// オブジェクトの配列
+// Array of objects
 const usersSchema = z.array(
     z.object({
         id: z.string(),
@@ -137,23 +137,23 @@ const usersSchema = z.array(
     })
 );
 
-// 制約のある配列
+// Array with constraints
 const tagsSchema = z.array(z.string()).min(1).max(10);
 const nonEmptyArray = z.array(z.string()).nonempty();
 ```
 
 ---
 
-## コードベーススキーマ例
+## Schema Examples from Codebase
 
-### フォームバリデーションスキーマ
+### Form Validation Schemas
 
-**ファイル:** `/form/src/helpers/zodSchemas.ts`
+**File:** `/form/src/helpers/zodSchemas.ts`
 
 ```typescript
 import { z } from 'zod';
 
-// 質問タイプ列挙型
+// Question types enum
 export const questionTypeSchema = z.enum([
     'input',
     'textbox',
@@ -165,17 +165,17 @@ export const questionTypeSchema = z.enum([
     'upload',
 ]);
 
-// アップロードタイプ
+// Upload types
 export const uploadTypeSchema = z.array(
     z.enum(['pdf', 'image', 'excel', 'video', 'powerpoint', 'word']).nullable()
 );
 
-// 入力タイプ
+// Input types
 export const inputTypeSchema = z
     .enum(['date', 'number', 'input', 'currency'])
     .nullable();
 
-// 質問オプション
+// Question option
 export const questionOptionSchema = z.object({
     id: z.number().int().positive().optional(),
     controlTag: z.string().max(150).nullable().optional(),
@@ -183,7 +183,7 @@ export const questionOptionSchema = z.object({
     order: z.number().int().min(0).default(0),
 });
 
-// 質問スキーマ
+// Question schema
 export const questionSchema = z.object({
     id: z.number().int().positive().optional(),
     formID: z.number().int().positive(),
@@ -202,7 +202,7 @@ export const questionSchema = z.object({
     isOptionsSorted: z.boolean().optional(),
 });
 
-// フォームセクションスキーマ
+// Form section schema
 export const formSectionSchema = z.object({
     id: z.number().int().positive(),
     formID: z.number().int().positive(),
@@ -212,7 +212,7 @@ export const formSectionSchema = z.object({
     isStandard: z.boolean(),
 });
 
-// フォーム作成スキーマ
+// Create form schema
 export const createFormSchema = z.object({
     id: z.number().int().positive(),
     label: z.string().max(150),
@@ -221,7 +221,7 @@ export const createFormSchema = z.object({
     username: z.string(),
 });
 
-// 順序更新スキーマ
+// Update order schema
 export const updateOrderSchema = z.object({
     source: z.object({
         index: z.number().int().min(0),
@@ -233,7 +233,7 @@ export const updateOrderSchema = z.object({
     }),
 });
 
-// Controller専用バリデーションスキーマ
+// Controller-specific validation schemas
 export const createQuestionValidationSchema = z.object({
     formID: z.number().int().positive(),
     sectionID: z.number().int().positive(),
@@ -249,10 +249,10 @@ export const updateQuestionValidationSchema = z.object({
 });
 ```
 
-### プロキシ関係スキーマ
+### Proxy Relationship Schema
 
 ```typescript
-// プロキシ関係バリデーション
+// Proxy relationship validation
 const createProxySchema = z.object({
     originalUserID: z.string().min(1),
     proxyUserID: z.string().min(1),
@@ -260,7 +260,7 @@ const createProxySchema = z.object({
     expiresAt: z.string().datetime(),
 });
 
-// カスタムバリデーション付き
+// With custom validation
 const createProxySchemaWithValidation = createProxySchema.refine(
     (data) => new Date(data.expiresAt) > new Date(data.startsAt),
     {
@@ -270,10 +270,10 @@ const createProxySchemaWithValidation = createProxySchema.refine(
 );
 ```
 
-### Workflowバリデーション
+### Workflow Validation
 
 ```typescript
-// Workflow開始スキーマ
+// Workflow start schema
 const startWorkflowSchema = z.object({
     workflowCode: z.string().min(1),
     entityType: z.enum(['Post', 'User', 'Comment']),
@@ -281,7 +281,7 @@ const startWorkflowSchema = z.object({
     dryRun: z.boolean().optional().default(false),
 });
 
-// Workflowステップ完了スキーマ
+// Workflow step completion schema
 const completeStepSchema = z.object({
     stepInstanceID: z.number().int().positive(),
     answers: z.record(z.string(), z.any()),
@@ -291,9 +291,9 @@ const completeStepSchema = z.object({
 
 ---
 
-## Routeレベルバリデーション
+## Route-Level Validation
 
-### パターン1: インラインバリデーション
+### Pattern 1: Inline Validation
 
 ```typescript
 // routes/proxyRoutes.ts
@@ -311,10 +311,10 @@ router.post(
     SSOMiddlewareClient.verifyLoginStatus,
     async (req, res) => {
         try {
-            // Routeレベルでバリデーション
+            // Validate at route level
             const validated = createProxySchema.parse(req.body);
 
-            // Serviceに委譲
+            // Delegate to service
             const proxy = await proxyService.createProxyRelationship(validated);
 
             res.status(201).json({ success: true, data: proxy });
@@ -334,20 +334,20 @@ router.post(
 );
 ```
 
-**利点:**
-- 高速でシンプル
-- シンプルなroutesに良い
+**Pros:**
+- Quick and simple
+- Good for simple routes
 
-**欠点:**
-- バリデーションロジックがroutesに存在
-- テストしにくい
-- 再利用不可
+**Cons:**
+- Validation logic in routes
+- Harder to test
+- Not reusable
 
 ---
 
-## Controllerバリデーション
+## Controller Validation
 
-### パターン2: Controllerバリデーション（推奨）
+### Pattern 2: Controller Validation (Recommended)
 
 ```typescript
 // validators/userSchemas.ts
@@ -389,16 +389,16 @@ export class UserController extends BaseController {
 
     async createUser(req: Request, res: Response): Promise<void> {
         try {
-            // 入力バリデーション
+            // Validate input
             const validated = createUserSchema.parse(req.body);
 
-            // Service呼び出し
+            // Call service
             const user = await this.userService.createUser(validated);
 
             this.handleSuccess(res, user, 'User created successfully', 201);
         } catch (error) {
             if (error instanceof z.ZodError) {
-                // 400ステータスでバリデーションエラー処理
+                // Handle validation errors with 400 status
                 return this.handleError(error, res, 'createUser', 400);
             }
             this.handleError(error, res, 'createUser');
@@ -407,7 +407,7 @@ export class UserController extends BaseController {
 
     async updateUser(req: Request, res: Response): Promise<void> {
         try {
-            // paramsとbodyのバリデーション
+            // Validate params and body
             const userId = req.params.id;
             const validated = updateUserSchema.parse(req.body);
 
@@ -424,68 +424,68 @@ export class UserController extends BaseController {
 }
 ```
 
-**利点:**
-- クリーンな分離
-- 再利用可能なスキーマ
-- テストしやすい
-- タイプセーフなDTOs
+**Pros:**
+- Clean separation
+- Reusable schemas
+- Easy to test
+- Type-safe DTOs
 
-**欠点:**
-- 管理するファイルが多い
+**Cons:**
+- More files to manage
 
 ---
 
-## DTOパターン
+## DTO Pattern
 
-### スキーマから型を推論
+### Type Inference from Schemas
 
 ```typescript
 import { z } from 'zod';
 
-// スキーマ定義
+// Define schema
 const createUserSchema = z.object({
     email: z.string().email(),
     name: z.string(),
     age: z.number().int().positive(),
 });
 
-// スキーマからTypeScript型を推論
+// Infer TypeScript type from schema
 type CreateUserDTO = z.infer<typeof createUserSchema>;
 
-// 以下と同等:
+// Equivalent to:
 // type CreateUserDTO = {
 //     email: string;
 //     name: string;
 //     age: number;
 // }
 
-// Serviceで使用
+// Use in service
 class UserService {
     async createUser(data: CreateUserDTO): Promise<User> {
-        // dataは完全に型付けされている！
-        console.log(data.email); // ✅ TypeScriptはこれが存在することを知っている
-        console.log(data.invalid); // ❌ TypeScriptエラー！
+        // data is fully typed!
+        console.log(data.email); // ✅ TypeScript knows this exists
+        console.log(data.invalid); // ❌ TypeScript error!
     }
 }
 ```
 
-### 入力 vs 出力型
+### Input vs Output Types
 
 ```typescript
-// 入力スキーマ（APIが受け取るもの）
+// Input schema (what API receives)
 const createUserInputSchema = z.object({
     email: z.string().email(),
     name: z.string(),
     password: z.string().min(8),
 });
 
-// 出力スキーマ（APIが返すもの）
+// Output schema (what API returns)
 const userOutputSchema = z.object({
     id: z.string().uuid(),
     email: z.string().email(),
     name: z.string(),
     createdAt: z.string().datetime(),
-    // passwordを除外！
+    // password excluded!
 });
 
 type CreateUserInput = z.infer<typeof createUserInputSchema>;
@@ -494,9 +494,9 @@ type UserOutput = z.infer<typeof userOutputSchema>;
 
 ---
 
-## エラー処理
+## Error Handling
 
-### Zodエラーフォーマット
+### Zod Error Format
 
 ```typescript
 try {
@@ -517,7 +517,7 @@ try {
 }
 ```
 
-### カスタムエラーメッセージ
+### Custom Error Messages
 
 ```typescript
 const userSchema = z.object({
@@ -527,10 +527,10 @@ const userSchema = z.object({
 });
 ```
 
-### フォーマットされたエラーレスポンス
+### Formatted Error Response
 
 ```typescript
-// Zodエラーをフォーマットするヘルパー関数
+// Helper function to format Zod errors
 function formatZodError(error: z.ZodError) {
     return {
         message: 'Validation failed',
@@ -542,7 +542,7 @@ function formatZodError(error: z.ZodError) {
     };
 }
 
-// Controllerで
+// In controller
 catch (error) {
     if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -552,7 +552,7 @@ catch (error) {
     }
 }
 
-// レスポンス例:
+// Response example:
 // {
 //   "success": false,
 //   "error": {
@@ -570,18 +570,18 @@ catch (error) {
 
 ---
 
-## 高度なパターン
+## Advanced Patterns
 
-### 条件付きバリデーション
+### Conditional Validation
 
 ```typescript
-// 他のフィールド値に基づくバリデーション
+// Validate based on other field values
 const submissionSchema = z.object({
     type: z.enum(['NEW', 'UPDATE']),
     postId: z.number().optional(),
 }).refine(
     (data) => {
-        // typeがUPDATEならpostIdは必須
+        // If type is UPDATE, postId is required
         if (data.type === 'UPDATE') {
             return data.postId !== undefined;
         }
@@ -594,26 +594,26 @@ const submissionSchema = z.object({
 );
 ```
 
-### データ変換
+### Transform Data
 
 ```typescript
-// 文字列を数値に変換
+// Transform strings to numbers
 const userSchema = z.object({
     name: z.string(),
     age: z.string().transform((val) => parseInt(val, 10)),
 });
 
-// 日付変換
+// Transform dates
 const eventSchema = z.object({
     name: z.string(),
     date: z.string().transform((str) => new Date(str)),
 });
 ```
 
-### データ前処理
+### Preprocess Data
 
 ```typescript
-// バリデーション前に文字列をtrim
+// Trim strings before validation
 const userSchema = z.object({
     email: z.preprocess(
         (val) => typeof val === 'string' ? val.trim().toLowerCase() : val,
@@ -626,13 +626,13 @@ const userSchema = z.object({
 });
 ```
 
-### ユニオン型
+### Union Types
 
 ```typescript
-// 複数の可能な型
+// Multiple possible types
 const idSchema = z.union([z.string(), z.number()]);
 
-// 判別可能なユニオン
+// Discriminated unions
 const notificationSchema = z.discriminatedUnion('type', [
     z.object({
         type: z.literal('email'),
@@ -647,10 +647,10 @@ const notificationSchema = z.discriminatedUnion('type', [
 ]);
 ```
 
-### 再帰スキーマ
+### Recursive Schemas
 
 ```typescript
-// ツリー状のネスト構造用
+// For nested structures like trees
 type Category = {
     id: number;
     name: string;
@@ -666,10 +666,10 @@ const categorySchema: z.ZodType<Category> = z.lazy(() =>
 );
 ```
 
-### スキーマ組み合わせ
+### Schema Composition
 
 ```typescript
-// 基本スキーマ
+// Base schemas
 const timestampsSchema = z.object({
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
@@ -680,27 +680,27 @@ const auditSchema = z.object({
     updatedBy: z.string(),
 });
 
-// スキーマの組み合わせ
+// Compose schemas
 const userSchema = z.object({
     id: z.string(),
     email: z.string().email(),
     name: z.string(),
 }).merge(timestampsSchema).merge(auditSchema);
 
-// スキーマの拡張
+// Extend schemas
 const adminUserSchema = userSchema.extend({
     adminLevel: z.number().int().min(1).max(5),
     permissions: z.array(z.string()),
 });
 
-// 特定フィールドの選択
+// Pick specific fields
 const publicUserSchema = userSchema.pick({
     id: true,
     name: true,
-    // emailを除外
+    // email excluded
 });
 
-// フィールドの除外
+// Omit fields
 const userWithoutTimestamps = userSchema.omit({
     createdAt: true,
     updatedAt: true,
@@ -710,7 +710,7 @@ const userWithoutTimestamps = userSchema.omit({
 ### Validation Middleware
 
 ```typescript
-// 再利用可能なvalidation middlewareを作成
+// Create reusable validation middleware
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 
@@ -734,11 +734,11 @@ export function validateBody<T extends z.ZodType>(schema: T) {
     };
 }
 
-// 使用法
+// Usage
 router.post('/users',
     validateBody(createUserSchema),
     async (req, res) => {
-        // req.bodyがバリデートされて型付けされている！
+        // req.body is validated and typed!
         const user = await userService.createUser(req.body);
         res.json({ success: true, data: user });
     }
@@ -747,78 +747,8 @@ router.post('/users',
 
 ---
 
-## RealWorld バリデーションルール
-
-### ユーザー登録
-
-| フィールド | ルール |
-|-----------|--------|
-| `username` | 必須、一意、1-20文字 |
-| `email` | 必須、一意、有効なメール形式 |
-| `password` | 必須、8文字以上 |
-
-```typescript
-const registerUserSchema = z.object({
-  user: z.object({
-    username: z.string().min(1).max(20),
-    email: z.string().email(),
-    password: z.string().min(8),
-  }),
-});
-```
-
-### 記事作成
-
-| フィールド | ルール |
-|-----------|--------|
-| `title` | 必須、1-100文字 |
-| `description` | 必須、1-200文字 |
-| `body` | 必須 |
-| `tagList` | 任意、配列 |
-
-```typescript
-const createArticleSchema = z.object({
-  article: z.object({
-    title: z.string().min(1).max(100),
-    description: z.string().min(1).max(200),
-    body: z.string().min(1),
-    tagList: z.array(z.string()).optional(),
-  }),
-});
-```
-
-### コメント作成
-
-| フィールド | ルール |
-|-----------|--------|
-| `body` | 必須、1-1000文字 |
-
-```typescript
-const createCommentSchema = z.object({
-  comment: z.object({
-    body: z.string().min(1).max(1000),
-  }),
-});
-```
-
-### ユーザー情報更新
-
-```typescript
-const updateUserSchema = z.object({
-  user: z.object({
-    email: z.string().email().optional(),
-    username: z.string().min(1).max(20).optional(),
-    password: z.string().min(8).optional(),
-    bio: z.string().optional(),
-    image: z.string().url().optional(),
-  }),
-});
-```
-
----
-
-**関連ファイル:**
-- [SKILL.md](SKILL.md) - メインガイド
-- [routing-and-controllers.md](routing-and-controllers.md) - Controllerでバリデーションを使用
-- [services-and-repositories.md](services-and-repositories.md) - ServicesでDTOsを使用
-- [async-and-errors.md](async-and-errors.md) - エラー処理パターン
+**Related Files:**
+- [SKILL.md](SKILL.md) - Main guide
+- [routing-and-controllers.md](routing-and-controllers.md) - Using validation in controllers
+- [services-and-repositories.md](services-and-repositories.md) - Using DTOs in services
+- [async-and-errors.md](async-and-errors.md) - Error handling patterns

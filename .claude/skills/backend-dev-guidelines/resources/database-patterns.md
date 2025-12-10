@@ -1,227 +1,56 @@
-# データベースパターン - Prisma モベストプラクティス
+# Database Patterns - Prisma Best Practices
 
-バックエンドサービスでPrismaを使用したデータベースアクセスパターンの完全なガイドです。
+Complete guide to database access patterns using Prisma in backend microservices.
 
-## RealWorld データモデル
+## Table of Contents
 
-### エンティティ関係図
-
-```mermaid
-erDiagram
-    User {
-        string id PK
-        string email UK
-        string username UK
-        string password
-        string bio
-        string image
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    Article {
-        string id PK
-        string slug UK
-        string title
-        string description
-        string body
-        string authorId FK
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    Tag {
-        string id PK
-        string name UK
-    }
-
-    ArticleTag {
-        string articleId FK
-        string tagId FK
-    }
-
-    Comment {
-        string id PK
-        string body
-        string articleId FK
-        string authorId FK
-        datetime createdAt
-        datetime updatedAt
-    }
-
-    Follow {
-        string followerId FK
-        string followingId FK
-    }
-
-    Favorite {
-        string userId FK
-        string articleId FK
-    }
-
-    User ||--o{ Article : "writes"
-    User ||--o{ Comment : "writes"
-    User ||--o{ Favorite : "favorites"
-    User ||--o{ Follow : "follower"
-    User ||--o{ Follow : "following"
-    Article ||--o{ Comment : "has"
-    Article ||--o{ ArticleTag : "has"
-    Article ||--o{ Favorite : "favorited by"
-    Tag ||--o{ ArticleTag : "tagged"
-```
-
-## 目次
-
-- [PrismaService使用法](#prismaservice使用法)
-- [Prismaスキーマ](#prismaスキーマ)
-- [Repositoryパターン](#repositoryパターン)
-- [トランザクションパターン](#トランザクションパターン)
-- [クエリ最適化](#クエリ最適化)
-- [N+1クエリ防止](#n1クエリ防止)
-- [エラー処理](#エラー処理)
+- [PrismaService Usage](#prismaservice-usage)
+- [Repository Pattern](#repository-pattern)
+- [Transaction Patterns](#transaction-patterns)
+- [Query Optimization](#query-optimization)
+- [N+1 Query Prevention](#n1-query-prevention)
+- [Error Handling](#error-handling)
 
 ---
 
-## PrismaService使用法
+## PrismaService Usage
 
-### 基本パターン
+### Basic Pattern
 
 ```typescript
-import { prisma } from '../lib/prisma';
+import { PrismaService } from '@project-lifecycle-portal/database';
 
-// Prismaクライアントを使用
-const users = await prisma.user.findMany();
+// Always use PrismaService.main
+const users = await PrismaService.main.user.findMany();
 ```
 
-### 初期化
+### Check Availability
 
 ```typescript
-// lib/prisma.ts
-import { PrismaClient } from '@prisma/client';
+if (!PrismaService.isAvailable) {
+    throw new Error('Prisma client not initialized');
+}
 
-export const prisma = new PrismaClient();
+const user = await PrismaService.main.user.findUnique({ where: { id } });
 ```
 
 ---
 
-## Prismaスキーマ
+## Repository Pattern
 
-```prisma
-// prisma/schema.prisma
+### Why Use Repositories
 
-generator client {
-  provider = "prisma-client-js"
-}
+✅ **Use repositories when:**
+- Complex queries with joins/includes
+- Query used in multiple places
+- Need caching layer
+- Want to mock for testing
 
-datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
-}
+❌ **Skip repositories for:**
+- Simple one-off queries
+- Prototyping (can refactor later)
 
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  username  String   @unique
-  password  String
-  bio       String?
-  image     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  articles   Article[]
-  comments   Comment[]
-  favorites  Favorite[]
-  followers  Follow[]   @relation("Following")
-  following  Follow[]   @relation("Follower")
-}
-
-model Article {
-  id          String   @id @default(uuid())
-  slug        String   @unique
-  title       String
-  description String
-  body        String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  // Relations
-  author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  String
-  tags      ArticleTag[]
-  comments  Comment[]
-  favorites Favorite[]
-
-  @@index([authorId])
-  @@index([createdAt])
-}
-
-model Tag {
-  id       String       @id @default(uuid())
-  name     String       @unique
-  articles ArticleTag[]
-}
-
-model ArticleTag {
-  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  articleId String
-  tag       Tag     @relation(fields: [tagId], references: [id], onDelete: Cascade)
-  tagId     String
-
-  @@id([articleId, tagId])
-}
-
-model Comment {
-  id        String   @id @default(uuid())
-  body      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  // Relations
-  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  articleId String
-  author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  authorId  String
-
-  @@index([articleId])
-}
-
-model Favorite {
-  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId    String
-  article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
-  articleId String
-
-  @@id([userId, articleId])
-}
-
-model Follow {
-  follower    User   @relation("Follower", fields: [followerId], references: [id], onDelete: Cascade)
-  followerId  String
-  following   User   @relation("Following", fields: [followingId], references: [id], onDelete: Cascade)
-  followingId String
-
-  @@id([followerId, followingId])
-}
-```
-
----
-
-## Repositoryパターン
-
-### Repositoryを使用すべき場合
-
-✅ **次の場合repositoriesを使用:**
-- JOINs/includeがある複雑なクエリ
-- 複数の場所で使用されるクエリ
-- キャッシングレイヤーが必要な場合
-- テストのためにモックしたい場合
-
-❌ **次の場合repositoriesを省略:**
-- シンプルな一回限りのクエリ
-- プロトタイピング（後でリファクタリング可能）
-
-### Repositoryテンプレート
+### Repository Template
 
 ```typescript
 export class UserRepository {
@@ -247,9 +76,9 @@ export class UserRepository {
 
 ---
 
-## トランザクションパターン
+## Transaction Patterns
 
-### 単純トランザクション
+### Simple Transaction
 
 ```typescript
 const result = await PrismaService.main.$transaction(async (tx) => {
@@ -259,7 +88,7 @@ const result = await PrismaService.main.$transaction(async (tx) => {
 });
 ```
 
-### インタラクティブトランザクション
+### Interactive Transaction
 
 ```typescript
 const result = await PrismaService.main.$transaction(
@@ -281,15 +110,15 @@ const result = await PrismaService.main.$transaction(
 
 ---
 
-## クエリ最適化
+## Query Optimization
 
-### selectでフィールドを制限
+### Use select to Limit Fields
 
 ```typescript
-// ❌ すべてのフィールドを取得
+// ❌ Fetches all fields
 const users = await PrismaService.main.user.findMany();
 
-// ✅ 必要なフィールドのみ取得
+// ✅ Only fetch needed fields
 const users = await PrismaService.main.user.findMany({
     select: {
         id: true,
@@ -299,10 +128,10 @@ const users = await PrismaService.main.user.findMany({
 });
 ```
 
-### includeを慎重に使用
+### Use include Carefully
 
 ```typescript
-// ❌ 過度なincludes
+// ❌ Excessive includes
 const user = await PrismaService.main.user.findUnique({
     where: { id },
     include: {
@@ -312,7 +141,7 @@ const user = await PrismaService.main.user.findUnique({
     },
 });
 
-// ✅ 必要なものだけinclude
+// ✅ Only include what you need
 const user = await PrismaService.main.user.findUnique({
     where: { id },
     include: { profile: true },
@@ -321,31 +150,31 @@ const user = await PrismaService.main.user.findUnique({
 
 ---
 
-## N+1クエリ防止
+## N+1 Query Prevention
 
-### 問題: N+1クエリ
+### Problem: N+1 Queries
 
 ```typescript
-// ❌ N+1クエリ問題
-const users = await PrismaService.main.user.findMany(); // 1つのクエリ
+// ❌ N+1 Query Problem
+const users = await PrismaService.main.user.findMany(); // 1 query
 
 for (const user of users) {
-    // Nクエリ（ユーザーごとに1つ）
+    // N queries (one per user)
     const profile = await PrismaService.main.userProfile.findUnique({
         where: { userId: user.id },
     });
 }
 ```
 
-### 解決策: includeまたはバッチングを使用
+### Solution: Use include or Batching
 
 ```typescript
-// ✅ includeで単一クエリ
+// ✅ Single query with include
 const users = await PrismaService.main.user.findMany({
     include: { profile: true },
 });
 
-// ✅ またはバッチクエリ
+// ✅ Or batch query
 const userIds = users.map(u => u.id);
 const profiles = await PrismaService.main.userProfile.findMany({
     where: { userId: { in: userIds } },
@@ -354,9 +183,9 @@ const profiles = await PrismaService.main.userProfile.findMany({
 
 ---
 
-## エラー処理
+## Error Handling
 
-### Prismaエラータイプ
+### Prisma Error Types
 
 ```typescript
 import { Prisma } from '@prisma/client';
@@ -365,23 +194,23 @@ try {
     await PrismaService.main.user.create({ data });
 } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        // ユニーク制約違反
+        // Unique constraint violation
         if (error.code === 'P2002') {
             throw new ConflictError('Email already exists');
         }
 
-        // 外部キー制約
+        // Foreign key constraint
         if (error.code === 'P2003') {
             throw new ValidationError('Invalid reference');
         }
 
-        // レコード見つからない
+        // Record not found
         if (error.code === 'P2025') {
             throw new NotFoundError('Record not found');
         }
     }
 
-    // 不明なエラー
+    // Unknown error
     Sentry.captureException(error);
     throw error;
 }
@@ -389,7 +218,7 @@ try {
 
 ---
 
-**関連ファイル:**
+**Related Files:**
 - [SKILL.md](SKILL.md)
 - [services-and-repositories.md](services-and-repositories.md)
 - [async-and-errors.md](async-and-errors.md)

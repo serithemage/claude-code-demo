@@ -1,28 +1,28 @@
-# トリガータイプ - 包括的ガイド
+# Trigger Types - Complete Guide
 
-Claude Codeのskill自動活性化システムでskillトリガーを設定するための包括的な参照ドキュメントです。
+Complete reference for configuring skill triggers in Claude Code's skill auto-activation system.
 
-## 目次
+## Table of Contents
 
-- [キーワードトリガー（明示的）](#キーワードトリガー明示的)
-- [Intentパターントリガー（暗黙的）](#intentパターントリガー暗黙的)
-- [ファイルパストリガー](#ファイルパストリガー)
-- [コンテンツパターントリガー](#コンテンツパターントリガー)
-- [ベストプラクティスサマリー](#ベストプラクティスサマリー)
+- [Keyword Triggers (Explicit)](#keyword-triggers-explicit)
+- [Intent Pattern Triggers (Implicit)](#intent-pattern-triggers-implicit)
+- [File Path Triggers](#file-path-triggers)
+- [Content Pattern Triggers](#content-pattern-triggers)
+- [Best Practices Summary](#best-practices-summary)
 
 ---
 
-## キーワードトリガー（明示的）
+## Keyword Triggers (Explicit)
 
-### 動作方式
+### How It Works
 
-ユーザープロンプトで大文字小文字を区別しない部分文字列マッチングを実行します。
+Case-insensitive substring matching in user's prompt.
 
-### 用途
+### Use For
 
-ユーザーがトピックを明示的に言及するトピックベースの活性化に使用します。
+Topic-based activation where user explicitly mentions the subject.
 
-### 設定
+### Configuration
 
 ```json
 "promptTriggers": {
@@ -30,32 +30,32 @@ Claude Codeのskill自動活性化システムでskillトリガーを設定す�
 }
 ```
 
-### 例
+### Example
 
-- ユーザープロンプト: "**layout**システムはどのように動作しますか？"
-- マッチ: "layout"キーワード
-- 活性化: `project-catalog-developer`
+- User prompt: "how does the **layout** system work?"
+- Matches: "layout" keyword
+- Activates: `project-catalog-developer`
 
-### ベストプラクティス
+### Best Practices
 
-- 具体的で曖昧でない用語を使用
-- 一般的なバリエーションを含める（"layout", "layout system", "grid layout"）
-- あまりにも一般的な単語を避ける（"system", "work", "create"）
-- 実際のプロンプトでテスト
+- Use specific, unambiguous terms
+- Include common variations ("layout", "layout system", "grid layout")
+- Avoid overly generic words ("system", "work", "create")
+- Test with real prompts
 
 ---
 
-## Intentパターントリガー（暗黙的）
+## Intent Pattern Triggers (Implicit)
 
-### 動作方式
+### How It Works
 
-ユーザーがトピックを明示的に言及しなくても意図を検出するためのregexパターンマッチングです。
+Regex pattern matching to detect user's intent even when they don't mention the topic explicitly.
 
-### 用途
+### Use For
 
-ユーザーが特定のトピックではなく望む作業を説明する動作ベースの活性化に使用します。
+Action-based activation where user describes what they want to do rather than the specific topic.
 
-### 設定
+### Configuration
 
 ```json
 "promptTriggers": {
@@ -66,59 +66,59 @@ Claude Codeのskill自動活性化システムでskillトリガーを設定す�
 }
 ```
 
-### 例
+### Examples
 
-**データベース作業:**
-- ユーザープロンプト: "ユーザートラッキング機能を追加して"
-- マッチ: `(add).*?(feature)`
-- 活性化: `database-verification`, `error-tracking`
+**Database Work:**
+- User prompt: "add user tracking feature"
+- Matches: `(add).*?(feature)`
+- Activates: `database-verification`, `error-tracking`
 
-**コンポーネント作成:**
-- ユーザープロンプト: "ダッシュボードウィジェットを作成して"
-- マッチ: `(create).*?(component)`（パターンにcomponentがある場合）
-- 活性化: `frontend-dev-guidelines`
+**Component Creation:**
+- User prompt: "create a dashboard widget"
+- Matches: `(create).*?(component)` (if component in pattern)
+- Activates: `frontend-dev-guidelines`
 
-### ベストプラクティス
+### Best Practices
 
-- 一般的な動作動詞を捕捉: `(create|add|modify|build|implement)`
-- ドメイン固有の名詞を含める: `(feature|endpoint|component|workflow)`
-- 非貪欲マッチングを使用: `.*`の代わりに`.*?`
-- regexテスターでパターンを徹底的にテスト（https://regex101.com/）
-- パターンを広すぎないように（誤検知発生）
-- パターンを具体的すぎないように（検出漏れ発生）
+- Capture common action verbs: `(create|add|modify|build|implement)`
+- Include domain-specific nouns: `(feature|endpoint|component|workflow)`
+- Use non-greedy matching: `.*?` instead of `.*`
+- Test patterns thoroughly with regex tester (https://regex101.com/)
+- Don't make patterns too broad (causes false positives)
+- Don't make patterns too specific (causes false negatives)
 
-### 一般的なパターン例
+### Common Pattern Examples
 
 ```regex
-# データベース作業
+# Database Work
 (add|create|implement).*?(user|login|auth|feature)
 
-# 説明リクエスト
+# Explanations
 (how does|explain|what is|describe).*?
 
-# フロントエンド作業
+# Frontend Work
 (create|add|make|build).*?(component|UI|page|modal|dialog)
 
-# エラー処理
+# Error Handling
 (fix|handle|catch|debug).*?(error|exception|bug)
 
-# ワークフロー作業
+# Workflow Operations
 (create|add|modify).*?(workflow|step|branch|condition)
 ```
 
 ---
 
-## ファイルパストリガー
+## File Path Triggers
 
-### 動作方式
+### How It Works
 
-編集中のファイルパスに対してglobパターンマッチングを実行します。
+Glob pattern matching against the file path being edited.
 
-### 用途
+### Use For
 
-プロジェクト内のファイル位置に基づくドメイン/領域別の活性化に使用します。
+Domain/area-specific activation based on file location in the project.
 
-### 設定
+### Configuration
 
 ```json
 "fileTriggers": {
@@ -133,70 +133,70 @@ Claude Codeのskill自動活性化システムでskillトリガーを設定す�
 }
 ```
 
-### Globパターン構文
+### Glob Pattern Syntax
 
-- `**` = 複数のディレクトリ（0個を含む）
-- `*` = ディレクトリ名内の任意の文字
-- 例:
-  - `frontend/src/**/*.tsx` = frontend/srcとサブディレクトリのすべての.tsxファイル
-  - `**/schema.prisma` = プロジェクトのどこでもschema.prisma
-  - `form/src/**/*.ts` = form/srcのサブディレクトリのすべての.tsファイル
+- `**` = Any number of directories (including zero)
+- `*` = Any characters within a directory name
+- Examples:
+  - `frontend/src/**/*.tsx` = All .tsx files in frontend/src and subdirs
+  - `**/schema.prisma` = schema.prisma anywhere in project
+  - `form/src/**/*.ts` = All .ts files in form/src subdirs
 
-### 例
+### Example
 
-- 編集中のファイル: `frontend/src/components/Dashboard.tsx`
-- マッチ: `frontend/src/**/*.tsx`
-- 活性化: `frontend-dev-guidelines`
+- File being edited: `frontend/src/components/Dashboard.tsx`
+- Matches: `frontend/src/**/*.tsx`
+- Activates: `frontend-dev-guidelines`
 
-### ベストプラクティス
+### Best Practices
 
-- 誤検知を防ぐために具体的に記述
-- テストファイルの除外を使用: `**/*.test.ts`
-- サブディレクトリ構造を考慮
-- 実際のファイルパスでパターンをテスト
-- 可能な場合はより狭いパターンを使用: `form/**`の代わりに`form/src/services/**`
+- Be specific to avoid false positives
+- Use exclusions for test files: `**/*.test.ts`
+- Consider subdirectory structure
+- Test patterns with actual file paths
+- Use narrower patterns when possible: `form/src/services/**` not `form/**`
 
-### 一般的なパスパターン
+### Common Path Patterns
 
 ```glob
-# フロントエンド
-frontend/src/**/*.tsx        # すべてのReactコンポーネント
-frontend/src/**/*.ts         # すべてのTypeScriptファイル
-frontend/src/components/**   # componentsディレクトリのみ
+# Frontend
+frontend/src/**/*.tsx        # All React components
+frontend/src/**/*.ts         # All TypeScript files
+frontend/src/components/**   # Only components directory
 
-# バックエンドサービス
-form/src/**/*.ts            # Formサービス
-email/src/**/*.ts           # Emailサービス
-users/src/**/*.ts           # Usersサービス
+# Backend Services
+form/src/**/*.ts            # Form service
+email/src/**/*.ts           # Email service
+users/src/**/*.ts           # Users service
 
-# データベース
-**/schema.prisma            # Prismaスキーマ（どこでも）
-**/migrations/**/*.sql      # マイグレーションファイル
-database/src/**/*.ts        # データベーススクリプト
+# Database
+**/schema.prisma            # Prisma schema (anywhere)
+**/migrations/**/*.sql      # Migration files
+database/src/**/*.ts        # Database scripts
 
-# ワークフロー
-form/src/workflow/**/*.ts              # ワークフローエンジン
-form/src/workflow-definitions/**/*.json # ワークフロー定義
+# Workflows
+form/src/workflow/**/*.ts              # Workflow engine
+form/src/workflow-definitions/**/*.json # Workflow definitions
 
-# テスト除外
-**/*.test.ts                # TypeScriptテスト
-**/*.test.tsx               # Reactコンポーネントテスト
-**/*.spec.ts                # Specファイル
+# Test Exclusions
+**/*.test.ts                # TypeScript tests
+**/*.test.tsx               # React component tests
+**/*.spec.ts                # Spec files
 ```
 
 ---
 
-## コンテンツパターントリガー
+## Content Pattern Triggers
 
-### 動作方式
+### How It Works
 
-ファイルの実際の内容（ファイルの中にあるもの）に対してregexパターンマッチングを実行します。
+Regex pattern matching against the file's actual content (what's inside the file).
 
-### 用途
+### Use For
 
-コードがimportまたは使用しているもの（Prisma、コントローラー、特定のライブラリ）に基づく技術特化の活性化に使用します。
+Technology-specific activation based on what the code imports or uses (Prisma, controllers, specific libraries).
 
-### 設定
+### Configuration
 
 ```json
 "fileTriggers": {
@@ -209,84 +209,84 @@ form/src/workflow-definitions/**/*.json # ワークフロー定義
 }
 ```
 
-### 例
+### Examples
 
-**Prisma検出:**
-- ファイル内容: `import { PrismaService } from '@project/database'`
-- マッチ: `import.*[Pp]risma`
-- 活性化: `database-verification`
+**Prisma Detection:**
+- File contains: `import { PrismaService } from '@project/database'`
+- Matches: `import.*[Pp]risma`
+- Activates: `database-verification`
 
-**Controller検出:**
-- ファイル内容: `export class UserController {`
-- マッチ: `export class.*Controller`
-- 活性化: `error-tracking`
+**Controller Detection:**
+- File contains: `export class UserController {`
+- Matches: `export class.*Controller`
+- Activates: `error-tracking`
 
-### ベストプラクティス
+### Best Practices
 
-- importマッチング: `import.*[Pp]risma`（[Pp]で大文字小文字を区別しない）
-- 特殊regex文字をエスケープ: `.findMany(`の代わりに`\\.findMany\\(`
-- パターンは大文字小文字を区別しないフラグを使用
-- 実際のファイル内容でテスト
-- 誤ったマッチングを避けるために十分に具体的に記述
+- Match imports: `import.*[Pp]risma` (case-insensitive with [Pp])
+- Escape special regex chars: `\\.findMany\\(` not `.findMany(`
+- Patterns use case-insensitive flag
+- Test against real file content
+- Make patterns specific enough to avoid false matches
 
-### 一般的なコンテンツパターン
+### Common Content Patterns
 
 ```regex
-# Prisma/データベース
-import.*[Pp]risma                # Prisma import
-PrismaService                    # PrismaService使用
+# Prisma/Database
+import.*[Pp]risma                # Prisma imports
+PrismaService                    # PrismaService usage
 prisma\.                         # prisma.something
-\.findMany\(                     # Prismaクエリメソッド
+\.findMany\(                     # Prisma query methods
 \.create\(
 \.update\(
 \.delete\(
 
-# コントローラー/ルート
-export class.*Controller         # Controllerクラス
+# Controllers/Routes
+export class.*Controller         # Controller classes
 router\.                         # Express router
-app\.(get|post|put|delete|patch) # Express appルート
+app\.(get|post|put|delete|patch) # Express app routes
 
-# エラー処理
-try\s*\{                        # Tryブロック
-catch\s*\(                      # Catchブロック
-throw new                        # Throw文
+# Error Handling
+try\s*\{                        # Try blocks
+catch\s*\(                      # Catch blocks
+throw new                        # Throw statements
 
-# React/コンポーネント
-export.*React\.FC               # React関数コンポーネント
-export default function.*       # デフォルト関数export
+# React/Components
+export.*React\.FC               # React functional components
+export default function.*       # Default function exports
 useState|useEffect              # React hooks
 ```
 
 ---
 
-## ベストプラクティスサマリー
+## Best Practices Summary
 
-### すべきこと:
-✅ 具体的で曖昧でないキーワードを使用
-✅ すべてのパターンを実際の例でテスト
-✅ 一般的なバリエーションを含める
-✅ 非貪欲regex使用: `.*?`
-✅ コンテンツパターンで特殊文字をエスケープ
-✅ テストファイルの除外を追加
-✅ ファイルパスパターンを狭く具体的に記述
+### DO:
+✅ Use specific, unambiguous keywords
+✅ Test all patterns with real examples
+✅ Include common variations
+✅ Use non-greedy regex: `.*?`
+✅ Escape special characters in content patterns
+✅ Add exclusions for test files
+✅ Make file path patterns narrow and specific
 
-### すべきでないこと:
-❌ あまりにも一般的なキーワードを使用（"system", "work"）
-❌ Intentパターンを広すぎるように作成（誤検知）
-❌ パターンを具体的すぎるように作成（検出漏れ）
-❌ regexテスターでテストしない（https://regex101.com/）
-❌ `.*?`の代わりに貪欲regex`.*`を使用
-❌ ファイルパスで広すぎるマッチング
+### DON'T:
+❌ Use overly generic keywords ("system", "work")
+❌ Make intent patterns too broad (false positives)
+❌ Make patterns too specific (false negatives)
+❌ Forget to test with regex tester (https://regex101.com/)
+❌ Use greedy regex: `.*` instead of `.*?`
+❌ Match too broadly in file paths
 
-### トリガーのテスト
+### Testing Your Triggers
 
-**キーワード/intentトリガーのテスト:**
+**Test keyword/intent triggers:**
 ```bash
-echo '{"session_id":"test","prompt":"テストプロンプト"}' | \
+echo '{"session_id":"test","prompt":"your test prompt"}' | \
   npx tsx .claude/hooks/skill-activation-prompt.ts
 ```
 
-**ファイルパス/コンテンツトリガーのテスト:**
+**Test file path/content triggers:**
 ```bash
 cat <<'EOF' | npx tsx .claude/hooks/skill-verification-guard.ts
 {
@@ -299,7 +299,7 @@ EOF
 
 ---
 
-**関連ファイル:**
-- [SKILL.md](SKILL.md) - メインskillガイド
-- [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - 完全skill-rules.jsonスキーマ
-- [PATTERNS_LIBRARY.md](PATTERNS_LIBRARY.md) - すぐに使えるパターンライブラリ
+**Related Files:**
+- [SKILL.md](SKILL.md) - Main skill guide
+- [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - Complete skill-rules.json schema
+- [PATTERNS_LIBRARY.md](PATTERNS_LIBRARY.md) - Ready-to-use pattern library

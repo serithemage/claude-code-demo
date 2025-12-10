@@ -1,21 +1,21 @@
-# 完全な例 - 実際に動作するコード
+# Complete Examples - Full Working Code
 
-すべての実装パターンを示す実際の例です。
+Real-world examples showing complete implementation patterns.
 
-## 目次
+## Table of Contents
 
-- [完全なController例](#完全なcontroller例)
-- [DIを含む完全なService](#diを含む完全なservice)
-- [完全なRouteファイル](#完全なrouteファイル)
-- [完全なRepository](#完全なrepository)
-- [リファクタリング例: 悪いコードから良いコードへ](#リファクタリング例-悪いコードから良いコードへ)
-- [End-to-End機能例](#end-to-end機能例)
+- [Complete Controller Example](#complete-controller-example)
+- [Complete Service with DI](#complete-service-with-di)
+- [Complete Route File](#complete-route-file)
+- [Complete Repository](#complete-repository)
+- [Refactoring Example: Bad to Good](#refactoring-example-bad-to-good)
+- [End-to-End Feature Example](#end-to-end-feature-example)
 
 ---
 
-## 完全なController例
+## Complete Controller Example
 
-### UserController（すべてのベストプラクティス適用）
+### UserController (Following All Best Practices)
 
 ```typescript
 // controllers/UserController.ts
@@ -71,10 +71,10 @@ export class UserController extends BaseController {
 
     async createUser(req: Request, res: Response): Promise<void> {
         try {
-            // Zodで入力バリデーション
+            // Validate input with Zod
             const validated = createUserSchema.parse(req.body);
 
-            // パフォーマンス追跡
+            // Track performance
             const user = await this.withTransaction(
                 'user.create',
                 'db.mutation',
@@ -121,7 +121,7 @@ export class UserController extends BaseController {
 
 ---
 
-## DIを含む完全なService
+## Complete Service with DI
 
 ### UserService
 
@@ -147,18 +147,18 @@ export class UserService {
     }
 
     async create(data: CreateUserDTO): Promise<User> {
-        // ビジネスルール: 年齢検証
+        // Business rule: validate age
         if (data.age < 18) {
             throw new ValidationError('User must be 18 or older');
         }
 
-        // ビジネスルール: メールの一意性確認
+        // Business rule: check email uniqueness
         const existing = await this.userRepository.findByEmail(data.email);
         if (existing) {
             throw new ConflictError('Email already in use');
         }
 
-        // プロファイルとともにユーザー作成
+        // Create user with profile
         return await this.userRepository.create({
             email: data.email,
             profile: {
@@ -172,13 +172,13 @@ export class UserService {
     }
 
     async update(id: string, data: UpdateUserDTO): Promise<User> {
-        // 存在確認
+        // Check exists
         const existing = await this.userRepository.findById(id);
         if (!existing) {
             throw new NotFoundError('User not found');
         }
 
-        // ビジネスルール: 変更時のメール一意性
+        // Business rule: email uniqueness if changing
         if (data.email && data.email !== existing.email) {
             const emailTaken = await this.userRepository.findByEmail(data.email);
             if (emailTaken) {
@@ -202,7 +202,7 @@ export class UserService {
 
 ---
 
-## 完全なRouteファイル
+## Complete Route File
 
 ### userRoutes.ts
 
@@ -216,35 +216,35 @@ import { auditMiddleware } from '../middleware/auditMiddleware';
 const router = Router();
 const controller = new UserController();
 
-// GET /users - すべてのユーザーをリスト
+// GET /users - List all users
 router.get('/',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
     async (req, res) => controller.listUsers(req, res)
 );
 
-// GET /users/:id - 単一ユーザーを取得
+// GET /users/:id - Get single user
 router.get('/:id',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
     async (req, res) => controller.getUser(req, res)
 );
 
-// POST /users - ユーザーを作成
+// POST /users - Create user
 router.post('/',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
     async (req, res) => controller.createUser(req, res)
 );
 
-// PUT /users/:id - ユーザーを更新
+// PUT /users/:id - Update user
 router.put('/:id',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
     async (req, res) => controller.updateUser(req, res)
 );
 
-// DELETE /users/:id - ユーザーを削除
+// DELETE /users/:id - Delete user
 router.delete('/:id',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
@@ -256,7 +256,7 @@ export default router;
 
 ---
 
-## 完全なRepository
+## Complete Repository
 
 ### UserRepository
 
@@ -318,38 +318,38 @@ export class UserRepository {
 
 ---
 
-## リファクタリング例: 悪いコードから良いコードへ
+## Refactoring Example: Bad to Good
 
-### 以前: Routesにビジネスロジック ❌
+### BEFORE: Business Logic in Routes ❌
 
 ```typescript
-// routes/postRoutes.ts（悪い例 - 200行以上）
+// routes/postRoutes.ts (BAD - 200+ lines)
 router.post('/posts', async (req, res) => {
     try {
         const username = res.locals.claims.preferred_username;
         const responses = req.body.responses;
         const stepInstanceId = req.body.stepInstanceId;
 
-        // ❌ Routeで権限確認
+        // ❌ Permission check in route
         const userId = await userProfileService.getProfileByEmail(username).then(p => p.id);
         const canComplete = await permissionService.canCompleteStep(userId, stepInstanceId);
         if (!canComplete) {
             return res.status(403).json({ error: 'No permission' });
         }
 
-        // ❌ Routeでビジネスロジック
+        // ❌ Business logic in route
         const post = await postRepository.create({
             title: req.body.title,
             content: req.body.content,
             authorId: userId
         });
 
-        // ❌ さらなるビジネスロジック...
+        // ❌ More business logic...
         if (res.locals.isImpersonating) {
             impersonationContextStore.storeContext(...);
         }
 
-        // ... 100行以上
+        // ... 100+ more lines
 
         res.json({ success: true, data: result });
     } catch (e) {
@@ -358,9 +358,9 @@ router.post('/posts', async (req, res) => {
 });
 ```
 
-### 以後: クリーンな分離 ✅
+### AFTER: Clean Separation ✅
 
-**1. クリーンなRoute:**
+**1. Clean Route:**
 ```typescript
 // routes/postRoutes.ts
 import { PostController } from '../controllers/PostController';
@@ -368,7 +368,7 @@ import { PostController } from '../controllers/PostController';
 const router = Router();
 const controller = new PostController();
 
-// ✅ クリーン: 合計8行！
+// ✅ CLEAN: 8 lines total!
 router.post('/',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
@@ -416,7 +416,7 @@ export class PostService {
         data: CreatePostDTO,
         userId: string
     ): Promise<SubmissionResult> {
-        // 権限確認
+        // Permission check
         const canComplete = await permissionService.canCompleteStep(
             userId,
             data.stepInstanceId
@@ -426,7 +426,7 @@ export class PostService {
             throw new ForbiddenError('No permission to complete step');
         }
 
-        // Workflow実行
+        // Execute workflow
         const engine = await createWorkflowEngine();
         const command = new CompleteStepCommand(
             data.stepInstanceId,
@@ -435,7 +435,7 @@ export class PostService {
         );
         const events = await engine.executeCommand(command);
 
-        // Impersonation処理
+        // Handle impersonation
         if (context.isImpersonating) {
             await this.handleImpersonation(data.stepInstanceId, context);
         }
@@ -452,17 +452,17 @@ export class PostService {
 }
 ```
 
-**結果:**
-- Route: 8行（200行以上だった）
-- Controller: 25行
-- Service: 40行
-- **テスト可能、保守可能、再利用可能！**
+**Result:**
+- Route: 8 lines (was 200+)
+- Controller: 25 lines
+- Service: 40 lines
+- **Testable, maintainable, reusable!**
 
 ---
 
-## End-to-End機能例
+## End-to-End Feature Example
 
-### 完全なユーザー管理機能
+### Complete User Management Feature
 
 **1. Types:**
 ```typescript
@@ -594,7 +594,7 @@ router.post('/',
 export default router;
 ```
 
-**7. app.tsに登録:**
+**7. Register in app.ts:**
 ```typescript
 // app.ts
 import userRoutes from './routes/userRoutes';
@@ -602,36 +602,36 @@ import userRoutes from './routes/userRoutes';
 app.use('/api/users', userRoutes);
 ```
 
-**全体のリクエストフロー:**
+**Complete Request Flow:**
 ```
 POST /api/users
   ↓
-userRoutesが/にマッチ
+userRoutes matches /
   ↓
-SSOMiddlewareが認証
+SSOMiddleware authenticates
   ↓
-controller.createUserを呼び出し
+controller.createUser called
   ↓
-Zodでバリデーション
+Validates with Zod
   ↓
-userService.createを呼び出し
+userService.create called
   ↓
-ビジネスルール確認
+Checks business rules
   ↓
-userRepository.createを呼び出し
+userRepository.create called
   ↓
-Prismaがユーザー作成
+Prisma creates user
   ↓
-逆順でレスポンス返却
+Returns up the chain
   ↓
-Controllerがレスポンスをフォーマット
+Controller formats response
   ↓
-200/201をクライアントに送信
+200/201 sent to client
 ```
 
 ---
 
-**関連ファイル:**
+**Related Files:**
 - [SKILL.md](SKILL.md)
 - [routing-and-controllers.md](routing-and-controllers.md)
 - [services-and-repositories.md](services-and-repositories.md)

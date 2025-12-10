@@ -1,307 +1,346 @@
-# アーキテクチャ概要 - バックエンドサービス
+# Architecture Overview - Backend Services
 
-バックエンドサービスで使用されるLayered Architectureパターンの完全なガイドです。
+Complete guide to the layered architecture pattern used in backend microservices.
 
-## プロジェクト概要
+## Table of Contents
 
-**RealWorld (Conduit)** - Medium.comクローンのソーシャルブログプラットフォーム
-
-| 技術 | バージョン | 用途 |
-|------|-----------|------|
-| **Node.js** | 20.x LTS | JavaScript ランタイム |
-| **Express** | 4.x | Web フレームワーク |
-| **TypeScript** | 5.x | 型安全性 |
-| **Prisma** | 5.x | ORM |
-| **SQLite** | 3.x | データベース |
-
-## 目次
-
-- [Layered Architectureパターン](#layered-architectureパターン)
-- [リクエストライフサイクル](#リクエストライフサイクル)
-- [ディレクトリ構造](#ディレクトリ構造)
-- [モジュール構成](#モジュール構成)
-- [関心の分離](#関心の分離)
+- [Layered Architecture Pattern](#layered-architecture-pattern)
+- [Request Lifecycle](#request-lifecycle)
+- [Service Comparison](#service-comparison)
+- [Directory Structure Rationale](#directory-structure-rationale)
+- [Module Organization](#module-organization)
+- [Separation of Concerns](#separation-of-concerns)
 
 ---
 
-## Layered Architectureパターン
+## Layered Architecture Pattern
 
-### 4つのレイヤー
+### The Four Layers
 
-```mermaid
-flowchart TB
-    Request[HTTP リクエスト]
-
-    subgraph Routes["レイヤー1: ROUTES"]
-        R1["ルート定義のみ"]
-        R2["Middleware登録"]
-        R3["Controllerに委譲"]
-        R4["ビジネスロジックなし"]
-    end
-
-    subgraph Controllers["レイヤー2: CONTROLLERS"]
-        C1["リクエスト/レスポンス処理"]
-        C2["入力バリデーション（Zod）"]
-        C3["Service呼び出し"]
-        C4["レスポンスフォーマット"]
-        C5["エラー処理"]
-    end
-
-    subgraph Services["レイヤー3: SERVICES"]
-        S1["ビジネスロジック"]
-        S2["オーケストレーション"]
-        S3["Repository呼び出し"]
-        S4["HTTP知識なし"]
-    end
-
-    subgraph Repositories["レイヤー4: REPOSITORIES"]
-        Repo1["データアクセス抽象化"]
-        Repo2["Prisma操作"]
-        Repo3["クエリ最適化"]
-    end
-
-    DB[(SQLite Database)]
-
-    Request --> Routes --> Controllers --> Services --> Repositories --> DB
+```
+┌─────────────────────────────────────┐
+│         HTTP Request                │
+└───────────────┬─────────────────────┘
+                ↓
+┌─────────────────────────────────────┐
+│  Layer 1: ROUTES                    │
+│  - Route definitions only           │
+│  - Middleware registration          │
+│  - Delegate to controllers          │
+│  - NO business logic                │
+└───────────────┬─────────────────────┘
+                ↓
+┌─────────────────────────────────────┐
+│  Layer 2: CONTROLLERS               │
+│  - Request/response handling        │
+│  - Input validation                 │
+│  - Call services                    │
+│  - Format responses                 │
+│  - Error handling                   │
+└───────────────┬─────────────────────┘
+                ↓
+┌─────────────────────────────────────┐
+│  Layer 3: SERVICES                  │
+│  - Business logic                   │
+│  - Orchestration                    │
+│  - Call repositories                │
+│  - No HTTP knowledge                │
+└───────────────┬─────────────────────┘
+                ↓
+┌─────────────────────────────────────┐
+│  Layer 4: REPOSITORIES              │
+│  - Data access abstraction          │
+│  - Prisma operations                │
+│  - Query optimization               │
+│  - Caching                          │
+└───────────────┬─────────────────────┘
+                ↓
+┌─────────────────────────────────────┐
+│         Database (MySQL)            │
+└─────────────────────────────────────┘
 ```
 
-### このアーキテクチャを使用する理由
+### Why This Architecture?
 
-**テスト容易性:**
-- 各レイヤーを独立してテスト可能
-- 依存性を簡単にモック
-- 明確なテスト境界
+**Testability:**
+- Each layer can be tested independently
+- Easy to mock dependencies
+- Clear test boundaries
 
-**保守性:**
-- 変更が特定のレイヤーに分離される
-- ビジネスロジックがHTTP関心事から分離
-- バグの場所を簡単に特定
+**Maintainability:**
+- Changes isolated to specific layers
+- Business logic separate from HTTP concerns
+- Easy to locate bugs
 
-**再利用性:**
-- Serviceをroutes、cron jobs、scriptsから使用可能
-- Repositoryがデータベース実装を隠蔽
-- ビジネスロジックがHTTPに依存しない
+**Reusability:**
+- Services can be used by routes, cron jobs, scripts
+- Repositories hide database implementation
+- Business logic not tied to HTTP
 
-**拡張性:**
-- 新しいエンドポイント追加が容易
-- 従うべき明確なパターン
-- 一貫した構造
+**Scalability:**
+- Easy to add new endpoints
+- Clear patterns to follow
+- Consistent structure
 
 ---
 
-## リクエストライフサイクル
+## Request Lifecycle
 
-### 完全なフロー例
+### Complete Flow Example
 
 ```typescript
 1. HTTP POST /api/users
    ↓
-2. ExpressがuserRoutes.tsでルートをマッチ
+2. Express matches route in userRoutes.ts
    ↓
-3. Middlewareチェーン実行:
-   - SSOMiddleware.verifyLoginStatus (認証)
-   - auditMiddleware (コンテキスト追跡)
+3. Middleware chain executes:
+   - SSOMiddleware.verifyLoginStatus (authentication)
+   - auditMiddleware (context tracking)
    ↓
-4. Route handlerがcontrollerに委譲:
+4. Route handler delegates to controller:
    router.post('/users', (req, res) => userController.create(req, res))
    ↓
-5. Controllerがバリデーション後service呼び出し:
-   - Zodで入力検証
-   - userService.create(data)呼び出し
-   - 成功/エラー処理
+5. Controller validates and calls service:
+   - Validate input with Zod
+   - Call userService.create(data)
+   - Handle success/error
    ↓
-6. Serviceがビジネスロジック実行:
-   - ビジネスルール確認
-   - userRepository.create(data)呼び出し
-   - 結果を返却
+6. Service executes business logic:
+   - Check business rules
+   - Call userRepository.create(data)
+   - Return result
    ↓
-7. Repositoryがデータベース操作実行:
+7. Repository performs database operation:
    - PrismaService.main.user.create({ data })
-   - データベースエラー処理
-   - 作成されたユーザーを返却
+   - Handle database errors
+   - Return created user
    ↓
-8. レスポンスが逆順で流れる:
-   Repository → Service → Controller → Express → クライアント
+8. Response flows back:
+   Repository → Service → Controller → Express → Client
 ```
 
-### Middleware実行順序
+### Middleware Execution Order
 
-**重要:** Middlewareは登録順に実行されます
+**Critical:** Middleware executes in registration order
 
 ```typescript
-app.use(Sentry.Handlers.requestHandler());  // 1. Sentry追跡（最初）
-app.use(express.json());                     // 2. Bodyパース
-app.use(express.urlencoded({ extended: true })); // 3. URLエンコード
-app.use(cookieParser());                     // 4. Cookieパース
-app.use(SSOMiddleware.initialize());         // 5. 認証初期化
-// ... ここでroutes登録
-app.use(auditMiddleware);                    // 6. 監査（グローバルの場合）
-app.use(errorBoundary);                      // 7. エラーハンドラー（最後）
-app.use(Sentry.Handlers.errorHandler());     // 8. Sentryエラー（最後）
+app.use(Sentry.Handlers.requestHandler());  // 1. Sentry tracing (FIRST)
+app.use(express.json());                     // 2. Body parsing
+app.use(express.urlencoded({ extended: true })); // 3. URL encoding
+app.use(cookieParser());                     // 4. Cookie parsing
+app.use(SSOMiddleware.initialize());         // 5. Auth initialization
+// ... routes registered here
+app.use(auditMiddleware);                    // 6. Audit (if global)
+app.use(errorBoundary);                      // 7. Error handler (LAST)
+app.use(Sentry.Handlers.errorHandler());     // 8. Sentry errors (LAST)
 ```
 
-**ルール:** エラーハンドラーは必ずroutesの後に登録すること！
+**Rule:** Error handlers must be registered AFTER routes!
 
 ---
 
-## ディレクトリ構造
+## Service Comparison
 
-### プロジェクト全体構造
+### Email Service (Mature Pattern ✅)
 
+**Strengths:**
+- Comprehensive BaseController with Sentry integration
+- Clean route delegation (no business logic in routes)
+- Consistent dependency injection pattern
+- Good middleware organization
+- Type-safe throughout
+- Excellent error handling
+
+**Example Structure:**
 ```
-backend/
-├── src/
-│   ├── routes/                # ルート定義
-│   ├── controllers/           # コントローラー
-│   ├── services/              # ビジネスロジック
-│   ├── repositories/          # データアクセス
-│   ├── middleware/            # ミドルウェア
-│   │   ├── auth.ts            # 認証ミドルウェア
-│   │   ├── errorHandler.ts    # エラーハンドリング
-│   │   └── validation.ts      # バリデーション
-│   ├── lib/                   # ユーティリティ
-│   │   ├── prisma.ts          # Prisma クライアント
-│   │   └── jwt.ts             # JWT ユーティリティ
-│   ├── types/                 # 型定義
-│   └── index.ts               # エントリーポイント
-├── prisma/
-│   ├── schema.prisma          # データベーススキーマ
-│   └── migrations/            # マイグレーション
-├── tsconfig.json
-└── package.json
+email/src/
+├── controllers/
+│   ├── BaseController.ts          ✅ Excellent template
+│   ├── NotificationController.ts  ✅ Extends BaseController
+│   └── EmailController.ts         ✅ Clean patterns
+├── routes/
+│   ├── notificationRoutes.ts      ✅ Clean delegation
+│   └── emailRoutes.ts             ✅ No business logic
+├── services/
+│   ├── NotificationService.ts     ✅ Dependency injection
+│   └── BatchingService.ts         ✅ Clear responsibility
+└── middleware/
+    ├── errorBoundary.ts           ✅ Comprehensive
+    └── DevImpersonationSSOMiddleware.ts
 ```
 
-### Controllersディレクトリ
+**Use as template** for new services!
 
-**目的:** HTTPリクエスト/レスポンス関心事の処理
+### Form Service (Transitioning ⚠️)
 
-**内容:**
-- `BaseController.ts` - 共通メソッドを持つ基底クラス
-- `{Feature}Controller.ts` - 機能別controllers
+**Strengths:**
+- Excellent workflow architecture (event sourcing)
+- Good Sentry integration
+- Innovative audit middleware (AsyncLocalStorage)
+- Comprehensive permission system
 
-**命名:** PascalCase + Controller
+**Weaknesses:**
+- Some routes have 200+ lines of business logic
+- Inconsistent controller naming
+- Direct process.env usage (60+ occurrences)
+- Minimal repository pattern usage
 
-**責任:**
-- リクエストパラメータのパース
-- 入力バリデーション（Zod）
-- 適切なserviceメソッド呼び出し
-- レスポンスフォーマット
-- エラー処理（BaseController経由）
-- HTTPステータスコード設定
+**Example:**
+```
+form/src/
+├── routes/
+│   ├── responseRoutes.ts          ❌ Business logic in routes
+│   └── proxyRoutes.ts             ✅ Good validation pattern
+├── controllers/
+│   ├── formController.ts          ⚠️ Lowercase naming
+│   └── UserProfileController.ts   ✅ PascalCase naming
+├── workflow/                      ✅ Excellent architecture!
+│   ├── core/
+│   │   ├── WorkflowEngineV3.ts   ✅ Event sourcing
+│   │   └── DryRunWrapper.ts      ✅ Innovative
+│   └── services/
+└── middleware/
+    └── auditMiddleware.ts         ✅ AsyncLocalStorage pattern
+```
 
-### Servicesディレクトリ
+**Learn from:** workflow/, middleware/auditMiddleware.ts
+**Avoid:** responseRoutes.ts, direct process.env
 
-**目的:** ビジネスロジックとオーケストレーション
+---
 
-**内容:**
-- `{feature}Service.ts` - 機能ビジネスロジック
+## Directory Structure Rationale
 
-**命名:** camelCase + Service（またはPascalCase + Service）
+### Controllers Directory
 
-**責任:**
-- ビジネスルール実装
-- 複数のrepositories調整
-- トランザクション管理
-- ビジネスバリデーション
-- HTTP知識なし（Request/Response型）
+**Purpose:** Handle HTTP request/response concerns
 
-### Repositoriesディレクトリ
+**Contents:**
+- `BaseController.ts` - Base class with common methods
+- `{Feature}Controller.ts` - Feature-specific controllers
 
-**目的:** データアクセス抽象化
+**Naming:** PascalCase + Controller
 
-**内容:**
-- `{Entity}Repository.ts` - エンティティのデータベース操作
+**Responsibilities:**
+- Parse request parameters
+- Validate input (Zod)
+- Call appropriate service methods
+- Format responses
+- Handle errors (via BaseController)
+- Set HTTP status codes
 
-**命名:** PascalCase + Repository
+### Services Directory
 
-**責任:**
-- Prismaクエリ操作
-- クエリ最適化
-- データベースエラー処理
-- キャッシングレイヤー
-- Prisma実装詳細の隠蔽
+**Purpose:** Business logic and orchestration
 
-**現在のギャップ:** 1つのrepositoryのみ存在（WorkflowRepository）
+**Contents:**
+- `{feature}Service.ts` - Feature business logic
 
-### Routesディレクトリ
+**Naming:** camelCase + Service (or PascalCase + Service)
 
-**目的:** ルート登録のみ
+**Responsibilities:**
+- Implement business rules
+- Orchestrate multiple repositories
+- Transaction management
+- Business validations
+- No HTTP knowledge (Request/Response types)
 
-**内容:**
-- `{feature}Routes.ts` - 機能のためのExpress router
+### Repositories Directory
 
-**命名:** camelCase + Routes
+**Purpose:** Data access abstraction
 
-**責任:**
-- Expressにroutesを登録
-- Middleware適用
-- Controllersに委譲
-- **ビジネスロジックなし！**
+**Contents:**
+- `{Entity}Repository.ts` - Database operations for entity
 
-### Middlewareディレクトリ
+**Naming:** PascalCase + Repository
 
-**目的:** 横断的関心事
+**Responsibilities:**
+- Prisma query operations
+- Query optimization
+- Database error handling
+- Caching layer
+- Hide Prisma implementation details
 
-**内容:**
-- 認証middleware
+**Current Gap:** Only 1 repository exists (WorkflowRepository)
+
+### Routes Directory
+
+**Purpose:** Route registration ONLY
+
+**Contents:**
+- `{feature}Routes.ts` - Express router for feature
+
+**Naming:** camelCase + Routes
+
+**Responsibilities:**
+- Register routes with Express
+- Apply middleware
+- Delegate to controllers
+- **NO business logic!**
+
+### Middleware Directory
+
+**Purpose:** Cross-cutting concerns
+
+**Contents:**
+- Authentication middleware
 - Audit middleware
 - Error boundaries
 - Validation middleware
-- カスタムmiddleware
+- Custom middleware
 
-**命名:** camelCase
+**Naming:** camelCase
 
-**タイプ:**
-- リクエスト処理（ハンドラー前）
-- レスポンス処理（ハンドラー後）
-- エラー処理（error boundary）
+**Types:**
+- Request processing (before handler)
+- Response processing (after handler)
+- Error handling (error boundary)
 
-### Configディレクトリ
+### Config Directory
 
-**目的:** 設定管理
+**Purpose:** Configuration management
 
-**内容:**
-- `unifiedConfig.ts` - タイプセーフ設定
-- 環境別設定
+**Contents:**
+- `unifiedConfig.ts` - Type-safe configuration
+- Environment-specific configs
 
-**パターン:** 単一信頼できるソース
+**Pattern:** Single source of truth
 
-### Typesディレクトリ
+### Types Directory
 
-**目的:** TypeScript型定義
+**Purpose:** TypeScript type definitions
 
-**内容:**
-- `{feature}.types.ts` - 機能別型
-- DTOs（Data Transfer Objects）
-- Request/Response型
-- ドメインモデル
+**Contents:**
+- `{feature}.types.ts` - Feature-specific types
+- DTOs (Data Transfer Objects)
+- Request/Response types
+- Domain models
 
 ---
 
-## モジュール構成
+## Module Organization
 
-### 機能ベース構成
+### Feature-Based Organization
 
-大規模な機能の場合サブディレクトリを使用:
+For large features, use subdirectories:
 
 ```
 src/workflow/
-├── core/              # コアエンジン
-├── services/          # Workflow専用services
-├── actions/           # システムアクション
-├── models/            # ドメインモデル
-├── validators/        # Workflowバリデーション
-└── utils/             # Workflowユーティリティ
+├── core/              # Core engine
+├── services/          # Workflow-specific services
+├── actions/           # System actions
+├── models/            # Domain models
+├── validators/        # Workflow validation
+└── utils/             # Workflow utilities
 ```
 
-**使用タイミング:**
-- 機能に5つ以上のファイルがある場合
-- 明確なサブドメインが存在する場合
-- 論理的グループ化が明確性を高める場合
+**When to use:**
+- Feature has 5+ files
+- Clear sub-domains exist
+- Logical grouping improves clarity
 
-### フラット構成
+### Flat Organization
 
-シンプルな機能の場合:
+For simple features:
 
 ```
 src/
@@ -311,51 +350,51 @@ src/
 └── repositories/UserRepository.ts
 ```
 
-**使用タイミング:**
-- シンプルな機能（< 5ファイル）
-- 明確なサブドメインなし
-- フラット構造がより明確な場合
+**When to use:**
+- Simple features (< 5 files)
+- No clear sub-domains
+- Flat structure is clearer
 
 ---
 
-## 関心の分離
+## Separation of Concerns
 
-### 何をどこに置くか
+### What Goes Where
 
-**Routesレイヤー:**
-- ✅ ルート定義
-- ✅ Middleware登録
-- ✅ Controller委譲
-- ❌ ビジネスロジック
-- ❌ データベース操作
-- ❌ バリデーションロジック（validatorまたはcontrollerにあるべき）
+**Routes Layer:**
+- ✅ Route definitions
+- ✅ Middleware registration
+- ✅ Controller delegation
+- ❌ Business logic
+- ❌ Database operations
+- ❌ Validation logic (should be in validator or controller)
 
-**Controllersレイヤー:**
-- ✅ リクエストパース（params、body、query）
-- ✅ 入力バリデーション（Zod）
-- ✅ Service呼び出し
-- ✅ レスポンスフォーマット
-- ✅ エラー処理
-- ❌ ビジネスロジック
-- ❌ データベース操作
+**Controllers Layer:**
+- ✅ Request parsing (params, body, query)
+- ✅ Input validation (Zod)
+- ✅ Service calls
+- ✅ Response formatting
+- ✅ Error handling
+- ❌ Business logic
+- ❌ Database operations
 
-**Servicesレイヤー:**
-- ✅ ビジネスロジック
-- ✅ ビジネスルール適用
-- ✅ オーケストレーション（複数repos）
-- ✅ トランザクション管理
-- ❌ HTTP関心事（Request/Response）
-- ❌ 直接Prisma呼び出し（repositories使用）
+**Services Layer:**
+- ✅ Business logic
+- ✅ Business rules enforcement
+- ✅ Orchestration (multiple repos)
+- ✅ Transaction management
+- ❌ HTTP concerns (Request/Response)
+- ❌ Direct Prisma calls (use repositories)
 
-**Repositoriesレイヤー:**
-- ✅ Prisma操作
-- ✅ クエリ構築
-- ✅ データベースエラー処理
-- ✅ キャッシング
-- ❌ ビジネスロジック
-- ❌ HTTP関心事
+**Repositories Layer:**
+- ✅ Prisma operations
+- ✅ Query construction
+- ✅ Database error handling
+- ✅ Caching
+- ❌ Business logic
+- ❌ HTTP concerns
 
-### 例示: ユーザー作成
+### Example: User Creation
 
 **Route:**
 ```typescript
@@ -382,11 +421,11 @@ async create(req: Request, res: Response): Promise<void> {
 **Service:**
 ```typescript
 async create(data: CreateUserDTO): Promise<User> {
-    // ビジネスルール: メールが既に存在するか確認
+    // Business rule: check if email already exists
     const existing = await this.userRepository.findByEmail(data.email);
     if (existing) throw new ConflictError('Email already exists');
 
-    // ユーザー作成
+    // Create user
     return await this.userRepository.create(data);
 }
 ```
@@ -402,11 +441,11 @@ async findByEmail(email: string): Promise<User | null> {
 }
 ```
 
-**注目:** 各レイヤーが明確で区別された責任を持ちます！
+**Notice:** Each layer has clear, distinct responsibilities!
 
 ---
 
-**関連ファイル:**
-- [SKILL.md](SKILL.md) - メインガイド
-- [routing-and-controllers.md](routing-and-controllers.md) - Routesとcontrollersの詳細
-- [services-and-repositories.md](services-and-repositories.md) - Serviceとrepositoryパターン
+**Related Files:**
+- [SKILL.md](SKILL.md) - Main guide
+- [routing-and-controllers.md](routing-and-controllers.md) - Routes and controllers details
+- [services-and-repositories.md](services-and-repositories.md) - Service and repository patterns

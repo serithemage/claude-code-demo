@@ -1,54 +1,54 @@
-# Hookメカニズム - 深堀り分析
+# Hook Mechanisms - Deep Dive
 
-UserPromptSubmitおよびPreToolUse hooksの動作方式についての技術的な深堀り分析です。
+Technical deep dive into how the UserPromptSubmit and PreToolUse hooks work.
 
-## 目次
+## Table of Contents
 
-- [UserPromptSubmit Hookフロー](#userpromptsubmit-hookフロー)
-- [PreToolUse Hookフロー](#pretooluse-hookフロー)
-- [終了コード動作（重要）](#終了コード動作重要)
-- [セッション状態管理](#セッション状態管理)
-- [パフォーマンス考慮事項](#パフォーマンス考慮事項)
+- [UserPromptSubmit Hook Flow](#userpromptsubmit-hook-flow)
+- [PreToolUse Hook Flow](#pretooluse-hook-flow)
+- [Exit Code Behavior (CRITICAL)](#exit-code-behavior-critical)
+- [Session State Management](#session-state-management)
+- [Performance Considerations](#performance-considerations)
 
 ---
 
-## UserPromptSubmit Hookフロー
+## UserPromptSubmit Hook Flow
 
-### 実行順序
+### Execution Sequence
 
 ```
-ユーザーがプロンプトを送信
+User submits prompt
     ↓
-.claude/settings.jsonがhookを登録
+.claude/settings.json registers hook
     ↓
-skill-activation-prompt.sh実行
+skill-activation-prompt.sh executes
     ↓
 npx tsx skill-activation-prompt.ts
     ↓
-Hookがstdinを読み取り（プロンプトを含むJSON）
+Hook reads stdin (JSON with prompt)
     ↓
-skill-rules.jsonをロード
+Loads skill-rules.json
     ↓
-キーワード + intentパターンマッチング
+Matches keywords + intent patterns
     ↓
-優先度別にマッチをグループ化（critical → high → medium → low）
+Groups matches by priority (critical → high → medium → low)
     ↓
-フォーマットされたメッセージをstdoutに出力
+Outputs formatted message to stdout
     ↓
-stdoutがClaudeのcontextになる（プロンプトの前に注入）
+stdout becomes context for Claude (injected before prompt)
     ↓
-Claudeが見るもの: [skill提案] + ユーザープロンプト
+Claude sees: [skill suggestion] + user's prompt
 ```
 
-### 重要なポイント
+### Key Points
 
-- **終了コード**: 常に0（許可）
-- **stdout**: → Claudeのcontext（システムメッセージとして注入）
-- **タイミング**: Claudeがプロンプトを処理する前に実行
-- **動作**: ブロックなし、推奨のみ
-- **目的**: Claudeが関連skillsを認識するようにする
+- **Exit code**: Always 0 (allow)
+- **stdout**: → Claude's context (injected as system message)
+- **Timing**: Runs BEFORE Claude processes prompt
+- **Behavior**: Non-blocking, advisory only
+- **Purpose**: Make Claude aware of relevant skills
 
-### 入力形式
+### Input Format
 
 ```json
 {
@@ -57,11 +57,11 @@ Claudeが見るもの: [skill提案] + ユーザープロンプト
   "cwd": "/root/git/your-project",
   "permission_mode": "normal",
   "hook_event_name": "UserPromptSubmit",
-  "prompt": "layoutシステムはどのように動作しますか？"
+  "prompt": "how does the layout system work?"
 }
 ```
 
-### 出力形式（stdoutへ）
+### Output Format (to stdout)
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -75,60 +75,60 @@ ACTION: Use Skill tool BEFORE responding
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-Claudeはユーザーのプロンプトを処理する前にこの出力を追加contextとして見ます。
+Claude sees this output as additional context before processing the user's prompt.
 
 ---
 
-## PreToolUse Hookフロー
+## PreToolUse Hook Flow
 
-### 実行順序
+### Execution Sequence
 
 ```
-ClaudeがEdit/Writeツールを呼び出し
+Claude calls Edit/Write tool
     ↓
-.claude/settings.jsonがhookを登録（matcher: Edit|Write）
+.claude/settings.json registers hook (matcher: Edit|Write)
     ↓
-skill-verification-guard.sh実行
+skill-verification-guard.sh executes
     ↓
 npx tsx skill-verification-guard.ts
     ↓
-Hookがstdinを読み取り（tool_name, tool_inputを含むJSON）
+Hook reads stdin (JSON with tool_name, tool_input)
     ↓
-skill-rules.jsonをロード
+Loads skill-rules.json
     ↓
-ファイルパスパターンを確認（globマッチング）
+Checks file path patterns (glob matching)
     ↓
-コンテンツパターンのためにファイルを読み取り（ファイルが存在する場合）
+Reads file for content patterns (if file exists)
     ↓
-セッション状態を確認（skillが既に使用されたか？）
+Checks session state (was skill already used?)
     ↓
-スキップ条件を確認（ファイルマーカー、環境変数）
+Checks skip conditions (file markers, env vars)
     ↓
-マッチしてスキップされない場合:
-  セッション状態を更新（skillが強制済みとしてマーク）
-  ブロックメッセージをstderrに出力
-  終了コード2で終了（BLOCK）
-それ以外:
-  終了コード0で終了（ALLOW）
+IF MATCHED AND NOT SKIPPED:
+  Update session state (mark skill as enforced)
+  Output block message to stderr
+  Exit with code 2 (BLOCK)
+ELSE:
+  Exit with code 0 (ALLOW)
     ↓
-ブロックされた場合:
-  stderr → Claudeがメッセージを確認
-  Edit/Writeツールが実行されない
-  Claudeはskillを使用して再試行する必要がある
-許可された場合:
-  ツールが正常に実行される
+IF BLOCKED:
+  stderr → Claude sees message
+  Edit/Write tool does NOT execute
+  Claude must use skill and retry
+IF ALLOWED:
+  Tool executes normally
 ```
 
-### 重要なポイント
+### Key Points
 
-- **終了コード2**: BLOCK（stderr → Claude）
-- **終了コード0**: ALLOW
-- **タイミング**: ツール実行前に実行
-- **セッショントラッキング**: 同一セッションでの繰り返しブロックを防止
-- **Fail open**: エラー時に作業を許可（ワークフロー中断を防止）
-- **目的**: コアguardrailsの強制
+- **Exit code 2**: BLOCK (stderr → Claude)
+- **Exit code 0**: ALLOW
+- **Timing**: Runs BEFORE tool execution
+- **Session tracking**: Prevents repeated blocks in same session
+- **Fail open**: On errors, allows operation (don't break workflow)
+- **Purpose**: Enforce critical guardrails
 
-### 入力形式
+### Input Format
 
 ```json
 {
@@ -146,7 +146,7 @@ skill-rules.jsonをロード
 }
 ```
 
-### 出力形式（ブロック時stderrへ）
+### Output Format (to stderr when blocked)
 
 ```
 ⚠️ BLOCKED - Database Operation Detected
@@ -163,62 +163,62 @@ File: form/src/services/user.ts
 💡 TIP: Add '// @skip-validation' comment to skip future checks
 ```
 
-Claudeがこのメッセージを受け取り、編集を再試行する前にskillを使用する必要があることを理解します。
+Claude receives this message and understands it needs to use the skill before retrying the edit.
 
 ---
 
-## 終了コード動作（重要）
+## Exit Code Behavior (CRITICAL)
 
-### 終了コード参照表
+### Exit Code Reference Table
 
-| 終了コード | stdout | stderr | ツール実行 | Claudeが見るもの |
-|-----------|--------|--------|----------|-----------------|
-| 0 (UserPromptSubmit) | → Context | → ユーザーのみ | N/A | stdout内容 |
-| 0 (PreToolUse) | → ユーザーのみ | → ユーザーのみ | **進行する** | なし |
-| 2 (PreToolUse) | → ユーザーのみ | → **CLAUDE** | **ブロック** | stderr内容 |
-| その他 | → ユーザーのみ | → ユーザーのみ | ブロック | なし |
+| Exit Code | stdout | stderr | Tool Execution | Claude Sees |
+|-----------|--------|--------|----------------|-------------|
+| 0 (UserPromptSubmit) | → Context | → User only | N/A | stdout content |
+| 0 (PreToolUse) | → User only | → User only | **Proceeds** | Nothing |
+| 2 (PreToolUse) | → User only | → **CLAUDE** | **BLOCKED** | stderr content |
+| Other | → User only | → User only | Blocked | Nothing |
 
-### 終了コード2が重要な理由
+### Why Exit Code 2 Matters
 
-これが強制のための核心メカニズムです:
+This is THE critical mechanism for enforcement:
 
-1. PreToolUseでClaudeにメッセージを送る**唯一の方法**
-2. stderr内容が「Claudeに自動的にフィードバックされる」
-3. Claudeがブロックメッセージを見て何をすべきか理解する
-4. ツール実行が防止される
-5. Guardrails強制に必須
+1. **Only way** to send message to Claude from PreToolUse
+2. stderr content is "fed back to Claude automatically"
+3. Claude sees the block message and understands what to do
+4. Tool execution is prevented
+5. Critical for enforcement of guardrails
 
-### 会話フローの例
+### Example Conversation Flow
 
 ```
-ユーザー: "Prismaで新しいユーザーサービスを追加して"
+User: "Add a new user service with Prisma"
 
-Claude: "ユーザーサービスを作成します..."
-    [form/src/services/user.tsの編集を試行]
+Claude: "I'll create the user service..."
+    [Attempts to Edit form/src/services/user.ts]
 
-PreToolUse Hook: [終了コード2]
+PreToolUse Hook: [Exit code 2]
     stderr: "⚠️ BLOCKED - Use database-verification"
 
-Claudeがエラーを確認して応答:
-    "まずデータベーススキーマを確認する必要があります。"
-    [Skillツールを使用: database-verification]
-    [カラム名を確認]
-    [編集を再試行 - 今回は許可される（セッショントラッキング）]
+Claude sees error, responds:
+    "I need to verify the database schema first."
+    [Uses Skill tool: database-verification]
+    [Verifies column names]
+    [Retries Edit - now allowed (session tracking)]
 ```
 
 ---
 
-## セッション状態管理
+## Session State Management
 
-### 目的
+### Purpose
 
-同一セッションでの繰り返し通知を防止 - Claudeがskillを使用すれば再度ブロックしない。
+Prevent repeated nagging in the same session - once Claude uses a skill, don't block again.
 
-### 状態ファイルの場所
+### State File Location
 
 `.claude/hooks/state/skills-used-{session_id}.json`
 
-### 状態ファイルの構造
+### State File Structure
 
 ```json
 {
@@ -230,77 +230,77 @@ Claudeがエラーを確認して応答:
 }
 ```
 
-### 動作方式
+### How It Works
 
-1. **最初の編集**（Prismaを含むファイル）:
-   - Hookが終了コード2でブロック
-   - セッション状態を更新: skills_usedに"database-verification"を追加
-   - Claudeがメッセージを見てskillを使用
+1. **First edit** of file with Prisma:
+   - Hook blocks with exit code 2
+   - Updates session state: adds "database-verification" to skills_used
+   - Claude sees message, uses skill
 
-2. **2回目の編集**（同一セッション）:
-   - Hookがセッション状態を確認
-   - skills_usedで"database-verification"を発見
-   - 終了コード0で終了（許可）
-   - Claudeにメッセージなし
+2. **Second edit** (same session):
+   - Hook checks session state
+   - Finds "database-verification" in skills_used
+   - Exits with code 0 (allow)
+   - No message to Claude
 
-3. **別のセッション**:
-   - 新しいセッションID = 新しい状態ファイル
-   - Hookが再度ブロック
+3. **Different session**:
+   - New session ID = new state file
+   - Hook blocks again
 
-### 制限事項
+### Limitation
 
-Hookはskillが*実際に*呼び出されたかどうか検出できません - セッションごと、skillごとに1回だけブロックします。これは以下を意味します:
+The hook cannot detect when the skill is *actually* invoked - it just blocks once per session per skill. This means:
 
-- Claudeがskillを使用せずに別の編集をしても再度ブロックしない
-- Claudeが指示に従うと信頼
-- 将来の改善: 実際のSkillツール使用の検出
+- If Claude doesn't use the skill but makes a different edit, it won't block again
+- Trust that Claude follows the instruction
+- Future enhancement: detect actual Skill tool usage
 
 ---
 
-## パフォーマンス考慮事項
+## Performance Considerations
 
-### 目標指標
+### Target Metrics
 
 - **UserPromptSubmit**: < 100ms
 - **PreToolUse**: < 200ms
 
-### パフォーマンスボトルネック
+### Performance Bottlenecks
 
-1. **skill-rules.jsonのロード**（毎回実行時）
-   - 将来: メモリにキャッシュ
-   - 将来: 変更を監視、必要時のみ再ロード
+1. **Loading skill-rules.json** (every execution)
+   - Future: Cache in memory
+   - Future: Watch for changes, reload only when needed
 
-2. **ファイル内容の読み取り**（PreToolUse）
-   - contentPatternsが設定されている場合のみ
-   - ファイルが存在する場合のみ
-   - 大きなファイルの場合遅くなる可能性
+2. **Reading file content** (PreToolUse)
+   - Only when contentPatterns configured
+   - Only if file exists
+   - Can be slow for large files
 
-3. **Globマッチング**（PreToolUse）
-   - 各パターンに対するRegexコンパイル
-   - 将来: 一度コンパイル、キャッシュ
+3. **Glob matching** (PreToolUse)
+   - Regex compilation for each pattern
+   - Future: Compile once, cache
 
-4. **Regexマッチング**（両方のhooks）
-   - Intentパターン（UserPromptSubmit）
-   - コンテンツパターン（PreToolUse）
-   - 将来: 遅延コンパイル、コンパイル済みregexをキャッシュ
+4. **Regex matching** (Both hooks)
+   - Intent patterns (UserPromptSubmit)
+   - Content patterns (PreToolUse)
+   - Future: Lazy compile, cache compiled regexes
 
-### 最適化戦略
+### Optimization Strategies
 
-**パターンを減らす:**
-- より具体的なパターンを使用（確認項目の削減）
-- 可能な場合は類似パターンを結合
+**Reduce patterns:**
+- Use more specific patterns (fewer to check)
+- Combine similar patterns where possible
 
-**ファイルパスパターン:**
-- より具体的 = 確認するファイルが減少
-- 例: `form/**`より`form/src/services/**`の方が良い
+**File path patterns:**
+- More specific = fewer files to check
+- Example: `form/src/services/**` better than `form/**`
 
-**コンテンツパターン:**
-- 本当に必要な場合のみ追加
-- よりシンプルなregex = より高速なマッチング
+**Content patterns:**
+- Only add when truly necessary
+- Simpler regex = faster matching
 
 ---
 
-**関連ファイル:**
-- [SKILL.md](SKILL.md) - メインskillガイド
-- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Hook問題のデバッグ
-- [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - 設定リファレンス
+**Related Files:**
+- [SKILL.md](SKILL.md) - Main skill guide
+- [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Debug hook issues
+- [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - Configuration reference

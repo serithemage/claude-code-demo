@@ -1,162 +1,28 @@
-# コンポーネントパターン
+# Component Patterns
 
-型安全、lazy loading、Suspense boundaries を強調するアプリケーションの最新 React コンポーネントアーキテクチャです。
-
----
-
-## プロジェクト概要
-
-**RealWorld (Conduit)** - Medium.com クローンのソーシャルブログプラットフォーム
-
-| 技術 | バージョン | 用途 |
-|------|-----------|------|
-| **React** | 19.x | UI ライブラリ |
-| **TypeScript** | 5.x | 型安全 |
-| **MUI** | v7 | UI コンポーネント |
-| **TanStack Query** | 5.x | データフェッチング |
-| **TanStack Router** | 1.x | ルーティング |
+Modern React component architecture for the application emphasizing type safety, lazy loading, and Suspense boundaries.
 
 ---
 
-## RealWorld 画面コンポーネント
+## React.FC Pattern (PREFERRED)
 
-### ページ一覧
+### Why React.FC
 
-| ルート | ページ名 | 主なコンポーネント |
-|--------|---------|-------------------|
-| `/#/` | ホーム | `HomePage`, `ArticleList`, `TagList`, `FeedTabs` |
-| `/#/login` | ログイン | `LoginPage`, `AuthForm` |
-| `/#/register` | 新規登録 | `RegisterPage`, `AuthForm` |
-| `/#/settings` | 設定 | `SettingsPage`, `SettingsForm` |
-| `/#/editor` | 新規記事 | `EditorPage`, `ArticleForm` |
-| `/#/editor/:slug` | 記事編集 | `EditorPage`, `ArticleForm` |
-| `/#/article/:slug` | 記事詳細 | `ArticlePage`, `ArticleMeta`, `CommentList` |
-| `/#/profile/:username` | プロフィール | `ProfilePage`, `ProfileHeader`, `ArticleList` |
-| `/#/profile/:username/favorites` | お気に入り | `ProfilePage`, `ArticleList` |
+All components use the `React.FC<Props>` pattern for:
+- Explicit type safety for props
+- Consistent component signatures
+- Clear prop interface documentation
+- Better IDE autocomplete
 
-### 共通レイアウトコンポーネント
-
-```typescript
-// ヘッダー（未ログイン時）
-interface HeaderProps {
-    isAuthenticated: false;
-}
-// 表示項目: Conduit ロゴ, Home, Sign in, Sign up
-
-// ヘッダー（ログイン時）
-interface HeaderProps {
-    isAuthenticated: true;
-    user: User;
-}
-// 表示項目: Conduit ロゴ, Home, New Article, Settings, プロフィール
-```
-
-### 機能別コンポーネント
-
-#### 認証 (features/auth)
-```typescript
-// ログインフォーム
-interface LoginFormProps {
-    onSubmit: (data: { email: string; password: string }) => void;
-    errors?: string[];
-}
-
-// 登録フォーム
-interface RegisterFormProps {
-    onSubmit: (data: { username: string; email: string; password: string }) => void;
-    errors?: string[];
-}
-```
-
-#### 記事 (features/articles)
-```typescript
-// 記事プレビュー
-interface ArticlePreviewProps {
-    article: Article;
-    onFavorite: (slug: string) => void;
-}
-
-// 記事一覧
-interface ArticleListProps {
-    articles: Article[];
-    articlesCount: number;
-    currentPage: number;
-    onPageChange: (page: number) => void;
-}
-
-// 記事フォーム
-interface ArticleFormProps {
-    article?: Article;
-    onSubmit: (data: { title: string; description: string; body: string; tagList: string[] }) => void;
-    errors?: string[];
-}
-
-// フィードタブ
-interface FeedTabsProps {
-    activeTab: 'your' | 'global' | 'tag';
-    selectedTag?: string;
-    isAuthenticated: boolean;
-    onTabChange: (tab: string) => void;
-}
-```
-
-#### コメント (features/comments)
-```typescript
-// コメント一覧
-interface CommentListProps {
-    comments: Comment[];
-    currentUser?: User;
-    onDelete: (id: number) => void;
-}
-
-// コメントフォーム
-interface CommentFormProps {
-    user: User;
-    onSubmit: (body: string) => void;
-}
-```
-
-#### プロフィール (features/profiles)
-```typescript
-// プロフィールヘッダー
-interface ProfileHeaderProps {
-    profile: Profile;
-    isCurrentUser: boolean;
-    onFollow: () => void;
-    onUnfollow: () => void;
-}
-```
-
-#### タグ (features/tags)
-```typescript
-// 人気タグ一覧
-interface TagListProps {
-    tags: string[];
-    onTagSelect: (tag: string) => void;
-}
-```
-
----
-
-## React.FC パターン (推奨)
-
-### React.FC を使用する理由
-
-すべてのコンポーネントは以下のために `React.FC<Props>` パターンを使用します:
-- props に対する明示的な型安全
-- 一貫したコンポーネントシグネチャ
-- 明確な prop インターフェースドキュメント
-- より良い IDE 自動補完
-
-### 基本パターン
+### Basic Pattern
 
 ```typescript
 import React from 'react';
 
 interface MyComponentProps {
-    /** 表示するユーザー ID */
+    /** User ID to display */
     userId: number;
-    /** アクション発生時の選択的コールバック */
+    /** Optional callback when action occurs */
     onAction?: () => void;
 }
 
@@ -171,35 +37,35 @@ export const MyComponent: React.FC<MyComponentProps> = ({ userId, onAction }) =>
 export default MyComponent;
 ```
 
-**キーポイント:**
-- JSDoc コメント付きの別の Props インターフェース定義
-- `React.FC<Props>` が型安全を提供
-- パラメータで props 分割代入
-- 下部に default export
+**Key Points:**
+- Props interface defined separately with JSDoc comments
+- `React.FC<Props>` provides type safety
+- Destructure props in parameters
+- Default export at bottom
 
 ---
 
-## Lazy Loading パターン
+## Lazy Loading Pattern
 
-### Lazy Load すべきとき
+### When to Lazy Load
 
-以下のようなコンポーネントを lazy load します:
-- 重いもの (DataGrid、チャート、リッチテキストエディター)
-- Route レベルコンポーネント
-- Modal/dialog コンテンツ (初期に表示されない)
-- Below-the-fold コンテンツ
+Lazy load components that are:
+- Heavy (DataGrid, charts, rich text editors)
+- Route-level components
+- Modal/dialog content (not shown initially)
+- Below-the-fold content
 
-### Lazy Load 方法
+### How to Lazy Load
 
 ```typescript
 import React from 'react';
 
-// 重いコンポーネント lazy load
+// Lazy load heavy component
 const PostDataGrid = React.lazy(() =>
     import('./grids/PostDataGrid')
 );
 
-// named exports の場合
+// For named exports
 const MyComponent = React.lazy(() =>
     import('./MyComponent').then(module => ({
         default: module.MyComponent
@@ -207,16 +73,16 @@ const MyComponent = React.lazy(() =>
 );
 ```
 
-**PostTable.tsx の例:**
+**Example from PostTable.tsx:**
 
 ```typescript
 /**
- * メイン post table コンテナコンポーネント
+ * Main post table container component
  */
 import React, { useState, useCallback } from 'react';
 import { Box, Paper } from '@mui/material';
 
-// バンドルサイズ最適化のために PostDataGrid lazy load
+// Lazy load PostDataGrid to optimize bundle size
 const PostDataGrid = React.lazy(() => import('./grids/PostDataGrid'));
 
 import { SuspenseLoader } from '~components/SuspenseLoader';
@@ -238,31 +104,31 @@ export default PostTable;
 
 ## Suspense Boundaries
 
-### SuspenseLoader コンポーネント
+### SuspenseLoader Component
 
 **Import:**
 ```typescript
 import { SuspenseLoader } from '~components/SuspenseLoader';
-// または
+// Or
 import { SuspenseLoader } from '@/components/SuspenseLoader';
 ```
 
-**使用:**
+**Usage:**
 ```typescript
 <SuspenseLoader>
     <LazyLoadedComponent />
 </SuspenseLoader>
 ```
 
-**機能:**
-- lazy コンポーネントロード中にローディングインジケーター表示
-- スムーズなフェードインアニメーション
-- 一貫したローディング体験
-- レイアウトシフト防止
+**What it does:**
+- Shows loading indicator while lazy component loads
+- Smooth fade-in animation
+- Consistent loading experience
+- Prevents layout shift
 
-### Suspense Boundaries 配置場所
+### Where to Place Suspense Boundaries
 
-**Route レベル:**
+**Route Level:**
 ```typescript
 // routes/my-route/index.tsx
 const MyPage = lazy(() => import('@/features/my-feature/components/MyPage'));
@@ -276,7 +142,7 @@ function Route() {
 }
 ```
 
-**コンポーネントレベル:**
+**Component Level:**
 ```typescript
 function ParentComponent() {
     return (
@@ -290,7 +156,7 @@ function ParentComponent() {
 }
 ```
 
-**複数 Boundaries:**
+**Multiple Boundaries:**
 ```typescript
 function Page() {
     return (
@@ -311,18 +177,18 @@ function Page() {
 }
 ```
 
-各セクションが独立してロードされより良い UX。
+Each section loads independently, better UX.
 
 ---
 
-## コンポーネント構造テンプレート
+## Component Structure Template
 
-### 推奨順序
+### Recommended Order
 
 ```typescript
 /**
- * コンポーネント説明
- * 機能、使用タイミング
+ * Component description
+ * What it does, when to use it
  */
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Box, Paper, Button } from '@mui/material';
@@ -333,24 +199,24 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { myFeatureApi } from '../api/myFeatureApi';
 import type { MyData } from '~types/myData';
 
-// コンポーネント imports
+// Component imports
 import { SuspenseLoader } from '~components/SuspenseLoader';
 
 // Hooks
 import { useAuth } from '@/hooks/useAuth';
 import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
-// 1. PROPS インターフェース (JSDoc と共に)
+// 1. PROPS INTERFACE (with JSDoc)
 interface MyComponentProps {
-    /** 表示する entity の ID */
+    /** The ID of the entity to display */
     entityId: number;
-    /** アクション完了時の選択的コールバック */
+    /** Optional callback when action completes */
     onComplete?: () => void;
-    /** 表示モード */
+    /** Display mode */
     mode?: 'view' | 'edit';
 }
 
-// 2. スタイル (インラインで100行未満の場合)
+// 2. STYLES (if inline and <100 lines)
 const componentStyles: Record<string, SxProps<Theme>> = {
     container: {
         p: 2,
@@ -364,41 +230,41 @@ const componentStyles: Record<string, SxProps<Theme>> = {
     },
 };
 
-// 3. コンポーネント定義
+// 3. COMPONENT DEFINITION
 export const MyComponent: React.FC<MyComponentProps> = ({
     entityId,
     onComplete,
     mode = 'view',
 }) => {
-    // 4. HOOKS (この順序で)
-    // - Context hooks を先に
+    // 4. HOOKS (in this order)
+    // - Context hooks first
     const { user } = useAuth();
     const { showSuccess, showError } = useMuiSnackbar();
 
-    // - データ fetching
+    // - Data fetching
     const { data } = useSuspenseQuery({
         queryKey: ['myEntity', entityId],
         queryFn: () => myFeatureApi.getEntity(entityId),
     });
 
-    // - ローカル状態
+    // - Local state
     const [selectedItem, setSelectedItem] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(mode === 'edit');
 
-    // - Memoized 値
+    // - Memoized values
     const filteredData = useMemo(() => {
         return data.filter(item => item.active);
     }, [data]);
 
     // - Effects
     useEffect(() => {
-        // セットアップ
+        // Setup
         return () => {
-            // クリーンアップ
+            // Cleanup
         };
     }, []);
 
-    // 5. イベントハンドラー (useCallback と共に)
+    // 5. EVENT HANDLERS (with useCallback)
     const handleItemSelect = useCallback((itemId: string) => {
         setSelectedItem(itemId);
     }, []);
@@ -413,7 +279,7 @@ export const MyComponent: React.FC<MyComponentProps> = ({
         }
     }, [entityId, onComplete, showSuccess, showError]);
 
-    // 6. レンダー
+    // 6. RENDER
     return (
         <Box sx={componentStyles.container}>
             <Box sx={componentStyles.header}>
@@ -430,35 +296,35 @@ export const MyComponent: React.FC<MyComponentProps> = ({
     );
 };
 
-// 7. EXPORT (下部に default export)
+// 7. EXPORT (default export at bottom)
 export default MyComponent;
 ```
 
 ---
 
-## コンポーネント分離
+## Component Separation
 
-### コンポーネントを分離すべきとき
+### When to Split Components
 
-**複数コンポーネントに分離すべきとき:**
-- コンポーネントが300行超
-- 複数の区別された責任
-- 再利用可能なセクション
-- 複雑なネスト JSX
+**Split into multiple components when:**
+- Component exceeds 300 lines
+- Multiple distinct responsibilities
+- Reusable sections
+- Complex nested JSX
 
-**例:**
+**Example:**
 
 ```typescript
-// ❌ 避ける - モノリシック
+// ❌ AVOID - Monolithic
 function MassiveComponent() {
-    // 500行以上
-    // 検索ロジック
-    // フィルターロジック
-    // グリッドロジック
-    // アクションパネルロジック
+    // 500+ lines
+    // Search logic
+    // Filter logic
+    // Grid logic
+    // Action panel logic
 }
 
-// ✅ 推奨 - モジュラー
+// ✅ PREFERRED - Modular
 function ParentContainer() {
     return (
         <Box>
@@ -470,34 +336,34 @@ function ParentContainer() {
 }
 ```
 
-### 一緒に維持すべきとき
+### When to Keep Together
 
-**同じファイルに維持すべきとき:**
-- コンポーネント200行未満
-- 密接に結合されたロジック
-- 他で再利用不可
-- 単純プレゼンテーションコンポーネント
+**Keep in same file when:**
+- Component < 200 lines
+- Tightly coupled logic
+- Not reusable elsewhere
+- Simple presentation component
 
 ---
 
-## Export パターン
+## Export Patterns
 
-### Named Const + Default Export (推奨)
+### Named Const + Default Export (PREFERRED)
 
 ```typescript
 export const MyComponent: React.FC<Props> = ({ ... }) => {
-    // コンポーネントロジック
+    // Component logic
 };
 
 export default MyComponent;
 ```
 
-**理由:**
-- テスト/リファクタリングのための named export
-- lazy loading 便宜のための default export
-- 消費者に両方のオプション提供
+**Why:**
+- Named export for testing/refactoring
+- Default export for lazy loading convenience
+- Both options available to consumers
 
-### Named Exports Lazy Loading
+### Lazy Loading Named Exports
 
 ```typescript
 const MyComponent = React.lazy(() =>
@@ -509,12 +375,12 @@ const MyComponent = React.lazy(() =>
 
 ---
 
-## コンポーネント通信
+## Component Communication
 
 ### Props Down, Events Up
 
 ```typescript
-// 親
+// Parent
 function Parent() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -526,7 +392,7 @@ function Parent() {
     );
 }
 
-// 子
+// Child
 interface ChildProps {
     data: Data[];
     onSelect: (id: string) => void;
@@ -535,28 +401,28 @@ interface ChildProps {
 export const Child: React.FC<ChildProps> = ({ data, onSelect }) => {
     return (
         <div onClick={() => onSelect(data[0].id)}>
-            {/* コンテンツ */}
+            {/* Content */}
         </div>
     );
 };
 ```
 
-### Prop Drilling を避ける
+### Avoid Prop Drilling
 
-**深いネストには context 使用:**
+**Use context for deep nesting:**
 ```typescript
-// ❌ 避ける - 5段階以上 prop drilling
+// ❌ AVOID - Prop drilling 5+ levels
 <A prop={x}>
   <B prop={x}>
     <C prop={x}>
       <D prop={x}>
-        <E prop={x} />  // 結局ここで使用
+        <E prop={x} />  // Finally uses it here
       </D>
     </C>
   </B>
 </A>
 
-// ✅ 推奨 - Context または TanStack Query
+// ✅ PREFERRED - Context or TanStack Query
 const MyContext = createContext<MyData | null>(null);
 
 function Provider({ children }) {
@@ -566,13 +432,13 @@ function Provider({ children }) {
 
 function DeepChild() {
     const data = useContext(MyContext);
-    // 直接 data 使用
+    // Use data directly
 }
 ```
 
 ---
 
-## 高度なパターン
+## Advanced Patterns
 
 ### Compound Components
 
@@ -590,7 +456,7 @@ Card.Header = CardHeader;
 Card.Body = CardBody;
 Card.Footer = CardFooter;
 
-// 使用
+// Usage
 <Card>
     <Card.Header>Title</Card.Header>
     <Card.Body>Content</Card.Body>
@@ -598,7 +464,7 @@ Card.Footer = CardFooter;
 </Card>
 ```
 
-### Render Props (まれだが有用)
+### Render Props (Rare, but useful)
 
 ```typescript
 interface DataProviderProps {
@@ -610,7 +476,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
     return <>{children(data)}</>;
 };
 
-// 使用
+// Usage
 <DataProvider>
     {(data) => <Display data={data} />}
 </DataProvider>
@@ -618,19 +484,19 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 
 ---
 
-## まとめ
+## Summary
 
-**最新コンポーネントレシピ:**
-1. TypeScript と共に `React.FC<Props>`
-2. 重ければ lazy load: `React.lazy(() => import())`
-3. ローディングのために `<SuspenseLoader>` でラップ
-4. データに `useSuspenseQuery` 使用
-5. Import エイリアス (@/, ~types, ~components)
-6. `useCallback` と共にイベントハンドラー
-7. 下部に default export
-8. ローディング状態での early returns 禁止
+**Modern Component Recipe:**
+1. `React.FC<Props>` with TypeScript
+2. Lazy load if heavy: `React.lazy(() => import())`
+3. Wrap in `<SuspenseLoader>` for loading
+4. Use `useSuspenseQuery` for data
+5. Import aliases (@/, ~types, ~components)
+6. Event handlers with `useCallback`
+7. Default export at bottom
+8. No early returns for loading states
 
-**参考:**
-- [data-fetching.md](data-fetching.md) - useSuspenseQuery 詳細
-- [loading-and-error-states.md](loading-and-error-states.md) - Suspense ベストプラクティス
-- [complete-examples.md](complete-examples.md) - 完全動作例
+**See Also:**
+- [data-fetching.md](data-fetching.md) - useSuspenseQuery details
+- [loading-and-error-states.md](loading-and-error-states.md) - Suspense best practices
+- [complete-examples.md](complete-examples.md) - Full working examples

@@ -1,300 +1,300 @@
 # Agents
 
-複雑なマルチステップタスクのための特化型エージェント。
+Specialized agents for complex, multi-step tasks.
 
 ---
 
-## Agentsとは？
+## What Are Agents?
 
-Agentsは特定の複雑なタスクを処理する自律的なClaudeインスタンスです。Skills（インラインガイドを提供する）とは異なり、agentsは：
-- 別のサブタスクとして実行
-- 最小限の監督で自律的に作業
-- 特化したツールへのアクセス権を保有
-- 完了時に総合レポートを返す
+Agents are autonomous Claude instances that handle specific complex tasks. Unlike skills (which provide inline guidance), agents:
+- Run as separate sub-tasks
+- Work autonomously with minimal supervision
+- Have specialized tool access
+- Return comprehensive reports when complete
 
-**核心的な利点：** Agentsは**独立型** - `.md`ファイルをコピーするだけですぐに使用可能！
+**Key advantage:** Agents are **standalone** - just copy the `.md` file and use immediately!
 
 ---
 
-## 使用可能なAgents（10個）
+## Available Agents (10)
 
 ### code-architecture-reviewer
-**目的：** アーキテクチャの一貫性とベストプラクティスのコードレビュー
+**Purpose:** Review code for architectural consistency and best practices
 
-**使用時期：**
-- 新機能の実装後
-- 重要な変更をマージする前
-- コードのリファクタリング時
-- アーキテクチャ決定の検証時
+**When to use:**
+- After implementing a new feature
+- Before merging significant changes
+- When refactoring code
+- To validate architectural decisions
 
-**統合：** ✅ そのままコピー
+**Integration:** ✅ Copy as-is
 
 ---
 
 ### code-refactor-master
-**目的：** 包括的なリファクタリング計画と実行
+**Purpose:** Plan and execute comprehensive refactoring
 
-**使用時期：**
-- ファイル構造の再構成
-- 大きなコンポーネントの分離
-- ファイル移動後のimportパス更新
-- コードの保守性改善
+**When to use:**
+- Reorganizing file structures
+- Breaking down large components
+- Updating import paths after moves
+- Improving code maintainability
 
-**統合：** ✅ そのままコピー
+**Integration:** ✅ Copy as-is
 
 ---
 
 ### documentation-architect
-**目的：** 包括的なドキュメント作成
+**Purpose:** Create comprehensive documentation
 
-**使用時期：**
-- 新機能のドキュメント化
-- APIドキュメントの作成
-- 開発者ガイドの作成
-- アーキテクチャ概要の生成
+**When to use:**
+- Documenting new features
+- Creating API documentation
+- Writing developer guides
+- Generating architectural overviews
 
-**統合：** ✅ そのままコピー
+**Integration:** ✅ Copy as-is
 
 ---
 
 ### frontend-error-fixer
-**目的：** フロントエンドエラーのデバッグと修正
+**Purpose:** Debug and fix frontend errors
 
-**使用時期：**
-- ブラウザコンソールエラー
-- フロントエンドTypeScriptコンパイルエラー
-- Reactエラー
-- ビルド失敗
+**When to use:**
+- Browser console errors
+- TypeScript compilation errors in frontend
+- React errors
+- Build failures
 
-**統合：** ⚠️ スクリーンショットパス参照可能 - 必要に応じて更新
+**Integration:** ⚠️ May reference screenshot paths - update if needed
 
 ---
 
 ### plan-reviewer
-**目的：** 実装前の開発計画レビュー
+**Purpose:** Review development plans before implementation
 
-**使用時期：**
-- 複雑な機能を開始する前
-- アーキテクチャ計画の検証
-- 潜在的な問題の早期識別
-- アプローチについてのセカンドオピニオンが必要な時
+**When to use:**
+- Before starting complex features
+- Validating architectural plans
+- Identifying potential issues early
+- Getting second opinion on approach
 
-**統合：** ✅ そのままコピー
+**Integration:** ✅ Copy as-is
 
 ---
 
 ### refactor-planner
-**目的：** 包括的なリファクタリング戦略の策定
+**Purpose:** Create comprehensive refactoring strategies
 
-**使用時期：**
-- コード再構成の計画
-- レガシーコードの現代化
-- 大きなファイルの分離
-- コード構造の改善
+**When to use:**
+- Planning code reorganization
+- Modernizing legacy code
+- Breaking down large files
+- Improving code structure
 
-**統合：** ✅ そのままコピー
+**Integration:** ✅ Copy as-is
 
 ---
 
 ### web-research-specialist
-**目的：** インターネットでの技術イシュー調査
+**Purpose:** Research technical issues online
 
-**使用時期：**
-- 難解なエラーのデバッグ
-- 問題解決策を探す
-- ベストプラクティスの調査
-- 実装アプローチの比較
+**When to use:**
+- Debugging obscure errors
+- Finding solutions to problems
+- Researching best practices
+- Comparing implementation approaches
 
-**統合：** ✅ そのままコピー
+**Integration:** ✅ Copy as-is
 
 ---
 
 ### auth-route-tester
-**目的：** 認証されたAPIエンドポイントのテスト
+**Purpose:** Test authenticated API endpoints
 
-**使用時期：**
-- JWT cookie認証を使用するルートのテスト
-- エンドポイント機能の検証
-- 認証問題のデバッグ
+**When to use:**
+- Testing routes with JWT cookie auth
+- Validating endpoint functionality
+- Debugging authentication issues
 
-**統合：** ⚠️ JWT cookie基盤認証が必要
+**Integration:** ⚠️ Requires JWT cookie-based auth
 
 ---
 
 ### auth-route-debugger
-**目的：** 認証問題のデバッグ
+**Purpose:** Debug authentication issues
 
-**使用時期：**
-- 認証失敗
-- トークン問題
-- cookie問題
-- 権限エラー
+**When to use:**
+- Auth failures
+- Token issues
+- Cookie problems
+- Permission errors
 
-**統合：** ⚠️ JWT cookie基盤認証が必要
+**Integration:** ⚠️ Requires JWT cookie-based auth
 
 ---
 
 ### auto-error-resolver
-**目的：** TypeScriptコンパイルエラーの自動修正
+**Purpose:** Automatically fix TypeScript compilation errors
 
-**使用時期：**
-- TypeScriptエラーによるビルド失敗
-- 型を壊すリファクタリング後
-- 体系的なエラー解決が必要な時
+**When to use:**
+- Build failures with TypeScript errors
+- After refactoring that breaks types
+- Systematic error resolution needed
 
-**統合：** ⚠️ パス更新が必要な場合あり
+**Integration:** ⚠️ May need path updates
 
 ---
 
-## Agent統合方法
+## How to Integrate an Agent
 
-### 標準統合（大部分のAgents）
+### Standard Integration (Most Agents)
 
-**Step 1: ファイルコピー**
+**Step 1: Copy the file**
 ```bash
 cp showcase/.claude/agents/agent-name.md \\
    your-project/.claude/agents/
 ```
 
-**Step 2: 確認（オプション）**
+**Step 2: Verify (optional)**
 ```bash
-# ハードコードされたパスを確認
+# Check for hardcoded paths
 grep -n "~/git/\|/root/git/\|/Users/" your-project/.claude/agents/agent-name.md
 ```
 
-**Step 3: 使用する**
-Claudeにリクエスト：「[agent-name] agentを使って[タスク]してください」
+**Step 3: Use it**
+Ask Claude: "Use the [agent-name] agent to [task]"
 
-以上！Agentsはすぐに動作します。
+That's it! Agents work immediately.
 
 ---
 
-### カスタマイズが必要なAgents
+### Agents Requiring Customization
 
 **frontend-error-fixer:**
-- スクリーンショットパス参照可能
-- ユーザーに確認：「スクリーンショットをどこに保存しますか？」
-- エージェントファイルのパスを更新
+- May reference screenshot paths
+- Ask user: "Where should screenshots be saved?"
+- Update paths in agent file
 
 **auth-route-tester / auth-route-debugger:**
-- JWT cookie認証が必要
-- 例のサービスURLを更新
-- ユーザーの認証設定に合わせてカスタマイズ
+- Require JWT cookie authentication
+- Update service URLs from examples
+- Customize for user's auth setup
 
 **auto-error-resolver:**
-- ハードコードされたプロジェクトパスがある可能性
-- `$CLAUDE_PROJECT_DIR`または相対パス使用に更新
+- May have hardcoded project paths
+- Update to use `$CLAUDE_PROJECT_DIR` or relative paths
 
 ---
 
-## Agents vs Skills使用時期
+## When to Use Agents vs Skills
 
-| Agents使用時... | Skills使用時... |
+| Use Agents When... | Use Skills When... |
 |-------------------|-------------------|
-| マルチステップタスクが必要 | インラインガイドが必要 |
-| 複雑な分析が必要 | ベストプラクティス確認 |
-| 自律的作業を好む | コントロールを維持したい |
-| 明確な最終目標があるタスク | 継続的な開発作業 |
-| 例：「すべてのコントローラーをレビューして」 | 例：「新しいルートを作成中」 |
+| Task requires multiple steps | Need inline guidance |
+| Complex analysis needed | Checking best practices |
+| Autonomous work preferred | Want to maintain control |
+| Task has clear end goal | Ongoing development work |
+| Example: "Review all controllers" | Example: "Creating a new route" |
 
-**両方を一緒に使用可能：**
-- Skillは開発中にパターンを提供
-- Agentは完了後に結果をレビュー
-
----
-
-## Agentクイックリファレンス
-
-| Agent | 複雑度 | カスタマイズ | 認証必要 |
-|-------|--------|--------------|-----------|
-| code-architecture-reviewer | 中 | ✅ なし | いいえ |
-| code-refactor-master | 高 | ✅ なし | いいえ |
-| documentation-architect | 中 | ✅ なし | いいえ |
-| frontend-error-fixer | 中 | ⚠️ スクリーンショットパス | いいえ |
-| plan-reviewer | 低 | ✅ なし | いいえ |
-| refactor-planner | 中 | ✅ なし | いいえ |
-| web-research-specialist | 低 | ✅ なし | いいえ |
-| auth-route-tester | 中 | ⚠️ 認証設定 | JWT cookie |
-| auth-route-debugger | 中 | ⚠️ 認証設定 | JWT cookie |
-| auto-error-resolver | 低 | ⚠️ パス | いいえ |
+**Both can work together:**
+- Skill provides patterns during development
+- Agent reviews the result when complete
 
 ---
 
-## Claude Code向けガイド
+## Agent Quick Reference
 
-**ユーザーのためにagents統合時：**
+| Agent | Complexity | Customization | Auth Required |
+|-------|-----------|---------------|---------------|
+| code-architecture-reviewer | Medium | ✅ None | No |
+| code-refactor-master | High | ✅ None | No |
+| documentation-architect | Medium | ✅ None | No |
+| frontend-error-fixer | Medium | ⚠️ Screenshot paths | No |
+| plan-reviewer | Low | ✅ None | No |
+| refactor-planner | Medium | ✅ None | No |
+| web-research-specialist | Low | ✅ None | No |
+| auth-route-tester | Medium | ⚠️ Auth setup | JWT cookies |
+| auth-route-debugger | Medium | ⚠️ Auth setup | JWT cookies |
+| auto-error-resolver | Low | ⚠️ Paths | No |
 
-1. **[CLAUDE_INTEGRATION_GUIDE.md](../../CLAUDE_INTEGRATION_GUIDE.md)を読む**
-2. **.mdファイルのみコピー** - agentsは独立型
-3. **ハードコードされたパスを確認：**
+---
+
+## For Claude Code
+
+**When integrating agents for a user:**
+
+1. **Read [CLAUDE_INTEGRATION_GUIDE.md](../../CLAUDE_INTEGRATION_GUIDE.md)**
+2. **Just copy the .md file** - agents are standalone
+3. **Check for hardcoded paths:**
    ```bash
    grep "~/git/\|/root/" agent-name.md
    ```
-4. **パスが見つかった場合は更新** - `$CLAUDE_PROJECT_DIR`または`.`に
-5. **認証agentsの場合：** JWT cookie認証使用の有無を先に確認
+4. **Update paths if found** to `$CLAUDE_PROJECT_DIR` or `.`
+5. **For auth agents:** Ask if they use JWT cookie auth first
 
-**以上！** Agentsは最も簡単に統合できるコンポーネントです。
+**That's it!** Agents are the easiest components to integrate.
 
 ---
 
-## 独自のAgentsを作成
+## Creating Your Own Agents
 
-Agentsはオプションのyaml frontmatterがあるマークダウンファイルです：
+Agents are markdown files with optional YAML frontmatter:
 
 ```markdown
 # Agent Name
 
-## 目的
-このエージェントが行うこと
+## Purpose
+What this agent does
 
-## 指示
-自律実行のためのステップバイステップの指示
+## Instructions
+Step-by-step instructions for autonomous execution
 
-## 使用可能なツール
-このエージェントが使用できるツールリスト
+## Tools Available
+List of tools this agent can use
 
-## 予想される出力
-結果を返す形式
+## Expected Output
+What format to return results in
 ```
 
-**ヒント：**
-- 指示を非常に具体的に記述
-- 複雑なタスクを番号付きステップに分離
-- 返す内容を正確に明示
-- 良い出力の例を含める
-- 使用可能なツールを明示的にリスト
+**Tips:**
+- Be very specific in instructions
+- Break complex tasks into numbered steps
+- Specify exactly what to return
+- Include examples of good output
+- List available tools explicitly
 
 ---
 
-## トラブルシューティング
+## Troubleshooting
 
-### Agentが見つからない
+### Agent not found
 
-**確認：**
+**Check:**
 ```bash
-# エージェントファイルがあるか？
+# Is agent file present?
 ls -la .claude/agents/[agent-name].md
 ```
 
-### Agentがパスエラーで失敗
+### Agent fails with path errors
 
-**ハードコードされたパスを確認：**
+**Check for hardcoded paths:**
 ```bash
 grep "~/\|/root/\|/Users/" .claude/agents/[agent-name].md
 ```
 
-**修正：**
+**Fix:**
 ```bash
 sed -i 's|~/git/.*project|$CLAUDE_PROJECT_DIR|g' .claude/agents/[agent-name].md
 ```
 
 ---
 
-## 次のステップ
+## Next Steps
 
-1. **上記のagentsを見る** - 作業に役立つものを探す
-2. **必要なものをコピー** - .mdファイルのみ
-3. **Claudeに使用を依頼** -「[agent]を使って[タスク]してください」
-4. **独自のものを作成** - 特定の要件に合わせてパターンを踏襲
+1. **Browse agents above** - Find ones useful for your work
+2. **Copy what you need** - Just the .md file
+3. **Ask Claude to use them** - "Use [agent] to [task]"
+4. **Create your own** - Follow the pattern for your specific needs
 
-**質問がありますか？** [CLAUDE_INTEGRATION_GUIDE.md](../../CLAUDE_INTEGRATION_GUIDE.md)を参照
+**Questions?** See [CLAUDE_INTEGRATION_GUIDE.md](../../CLAUDE_INTEGRATION_GUIDE.md)

@@ -1,87 +1,66 @@
-# Routing ガイド
+# Routing Guide
 
-TanStack Router 実装とフォルダベースルーティングおよび lazy loading パターンです。
+TanStack Router implementation with folder-based routing and lazy loading patterns.
 
 ---
 
-## TanStack Router 概要
+## TanStack Router Overview
 
-ファイルベースルーティングがある **TanStack Router**:
-- フォルダ構造が routes を定義
-- コード分割のための Lazy loading
-- 型安全ルーティング
+**TanStack Router** with file-based routing:
+- Folder structure defines routes
+- Lazy loading for code splitting
+- Type-safe routing
 - Breadcrumb loaders
 
 ---
 
-## RealWorld ページ一覧
+## Folder-Based Routing
 
-| ルート | ページ名 | 説明 |
-|--------|---------|------|
-| `/#/` | ホーム | 記事フィード、人気タグ |
-| `/#/login` | ログイン | ログインフォーム |
-| `/#/register` | 新規登録 | 登録フォーム |
-| `/#/settings` | 設定 | ユーザー設定、ログアウト |
-| `/#/editor` | 新規記事 | 記事作成フォーム |
-| `/#/editor/:slug` | 記事編集 | 記事編集フォーム |
-| `/#/article/:slug` | 記事詳細 | 記事本文、コメント |
-| `/#/profile/:username` | プロフィール | ユーザー情報、投稿記事 |
-| `/#/profile/:username/favorites` | お気に入り | ユーザーのお気に入り記事 |
-
----
-
-## フォルダベースルーティング
-
-### ディレクトリ構造
+### Directory Structure
 
 ```
 routes/
-  __root.tsx                    # ルートレイアウト
-  index.tsx                     # ホーム route (/)
-  login.tsx                     # /login
-  register.tsx                  # /register
-  settings.tsx                  # /settings
-  editor/
-    index.tsx                   # /editor (新規記事)
-    $slug.tsx                   # /editor/:slug (記事編集)
-  article/
-    $slug.tsx                   # /article/:slug (記事詳細)
-  profile/
-    $username.tsx               # /profile/:username
-    $username/
-      favorites.tsx             # /profile/:username/favorites
+  __root.tsx                    # Root layout
+  index.tsx                     # Home route (/)
+  posts/
+    index.tsx                   # /posts
+    create/
+      index.tsx                 # /posts/create
+    $postId.tsx                 # /posts/:postId (dynamic)
+  comments/
+    index.tsx                   # /comments
 ```
 
-**パターン**:
-- `index.tsx` = そのパスの Route
-- `$param.tsx` = 動的パラメータ
-- ネストフォルダ = ネスト routes
+**Pattern**:
+- `index.tsx` = Route at that path
+- `$param.tsx` = Dynamic parameter
+- Nested folders = Nested routes
 
 ---
 
-## 基本 Route パターン
+## Basic Route Pattern
 
-### posts/index.tsx 例
+### Example from posts/index.tsx
 
 ```typescript
 /**
- * Posts route コンポーネント
- * メインブログポストリスト表示
+ * Posts route component
+ * Displays the main blog posts list
  */
 
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy } from 'react';
 
-// ページコンポーネント Lazy load
+// Lazy load the page component
 const PostsList = lazy(() =>
     import('@/features/posts/components/PostsList').then(
         (module) => ({ default: module.PostsList }),
     ),
 );
 
-export const Route = createFileRoute('/posts/')(({
+export const Route = createFileRoute('/posts/')({
     component: PostsPage,
-    // Breadcrumb データ定義
+    // Define breadcrumb data
     loader: () => ({
         crumb: 'Posts',
     }),
@@ -99,23 +78,23 @@ function PostsPage() {
 export default PostsPage;
 ```
 
-**キーポイント:**
-- 重いコンポーネント lazy load
-- route パスと共に `createFileRoute`
-- breadcrumb データ用 `loader`
-- Page コンポーネントがコンテンツレンダー
-- Route とコンポーネント両方を export
+**Key Points:**
+- Lazy load heavy components
+- `createFileRoute` with route path
+- `loader` for breadcrumb data
+- Page component renders content
+- Export both Route and component
 
 ---
 
 ## Lazy Loading Routes
 
-### Named Export パターン
+### Named Export Pattern
 
 ```typescript
 import { lazy } from 'react';
 
-// named exports の場合 .then() で default にマッピング
+// For named exports, use .then() to map to default
 const MyPage = lazy(() =>
     import('@/features/my-feature/components/MyPage').then(
         (module) => ({ default: module.MyPage })
@@ -123,30 +102,30 @@ const MyPage = lazy(() =>
 );
 ```
 
-### Default Export パターン
+### Default Export Pattern
 
 ```typescript
 import { lazy } from 'react';
 
-// default exports の場合より簡単な文法
+// For default exports, simpler syntax
 const MyPage = lazy(() => import('@/features/my-feature/components/MyPage'));
 ```
 
-### Routes を Lazy Load する理由
+### Why Lazy Load Routes?
 
-- コード分割 - より小さい初期バンドル
-- より速い初期ページロード
-- ナビゲーション時のみ route コードロード
-- より良いパフォーマンス
+- Code splitting - smaller initial bundle
+- Faster initial page load
+- Load route code only when navigated to
+- Better performance
 
 ---
 
 ## createFileRoute
 
-### 基本設定
+### Basic Configuration
 
 ```typescript
-export const Route = createFileRoute('/my-route/')(({
+export const Route = createFileRoute('/my-route/')({
     component: MyRoutePage,
 });
 
@@ -155,10 +134,10 @@ function MyRoutePage() {
 }
 ```
 
-### Breadcrumb Loader と共に
+### With Breadcrumb Loader
 
 ```typescript
-export const Route = createFileRoute('/my-route/')(({
+export const Route = createFileRoute('/my-route/')({
     component: MyRoutePage,
     loader: () => ({
         crumb: 'My Route Title',
@@ -166,25 +145,25 @@ export const Route = createFileRoute('/my-route/')(({
 });
 ```
 
-Breadcrumb がナビゲーション/アプリバーに自動的に表示されます。
+Breadcrumb appears in navigation/app bar automatically.
 
-### データ Loader と共に
+### With Data Loader
 
 ```typescript
-export const Route = createFileRoute('/my-route/')(({
+export const Route = createFileRoute('/my-route/')({
     component: MyRoutePage,
     loader: async () => {
-        // ここでデータ prefetch 可能
+        // Can prefetch data here
         const data = await api.getData();
         return { crumb: 'My Route', data };
     },
 });
 ```
 
-### Search Params と共に
+### With Search Params
 
 ```typescript
-export const Route = createFileRoute('/search/')(({
+export const Route = createFileRoute('/search/')({
     component: SearchPage,
     validateSearch: (search: Record<string, unknown>) => {
         return {
@@ -196,20 +175,20 @@ export const Route = createFileRoute('/search/')(({
 
 function SearchPage() {
     const { query, page } = Route.useSearch();
-    // query と page 使用
+    // Use query and page
 }
 ```
 
 ---
 
-## 動的 Routes
+## Dynamic Routes
 
-### パラメータ Routes
+### Parameter Routes
 
 ```typescript
 // routes/users/$userId.tsx
 
-export const Route = createFileRoute('/users/$userId')(({
+export const Route = createFileRoute('/users/$userId')({
     component: UserPage,
 });
 
@@ -220,12 +199,12 @@ function UserPage() {
 }
 ```
 
-### 複数パラメータ
+### Multiple Parameters
 
 ```typescript
 // routes/posts/$postId/comments/$commentId.tsx
 
-export const Route = createFileRoute('/posts/$postId/comments/$commentId')(({
+export const Route = createFileRoute('/posts/$postId/comments/$commentId')({
     component: CommentPage,
 });
 
@@ -238,9 +217,9 @@ function CommentPage() {
 
 ---
 
-## ナビゲーション
+## Navigation
 
-### プログラマティックナビゲーション
+### Programmatic Navigation
 
 ```typescript
 import { useNavigate } from '@tanstack/react-router';
@@ -256,7 +235,7 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-### パラメータと共に
+### With Parameters
 
 ```typescript
 const handleNavigate = () => {
@@ -267,7 +246,7 @@ const handleNavigate = () => {
 };
 ```
 
-### Search Params と共に
+### With Search Params
 
 ```typescript
 const handleSearch = () => {
@@ -280,9 +259,9 @@ const handleSearch = () => {
 
 ---
 
-## Route レイアウトパターン
+## Route Layout Pattern
 
-### ルートレイアウト (__root.tsx)
+### Root Layout (__root.tsx)
 
 ```typescript
 import { createRootRoute, Outlet } from '@tanstack/react-router';
@@ -298,18 +277,18 @@ function RootLayout() {
         <Box>
             <CustomAppBar />
             <Box sx={{ p: 2 }}>
-                <Outlet />  {/* 子 routes がここでレンダー */}
+                <Outlet />  {/* Child routes render here */}
             </Box>
         </Box>
     );
 }
 ```
 
-### ネストレイアウト
+### Nested Layouts
 
 ```typescript
 // routes/dashboard/index.tsx
-export const Route = createFileRoute('/dashboard/')(({
+export const Route = createFileRoute('/dashboard/')({
     component: DashboardLayout,
 });
 
@@ -318,7 +297,7 @@ function DashboardLayout() {
         <Box>
             <DashboardSidebar />
             <Box sx={{ flex: 1 }}>
-                <Outlet />  {/* ネスト routes */}
+                <Outlet />  {/* Nested routes */}
             </Box>
         </Box>
     );
@@ -327,26 +306,26 @@ function DashboardLayout() {
 
 ---
 
-## 完全な Route 例
+## Complete Route Example
 
 ```typescript
 /**
  * User profile route
- * パス: /users/:userId
+ * Path: /users/:userId
  */
 
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy } from 'react';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 
-// 重いコンポーネント Lazy load
+// Lazy load heavy component
 const UserProfile = lazy(() =>
     import('@/features/users/components/UserProfile').then(
         (module) => ({ default: module.UserProfile })
     )
 );
 
-export const Route = createFileRoute('/users/$userId')(({
+export const Route = createFileRoute('/users/$userId')({
     component: UserPage,
     loader: () => ({
         crumb: 'User Profile',
@@ -368,18 +347,18 @@ export default UserPage;
 
 ---
 
-## まとめ
+## Summary
 
-**Routing チェックリスト:**
-- ✅ フォルダベース: `routes/my-route/index.tsx`
-- ✅ コンポーネント Lazy load: `React.lazy(() => import())`
-- ✅ route パスと共に `createFileRoute` 使用
-- ✅ `loader` 関数に breadcrumb 追加
-- ✅ ローディング状態のために `SuspenseLoader` でラップ
-- ✅ 動的 params に `Route.useParams()` 使用
-- ✅ プログラマティックナビゲーションに `useNavigate()` 使用
+**Routing Checklist:**
+- ✅ Folder-based: `routes/my-route/index.tsx`
+- ✅ Lazy load components: `React.lazy(() => import())`
+- ✅ Use `createFileRoute` with route path
+- ✅ Add breadcrumb in `loader` function
+- ✅ Wrap in `SuspenseLoader` for loading states
+- ✅ Use `Route.useParams()` for dynamic params
+- ✅ Use `useNavigate()` for programmatic navigation
 
-**参考:**
-- [component-patterns.md](component-patterns.md) - Lazy loading パターン
-- [loading-and-error-states.md](loading-and-error-states.md) - SuspenseLoader 使用
-- [complete-examples.md](complete-examples.md) - 完全 route 例
+**See Also:**
+- [component-patterns.md](component-patterns.md) - Lazy loading patterns
+- [loading-and-error-states.md](loading-and-error-states.md) - SuspenseLoader usage
+- [complete-examples.md](complete-examples.md) - Full route examples

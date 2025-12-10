@@ -1,55 +1,55 @@
 ---
-description: context compaction前に開発ドキュメントを更新
-argument-hint: オプション - 集中する特定のコンテキストや作業（包括的な更新を希望する場合は空にしてください）
+description: Update dev documentation before context compaction
+argument-hint: Optional - specific context or tasks to focus on (leave empty for comprehensive update)
 ---
 
-Context制限に近づいています。Contextリセット後の円滑な作業継続を確保するために開発ドキュメントを更新してください。
+We're approaching context limits. Please update the development documentation to ensure seamless continuation after context reset.
 
-## 必須更新項目
+## Required Updates
 
-### 1. アクティブ作業ドキュメントの更新
-`/dev/active/`の各作業について：
-- `[task-name]-context.md`を更新：
-  - 現在の実装状態
-  - このセッションで下した主要な決定
-  - 修正したファイルとその理由
-  - 発見したブロッカーや問題
-  - 次に即座に行うステップ
-  - 最終更新タイムスタンプ
+### 1. Update Active Task Documentation
+For each task in `/dev/active/`:
+- Update `[task-name]-context.md` with:
+  - Current implementation state
+  - Key decisions made this session
+  - Files modified and why
+  - Any blockers or issues discovered
+  - Next immediate steps
+  - Last Updated timestamp
 
-- `[task-name]-tasks.md`を更新：
-  - 完了したタスクは✅でマーク
-  - 発見した新しいタスクを追加
-  - 進行中のタスクの現在状態を更新
-  - 必要に応じて優先順位を再整理
+- Update `[task-name]-tasks.md` with:
+  - Mark completed tasks as ✅ 
+  - Add any new tasks discovered
+  - Update in-progress tasks with current status
+  - Reorder priorities if needed
 
-### 2. セッションコンテキストのキャプチャ
-関連情報を含める：
-- 解決した複雑な問題
-- 下したアーキテクチャ上の決定
-- 発見して修正した厄介なバグ
-- 発見した統合ポイント
-- 使用したテストアプローチ
-- 実施したパフォーマンス最適化
+### 2. Capture Session Context
+Include any relevant information about:
+- Complex problems solved
+- Architectural decisions made
+- Tricky bugs found and fixed
+- Integration points discovered
+- Testing approaches used
+- Performance optimizations made
 
-### 3. メモリ更新（該当する場合）
-- 新しいパターンやソリューションをプロジェクトメモリ/ドキュメントに保存
-- 発見したエンティティ関係を更新
-- システム動作に関する観察を追加
+### 3. Update Memory (if applicable)
+- Store any new patterns or solutions in project memory/documentation
+- Update entity relationships discovered
+- Add observations about system behavior
 
-### 4. 未完了作業の文書化
-- Context制限に達した時に作業していた内容
-- 部分的に完了した機能の正確な状態
-- 再起動時に実行すべきコマンド
-- 永続的な修正が必要な一時的な解決策
+### 4. Document Unfinished Work
+- What was being worked on when context limit approached
+- Exact state of any partially completed features
+- Commands that need to be run on restart
+- Any temporary workarounds that need permanent fixes
 
-### 5. 引き継ぎノートの作成
-新しい会話に切り替える場合：
-- 編集中の正確なファイルと行
-- 現在の変更の目標
-- 注意が必要なコミットされていない変更
-- 作業を検証するためのテストコマンド
+### 5. Create Handoff Notes
+If switching to a new conversation:
+- Exact file and line being edited
+- The goal of current changes
+- Any uncommitted changes that need attention
+- Test commands to verify work
 
-## 追加コンテキスト：$ARGUMENTS
+## Additional Context: $ARGUMENTS
 
-**優先事項**：コードだけでは再発見や再構築が難しい情報のキャプチャに集中してください。
+**Priority**: Focus on capturing information that would be hard to rediscover or reconstruct from code alone.

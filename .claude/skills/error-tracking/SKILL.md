@@ -1,64 +1,64 @@
 ---
 name: error-tracking
-description: プロジェクトサービスに Sentry v8 error tracking および performance monitoring 追加。この skill は error handling 追加、新 controllers 生成、cron jobs 計測、データベースパフォーマンス追跡時に使用します。すべてのエラーは必ず Sentry にキャプチャされる必要があります - 例外なし。
+description: Add Sentry v8 error tracking and performance monitoring to your project services. Use this skill when adding error handling, creating new controllers, instrumenting cron jobs, or tracking database performance. ALL ERRORS MUST BE CAPTURED TO SENTRY - no exceptions.
 ---
 
-# プロジェクト Sentry 統合 Skill
+# your project Sentry Integration Skill
 
-## 目的
-この skill は Sentry v8 パターンに従ってすべてのプロジェクトサービスで包括的な Sentry error tracking および performance monitoring を強制します。
+## Purpose
+This skill enforces comprehensive Sentry error tracking and performance monitoring across all your project services following Sentry v8 patterns.
 
-## この Skill 使用時点
-- どのコードにでも error handling 追加
-- 新 controllers または routes 生成
-- Cron jobs 計測
-- データベースパフォーマンス追跡
-- Performance spans 追加
-- Workflow errors 処理
+## When to Use This Skill
+- Adding error handling to any code
+- Creating new controllers or routes
+- Instrumenting cron jobs
+- Tracking database performance
+- Adding performance spans
+- Handling workflow errors
 
-## 🚨 核心ルール
+## 🚨 CRITICAL RULE
 
-**すべてのエラーは必ず Sentry にキャプチャされる必要があります** - 例外なし。console.error のみを単独で使用しないでください。
+**ALL ERRORS MUST BE CAPTURED TO SENTRY** - No exceptions. Never use console.error alone.
 
-## 現在の状態
+## Current Status
 
-### Form Service ✅ 完了
-- Sentry v8 完全統合
-- すべての workflow errors 追跡済み
-- SystemActionQueueProcessor 計測済み
-- テストエンドポイント利用可能
+### Form Service ✅ Complete
+- Sentry v8 fully integrated
+- All workflow errors tracked
+- SystemActionQueueProcessor instrumented
+- Test endpoints available
 
-### Email Service 🟡 進行中
-- Phase 1-2 完了 (6/22 作業)
-- 189個の ErrorLogger.log() 呼び出し残り
+### Email Service 🟡 In Progress
+- Phase 1-2 complete (6/22 tasks)
+- 189 ErrorLogger.log() calls remaining
 
-## Sentry 統合パターン
+## Sentry Integration Patterns
 
 ### 1. Controller Error Handling
 
 ```typescript
-// ✅ 正しい - BaseController 使用
+// ✅ CORRECT - Use BaseController
 import { BaseController } from '../controllers/BaseController';
 
 export class MyController extends BaseController {
     async myMethod() {
         try {
-            // ... コード
+            // ... your code
         } catch (error) {
-            this.handleError(error, 'myMethod'); // 自動的に Sentry に送信
+            this.handleError(error, 'myMethod'); // Automatically sends to Sentry
         }
     }
 }
 ```
 
-### 2. Route Error Handling (BaseController なし)
+### 2. Route Error Handling (Without BaseController)
 
 ```typescript
 import * as Sentry from '@sentry/node';
 
 router.get('/route', async (req, res) => {
     try {
-        // ... コード
+        // ... your code
     } catch (error) {
         Sentry.captureException(error, {
             tags: { route: '/route', method: 'GET' },
@@ -74,7 +74,7 @@ router.get('/route', async (req, res) => {
 ```typescript
 import { WorkflowSentryHelper } from '../workflow/utils/sentryHelper';
 
-// ✅ 正しい - WorkflowSentryHelper 使用
+// ✅ CORRECT - Use WorkflowSentryHelper
 WorkflowSentryHelper.captureWorkflowError(error, {
     workflowCode: 'DHS_CLOSEOUT',
     instanceId: 123,
@@ -85,11 +85,11 @@ WorkflowSentryHelper.captureWorkflowError(error, {
 });
 ```
 
-### 4. Cron Jobs (必須パターン)
+### 4. Cron Jobs (MANDATORY Pattern)
 
 ```typescript
 #!/usr/bin/env node
-// shebang 次の最初の行 - 重要！
+// FIRST LINE after shebang - CRITICAL!
 import '../instrument';
 import * as Sentry from '@sentry/node';
 
@@ -103,7 +103,7 @@ async function main() {
         }
     }, async () => {
         try {
-            // cron job ロジック
+            // Your cron job logic
         } catch (error) {
             Sentry.captureException(error, {
                 tags: {
@@ -119,7 +119,7 @@ async function main() {
 
 main()
     .then(() => {
-        console.log('[Job] 正常に完了');
+        console.log('[Job] Completed successfully');
         process.exit(0);
     })
     .catch((error) => {
@@ -133,7 +133,7 @@ main()
 ```typescript
 import { DatabasePerformanceMonitor } from '../utils/databasePerformance';
 
-// ✅ 正しい - データベース操作をラップ
+// ✅ CORRECT - Wrap database operations
 const result = await DatabasePerformanceMonitor.withPerformanceTracking(
     'findMany',
     'UserProfile',
@@ -145,7 +145,7 @@ const result = await DatabasePerformanceMonitor.withPerformanceTracking(
 );
 ```
 
-### 6. Spans を使用した Async 作業
+### 6. Async Operations with Spans
 
 ```typescript
 import * as Sentry from '@sentry/node';
@@ -157,33 +157,33 @@ const result = await Sentry.startSpan({
         'custom.attribute': 'value'
     }
 }, async () => {
-    // async 作業
+    // Your async operation
     return await someAsyncOperation();
 });
 ```
 
-## エラーレベル
+## Error Levels
 
-適切な重大度レベルを使用:
+Use appropriate severity levels:
 
-- **fatal**: システム使用不可 (データベースダウン、コアサービス障害)
-- **error**: 操作失敗、即座の注意が必要
-- **warning**: 回復可能な問題、パフォーマンス低下
-- **info**: 情報メッセージ、正常な操作
-- **debug**: 詳細デバッグ情報 (開発環境のみ)
+- **fatal**: System is unusable (database down, critical service failure)
+- **error**: Operation failed, needs immediate attention
+- **warning**: Recoverable issues, degraded performance
+- **info**: Informational messages, successful operations
+- **debug**: Detailed debugging information (dev only)
 
-## 必須 Context
+## Required Context
 
 ```typescript
 import * as Sentry from '@sentry/node';
 
 Sentry.withScope((scope) => {
-    // 使用可能な場合は常に含める
+    // ALWAYS include these if available
     scope.setUser({ id: userId });
-    scope.setTag('service', 'form'); // または 'email', 'users' など
+    scope.setTag('service', 'form'); // or 'email', 'users', etc.
     scope.setTag('environment', process.env.NODE_ENV);
 
-    // 操作別 context 追加
+    // Add operation-specific context
     scope.setContext('operation', {
         type: 'workflow.start',
         workflowCode: 'DHS_CLOSEOUT',
@@ -194,11 +194,11 @@ Sentry.withScope((scope) => {
 });
 ```
 
-## サービス別統合
+## Service-Specific Integration
 
 ### Form Service
 
-**場所**: `./blog-api/src/instrument.ts`
+**Location**: `./blog-api/src/instrument.ts`
 
 ```typescript
 import * as Sentry from '@sentry/node';
@@ -215,14 +215,14 @@ Sentry.init({
 });
 ```
 
-**主要 Helper**:
-- `WorkflowSentryHelper` - Workflow 専用エラー
-- `DatabasePerformanceMonitor` - DB クエリ追跡
+**Key Helpers**:
+- `WorkflowSentryHelper` - Workflow-specific errors
+- `DatabasePerformanceMonitor` - DB query tracking
 - `BaseController` - Controller error handling
 
 ### Email Service
 
-**場所**: `./notifications/src/instrument.ts`
+**Location**: `./notifications/src/instrument.ts`
 
 ```typescript
 import * as Sentry from '@sentry/node';
@@ -239,11 +239,11 @@ Sentry.init({
 });
 ```
 
-**主要 Helper**:
-- `EmailSentryHelper` - Email 専用エラー
+**Key Helpers**:
+- `EmailSentryHelper` - Email-specific errors
 - `BaseController` - Controller error handling
 
-## 設定 (config.ini)
+## Configuration (config.ini)
 
 ```ini
 [sentry]
@@ -260,116 +260,116 @@ dbErrorCapture = true
 enableN1Detection = true
 ```
 
-## Sentry 統合テスト
+## Testing Sentry Integration
 
-### Form Service テストエンドポイント
+### Form Service Test Endpoints
 
 ```bash
-# 基本 error capture テスト
+# Test basic error capture
 curl http://localhost:3002/blog-api/api/sentry/test-error
 
-# Workflow error テスト
+# Test workflow error
 curl http://localhost:3002/blog-api/api/sentry/test-workflow-error
 
-# Database performance テスト
+# Test database performance
 curl http://localhost:3002/blog-api/api/sentry/test-database-performance
 
-# Error boundary テスト
+# Test error boundary
 curl http://localhost:3002/blog-api/api/sentry/test-error-boundary
 ```
 
-### Email Service テストエンドポイント
+### Email Service Test Endpoints
 
 ```bash
-# 基本 error capture テスト
+# Test basic error capture
 curl http://localhost:3003/notifications/api/sentry/test-error
 
-# Email 専用 error テスト
+# Test email-specific error
 curl http://localhost:3003/notifications/api/sentry/test-email-error
 
-# Performance tracking テスト
+# Test performance tracking
 curl http://localhost:3003/notifications/api/sentry/test-performance
 ```
 
 ## Performance Monitoring
 
-### 要件
+### Requirements
 
-1. **すべての API エンドポイント**はトランザクション追跡必須
-2. **100ms 超過データベースクエリ**は自動的にフラグ付け
-3. **N+1 クエリ**は検知および報告
-4. **Cron jobs**は実行時間追跡必須
+1. **All API endpoints** must have transaction tracking
+2. **Database queries > 100ms** are automatically flagged
+3. **N+1 queries** are detected and reported
+4. **Cron jobs** must track execution time
 
 ### Transaction Tracking
 
 ```typescript
 import * as Sentry from '@sentry/node';
 
-// Express routes 用自動トランザクション追跡
+// Automatic transaction tracking for Express routes
 app.use(Sentry.Handlers.requestHandler());
 app.use(Sentry.Handlers.tracingHandler());
 
-// カスタム操作用手動トランザクション
+// Manual transaction for custom operations
 const transaction = Sentry.startTransaction({
     op: 'operation.type',
     name: 'Operation Name',
 });
 
 try {
-    // 操作実行
+    // Your operation
 } finally {
     transaction.finish();
 }
 ```
 
-## 避けるべき一般的な間違い
+## Common Mistakes to Avoid
 
-❌ **絶対** Sentry なしで console.error だけを使用しないでください
-❌ **絶対** エラーを静かに飲み込まないでください
-❌ **絶対** エラー context に機密データを露出しないでください
-❌ **絶対** context なしで一般的なエラーメッセージを使用しないでください
-❌ **絶対** async 操作で error handling をスキップしないでください
-❌ **絶対** cron jobs で instrument.ts を最初の行に import することを忘れないでください
+❌ **NEVER** use console.error without Sentry
+❌ **NEVER** swallow errors silently
+❌ **NEVER** expose sensitive data in error context
+❌ **NEVER** use generic error messages without context
+❌ **NEVER** skip error handling in async operations
+❌ **NEVER** forget to import instrument.ts as first line in cron jobs
 
-## 実装チェックリスト
+## Implementation Checklist
 
-新コードに Sentry 追加時:
+When adding Sentry to new code:
 
-- [ ] Sentry または適切な helper がインポート済み
-- [ ] すべての try/catch ブロックが Sentry にキャプチャ
-- [ ] エラーに意味のある context 追加済み
-- [ ] 適切なエラーレベル使用済み
-- [ ] エラーメッセージに機密データなし
-- [ ] 遅い操作に performance tracking 追加済み
-- [ ] Error handling パステスト済み
-- [ ] Cron jobs の場合: instrument.ts が最初にインポート済み
+- [ ] Imported Sentry or appropriate helper
+- [ ] All try/catch blocks capture to Sentry
+- [ ] Added meaningful context to errors
+- [ ] Used appropriate error level
+- [ ] No sensitive data in error messages
+- [ ] Added performance tracking for slow operations
+- [ ] Tested error handling paths
+- [ ] For cron jobs: instrument.ts imported first
 
-## 核心ファイル
+## Key Files
 
 ### Form Service
-- `/blog-api/src/instrument.ts` - Sentry 初期化
-- `/blog-api/src/workflow/utils/sentryHelper.ts` - Workflow エラー
-- `/blog-api/src/utils/databasePerformance.ts` - DB モニタリング
-- `/blog-api/src/controllers/BaseController.ts` - Controller ベース
+- `/blog-api/src/instrument.ts` - Sentry initialization
+- `/blog-api/src/workflow/utils/sentryHelper.ts` - Workflow errors
+- `/blog-api/src/utils/databasePerformance.ts` - DB monitoring
+- `/blog-api/src/controllers/BaseController.ts` - Controller base
 
 ### Email Service
-- `/notifications/src/instrument.ts` - Sentry 初期化
-- `/notifications/src/utils/EmailSentryHelper.ts` - Email エラー
-- `/notifications/src/controllers/BaseController.ts` - Controller ベース
+- `/notifications/src/instrument.ts` - Sentry initialization
+- `/notifications/src/utils/EmailSentryHelper.ts` - Email errors
+- `/notifications/src/controllers/BaseController.ts` - Controller base
 
-### 設定
-- `/blog-api/config.ini` - Form service 設定
-- `/notifications/config.ini` - Email service 設定
-- `/sentry.ini` - 共有 Sentry 設定
+### Configuration
+- `/blog-api/config.ini` - Form service config
+- `/notifications/config.ini` - Email service config
+- `/sentry.ini` - Shared Sentry config
 
-## ドキュメント
+## Documentation
 
-- 完全実装: `/dev/active/email-sentry-integration/`
-- Form service ドキュメント: `/blog-api/docs/sentry-integration.md`
-- Email service ドキュメント: `/notifications/docs/sentry-integration.md`
+- Full implementation: `/dev/active/email-sentry-integration/`
+- Form service docs: `/blog-api/docs/sentry-integration.md`
+- Email service docs: `/notifications/docs/sentry-integration.md`
 
-## 関連 Skills
+## Related Skills
 
-- データベース操作前に **database-verification** 使用
-- Workflow error context 用 **workflow-builder** 使用
-- データベース error handling 用 **database-scripts** 使用
+- Use **database-verification** before database operations
+- Use **workflow-builder** for workflow error context
+- Use **database-scripts** for database error handling

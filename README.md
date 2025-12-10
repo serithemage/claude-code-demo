@@ -1,255 +1,267 @@
-# Claude Code Demo - Agentic Coding 学習プロジェクト
+# Claude Code Demo - Agentic Coding Learning Project
 
-[Claude Code is a Beast](https://www.youtube.com/watch?v=...) 動画で紹介された高度な設定を、実際のアプリケーション実装を通じて体験できる学習用プロジェクトです。
+A learning project to experience the advanced configurations introduced in the [Claude Code is a Beast](https://www.youtube.com/watch?v=...) video through actual application implementation.
 
-## このプロジェクトの目的
+## Purpose of This Project
 
-**RealWorld (Conduit)** アプリ - Medium.com クローンのブログプラットフォーム - を実装しながら Claude Code の様々な機能を実習します：
+Implement the **RealWorld (Conduit)** app - a Medium.com clone blog platform - while practicing various Claude Code features:
 
-- **Skills**: コンテキスト基盤の自動活性化指針
-- **Hooks**: ツール使用前/後の自動実行スクリプト
-- **Custom Agents**: 特化した作業のためのカスタムエージェント
-- **Slash Commands**: 繰り返し作業のためのカスタムコマンド
+- **Skills**: Context-based auto-activation guidelines
+- **Hooks**: Auto-execution scripts before/after tool usage
+- **Custom Agents**: Custom agents for specialized tasks
+- **Slash Commands**: Custom commands for repetitive tasks
 
 ---
 
-## プロジェクト構造
+## Project Structure
 
 ```
 claude-code-demo/
-├── .claude/                    # Claude Code 設定
-│   ├── settings.json           # 権限、hooks 設定
-│   ├── skills/                 # 自動活性化スキル
+├── .claude/                    # Claude Code Configuration
+│   ├── settings.json           # Permissions, hooks settings
+│   ├── skills/                 # Auto-activation skills
 │   │   ├── backend-dev-guidelines/
 │   │   ├── frontend-dev-guidelines/
 │   │   ├── route-tester/
 │   │   ├── error-tracking/
-│   │   └── skill-rules.json    # スキル活性化ルール
-│   ├── hooks/                  # 自動化フックスクリプト
-│   ├── agents/                 # カスタムエージェント定義
-│   └── commands/               # スラッシュコマンド定義
-├── docs/                       # ハイレベル設計文書
-│   ├── PRD.md                  # 製品要求仕様
-│   ├── TechStack.md            # 技術スタック
-│   ├── Architecture.md         # システムアーキテクチャ
-│   └── API-Spec.md             # API 仕様
+│   │   └── skill-rules.json    # Skill activation rules
+│   ├── hooks/                  # Automation hook scripts
+│   ├── agents/                 # Custom agent definitions
+│   └── commands/               # Slash command definitions
+├── docs/                       # High-level design documents
+│   ├── PRD.md                  # Product Requirements
+│   ├── TechStack.md            # Tech Stack
+│   ├── Architecture.md         # System Architecture
+│   └── API-Spec.md             # API Specification
 ├── frontend/                   # React 19 + TypeScript + MUI v7
 ├── backend/                    # Express + TypeScript + Prisma
-└── CLAUDE.md                   # Claude Code メイン指針
+└── CLAUDE.md                   # Claude Code main guidelines
 ```
 
-### docs/ vs .claude/skills/ の関係
+### Relationship between docs/ and .claude/skills/
 
-| フォルダ | 役割 | 対象 |
-|----------|------|------|
-| `docs/` | ハイレベル設計文書 | 人が読む文書 |
-| `.claude/skills/` | エージェント実行指針 | Claude が使用する指針 |
+| Folder | Role | Target |
+|--------|------|--------|
+| `docs/` | High-level design documents | Human-readable documents |
+| `.claude/skills/` | Agent execution guidelines | Guidelines for Claude |
 
-`docs/` の設計内容を `.claude/skills/` のリソース文書に変換し、Claude がコーディング時に参照できるようにします。
+Content from `docs/` is transformed into resource documents in `.claude/skills/` for Claude to reference during coding.
 
 ---
 
-## 核心概念
+## Core Concepts
 
-### 1. Skills（スキル）
+### 1. Skills
 
-**スキル**は Claude が特定の作業を実行する際に自動的にロードされるナレッジベースです。
+**Skills** are knowledge bases that are automatically loaded when Claude performs specific tasks.
 
 ```
 .claude/skills/
-├── backend-dev-guidelines/     # バックエンド開発ガイドライン
-│   ├── SKILL.md                # メインスキルファイル
-│   └── resources/              # 詳細リソース文書
+├── backend-dev-guidelines/     # Backend Development Guidelines
+│   ├── SKILL.md                # Main skill file
+│   └── resources/              # Detailed resource documents
 │       ├── architecture-overview.md
 │       ├── routing-and-controllers.md
 │       └── ...
-├── frontend-dev-guidelines/    # フロントエンド開発ガイドライン
-└── skill-rules.json            # スキル活性化ルール
+├── frontend-dev-guidelines/    # Frontend Development Guidelines
+└── skill-rules.json            # Skill activation rules
 ```
 
-**自動活性化方式** (`skill-rules.json`):
-- `pathPatterns`: 特定ファイル編集時 (`backend/**/*.ts`)
-- `keywords`: プロンプトにキーワード含む時 (`"backend"`, `"API"`)
-- `intentPatterns`: ユーザー意図パターンマッチング
+**Auto-activation methods** (`skill-rules.json`):
+- `pathPatterns`: When editing specific files (`backend/**/*.ts`)
+- `keywords`: When prompt contains keywords (`"backend"`, `"API"`)
+- `intentPatterns`: User intent pattern matching
 
-### 2. Hooks（フック）
+### 2. Hooks
 
-**フック**は特定のイベント発生時に自動的に実行されるスクリプトです。
+**Hooks** are scripts that automatically execute when specific events occur.
 
 ```json
 // .claude/settings.json
 {
   "hooks": {
-    "UserPromptSubmit": [...],  // プロンプト送信時
-    "PostToolUse": [...],       // ツール使用後
-    "Stop": [...]               // 作業完了時
+    "UserPromptSubmit": [...],  // On prompt submission
+    "PostToolUse": [...],       // After tool usage
+    "Stop": [...]               // On work completion
   }
 }
 ```
 
-**このプロジェクトのフック**:
-- `skill-activation-prompt.sh`: プロンプト分析後に関連スキル推奨
-- `post-tool-use-tracker.sh`: ファイル編集追跡
-- `tsc-check.sh`: TypeScript コンパイルチェック
+**Hooks in this project**:
+- `skill-activation-prompt.sh`: Recommend relevant skills after prompt analysis
+- `post-tool-use-tracker.sh`: Track file edits
+- `tsc-check.sh`: TypeScript compile check
 
-### 3. Custom Agents（カスタムエージェント）
+### 3. Custom Agents
 
-**カスタムエージェント**は特化した作業のために定義された AI ペルソナです。
+**Custom Agents** are AI personas defined for specialized tasks.
 
 ```
 .claude/agents/
-├── auth-route-debugger.md      # 認証問題デバッグ
-├── code-refactor-master.md     # コードリファクタリング
-├── frontend-error-fixer.md     # フロントエンドエラー修正
+├── auth-route-debugger.md      # Authentication issue debugging
+├── code-refactor-master.md     # Code refactoring
+├── frontend-error-fixer.md     # Frontend error fixing
 └── ...
 ```
 
-### 4. Slash Commands（スラッシュコマンド）
+### 4. Slash Commands
 
-**スラッシュコマンド**は繰り返し作業のためのカスタムコマンドです。
+**Slash Commands** are custom commands for repetitive tasks.
 
 ```
 .claude/commands/
-├── dev-docs.md                 # 開発文書生成
-├── dev-docs-update.md          # 開発文書更新
+├── dev-docs.md                 # Generate dev docs
+├── dev-docs-update.md          # Update dev docs
 └── route-research-for-testing.md
 ```
 
-使用法: `/dev-docs 認証システム実装計画`
+Usage: `/dev-docs auth system implementation plan`
 
 ---
 
-## 始め方
+## Getting Started
 
-### 前提条件
+### Prerequisites
 
 - Node.js 20+
 - pnpm
-- Claude Code CLI ([インストールガイド](https://claude.ai/code))
+- Claude Code CLI ([Installation Guide](https://claude.ai/code))
 
-### インストール
+### Installation
 
 ```bash
-# リポジトリクローン
+# Clone repository
 git clone https://github.com/serithemage/claude-code-demo.git
 cd claude-code-demo
 
-# 依存関係インストール
+# Install dependencies
 pnpm install
 
-# データベースマイグレーション
+# Database migration
 pnpm --filter backend prisma migrate dev
 
-# 開発サーバー起動
+# Start development server
 pnpm dev
 ```
 
-### Claude Code 実行
+### Running Claude Code
 
 ```bash
-# プロジェクトディレクトリで
+# In project directory
 claude
 
-# または特定作業開始
-claude "バックエンドに新しい API エンドポイントを追加して"
+# Or start with specific task
+claude "Add a new API endpoint to the backend"
 ```
 
 ---
 
-## 学習ガイド
+## Learning Guide
 
-### レベル 1: 基本構造の理解
+### Level 1: Understanding Basic Structure
 
-1. **CLAUDE.md を読む**: プロジェクト全体の指針を確認
-2. **docs/ を探索**: ハイレベル設計文書を理解
-3. **settings.json を確認**: 権限とフック設定を理解
+1. **Read CLAUDE.md**: Check overall project guidelines
+2. **Explore docs/**: Understand high-level design documents
+3. **Check settings.json**: Understand permissions and hook settings
 
-### レベル 2: Skills 体験
+### Level 2: Experiencing Skills
 
-1. `backend/` フォルダで `.ts` ファイルを編集してみる
-2. 自動的に `backend-dev-guidelines` スキルが活性化されるか確認
-3. `skill-rules.json` で活性化条件を分析
+1. Try editing a `.ts` file in the `backend/` folder
+2. Confirm that `backend-dev-guidelines` skill activates automatically
+3. Analyze activation conditions in `skill-rules.json`
 
 ```bash
-# 例: バックエンドファイル編集
-claude "backend/src/routes/ に新しいルートを追加して"
-# → backend-dev-guidelines スキル自動活性化
+# Example: Edit backend file
+claude "Add a new route to backend/src/routes/"
+# → backend-dev-guidelines skill auto-activates
 ```
 
-### レベル 3: Hooks 分析
+### Level 3: Analyzing Hooks
 
-1. `.claude/hooks/` フォルダのスクリプトを分析
-2. `settings.json` の hooks 設定とのマッピングを理解
-3. フック実行ログを観察
+1. Analyze scripts in `.claude/hooks/` folder
+2. Understand mapping with hooks settings in `settings.json`
+3. Observe hook execution logs
 
-### レベル 4: カスタマイズ
+### Level 4: Customization
 
-1. 新しいスキルを追加してみる
-2. `skill-rules.json` に活性化ルールを追加
-3. カスタムスラッシュコマンドを作成
+1. Try adding a new skill
+2. Add activation rules to `skill-rules.json`
+3. Create custom slash commands
 
 ---
 
-## 技術スタック
+## Tech Stack
 
-| 領域 | 技術 |
-|------|------|
+| Area | Technology |
+|------|------------|
 | **Frontend** | React 19, TypeScript, MUI v7, TanStack Query/Router, Vite |
 | **Backend** | Node.js 20, Express 4, TypeScript, Prisma 5, SQLite |
-| **認証** | JWT (localStorage 保存) |
-| **テスト** | Vitest, Testing Library, Supertest |
+| **Authentication** | JWT (localStorage storage) |
+| **Testing** | Vitest, Testing Library, Supertest |
 
 ---
 
-## 主要ファイル説明
+## Key File Descriptions
 
-| ファイル | 説明 |
-|----------|------|
-| `CLAUDE.md` | Claude Code がプロジェクト作業時に参照するメイン指針 |
-| `.claude/settings.json` | 権限、MCP サーバー、フック設定 |
-| `.claude/skills/skill-rules.json` | スキル自動活性化ルール定義 |
-| `docs/Architecture.md` | システムアーキテクチャ（Mermaid ダイアグラム含む）|
+| File | Description |
+|------|-------------|
+| `CLAUDE.md` | Main guidelines Claude Code references when working on project |
+| `.claude/settings.json` | Permissions, MCP servers, hook settings |
+| `.claude/skills/skill-rules.json` | Skill auto-activation rule definitions |
+| `docs/Architecture.md` | System architecture (includes Mermaid diagrams) |
 
 ---
 
-## 便利なコマンド
+## Useful Commands
 
 ```bash
-# 開発サーバー
-pnpm dev                        # 全体（フロントエンド + バックエンド）
-pnpm --filter frontend dev      # フロントエンドのみ
-pnpm --filter backend dev       # バックエンドのみ
+# Development server
+pnpm dev                        # All (frontend + backend)
+pnpm --filter frontend dev      # Frontend only
+pnpm --filter backend dev       # Backend only
 
-# テスト
-pnpm test                       # 全テスト
-pnpm --filter backend test      # バックエンドテストのみ
+# Testing
+pnpm test                       # All tests
+pnpm --filter backend test      # Backend tests only
 
-# ビルド
-pnpm build                      # プロダクションビルド
+# Build
+pnpm build                      # Production build
 
-# リント/フォーマット
+# Lint/Format
 pnpm lint
 pnpm format
 ```
 
 ---
 
-## 参考資料
+## Language Versions
 
-- [Claude Code 公式ドキュメント](https://docs.anthropic.com/claude-code)
-- [RealWorld スペック](https://realworld-docs.netlify.app/)
-- [Skills 詳細ガイド](.claude/skills/README.md)
-- [Hooks 設定ガイド](.claude/hooks/README.md)
-- [Agents ガイド](.claude/agents/README.md)
+This project is available in multiple languages:
+
+| Branch | Language |
+|--------|----------|
+| `main` | English |
+| `korean` | Korean (한국어) |
+| `japanese` | Japanese (日本語) |
 
 ---
 
-## ライセンス
+## References
+
+- [Claude Code Official Documentation](https://docs.anthropic.com/claude-code)
+- [RealWorld Spec](https://realworld-docs.netlify.app/)
+- [Skills Detailed Guide](.claude/skills/README.md)
+- [Hooks Configuration Guide](.claude/hooks/README.md)
+- [Agents Guide](.claude/agents/README.md)
+
+---
+
+## License
 
 MIT License
 
 ---
 
-## 貢献
+## Contributing
 
-Issue と PR を歓迎します。Agentic Coding 学習に役立つ改善点があればご提案ください。
+Issues and PRs are welcome. Please suggest any improvements that would help with Agentic Coding learning.

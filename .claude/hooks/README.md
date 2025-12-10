@@ -1,50 +1,50 @@
 # Hooks
 
-Skills自動アクティベーション、ファイル追跡、検証を可能にするClaude Code hooksです。
+Claude Code hooks that enable skill auto-activation, file tracking, and validation.
 
 ---
 
-## Hooksとは？
+## What Are Hooks?
 
-Hooksは、Claudeワークフローの特定の時点で実行されるスクリプトです：
-- **UserPromptSubmit**: ユーザーがプロンプトを送信した時
-- **PreToolUse**: ツールが実行される前
-- **PostToolUse**: ツールが完了した後
-- **Stop**: ユーザーが停止を要求した時
+Hooks are scripts that run at specific points in Claude's workflow:
+- **UserPromptSubmit**: When user submits a prompt
+- **PreToolUse**: Before a tool executes  
+- **PostToolUse**: After a tool completes
+- **Stop**: When user requests to stop
 
-**核心インサイト：** Hooksはプロンプトを修正し、操作をブロックし、状態を追跡できるため、Claude単独ではできない機能を可能にします。
+**Key insight:** Hooks can modify prompts, block actions, and track state - enabling features Claude can't do alone.
 
 ---
 
-## 必須Hooks（ここから始める）
+## Essential Hooks (Start Here)
 
-### skill-activation-prompt（UserPromptSubmit）
+### skill-activation-prompt (UserPromptSubmit)
 
-**目的：** ユーザープロンプトとファイルコンテキストに基づいて関連skillsを自動提案
+**Purpose:** Automatically suggests relevant skills based on user prompts and file context
 
-**動作方式：**
-1. `skill-rules.json`を読む
-2. ユーザープロンプトをトリガーパターンとマッチング
-3. ユーザーが作業中のファイルを確認
-4. Claudeのコンテキストにskill提案を注入
+**How it works:**
+1. Reads `skill-rules.json`
+2. Matches user prompt against trigger patterns
+3. Checks which files user is working with
+4. Injects skill suggestions into Claude's context
 
-**必須の理由：** Skillsを自動アクティベートさせる核心hookです。
+**Why it's essential:** This is THE hook that makes skills auto-activate.
 
-**統合方法：**
+**Integration:**
 ```bash
-# 両ファイルをコピー
+# Copy both files
 cp skill-activation-prompt.sh your-project/.claude/hooks/
 cp skill-activation-prompt.ts your-project/.claude/hooks/
 
-# 実行権限付与
+# Make executable
 chmod +x your-project/.claude/hooks/skill-activation-prompt.sh
 
-# 依存関係インストール
+# Install dependencies
 cd your-project/.claude/hooks
 npm install
 ```
 
-**settings.jsonに追加：**
+**Add to settings.json:**
 ```json
 {
   "hooks": {
@@ -62,32 +62,32 @@ npm install
 }
 ```
 
-**カスタマイズ：** ✅ 不要 - skill-rules.jsonを自動的に読む
+**Customization:** ✅ None needed - reads skill-rules.json automatically
 
 ---
 
-### post-tool-use-tracker（PostToolUse）
+### post-tool-use-tracker (PostToolUse)
 
-**目的：** セッション間のコンテキストを維持するためにファイル変更を追跡
+**Purpose:** Tracks file changes to maintain context across sessions
 
-**動作方式：**
-1. Edit/Write/MultiEditツール呼び出しをモニタリング
-2. 修正されたファイルを記録
-3. コンテキスト管理のためのキャッシュ生成
-4. プロジェクト構造自動検出（frontend、backend、packagesなど）
+**How it works:**
+1. Monitors Edit/Write/MultiEdit tool calls
+2. Records which files were modified
+3. Creates cache for context management
+4. Auto-detects project structure (frontend, backend, packages, etc.)
 
-**必須の理由：** Claudeがコードベースのどの部分がアクティブ状態か理解するのを助けます。
+**Why it's essential:** Helps Claude understand what parts of your codebase are active.
 
-**統合方法：**
+**Integration:**
 ```bash
-# ファイルをコピー
+# Copy file
 cp post-tool-use-tracker.sh your-project/.claude/hooks/
 
-# 実行権限付与
+# Make executable
 chmod +x your-project/.claude/hooks/post-tool-use-tracker.sh
 ```
 
-**settings.jsonに追加：**
+**Add to settings.json:**
 ```json
 {
   "hooks": {
@@ -106,58 +106,58 @@ chmod +x your-project/.claude/hooks/post-tool-use-tracker.sh
 }
 ```
 
-**カスタマイズ：** ✅ 不要 - 構造を自動検出
+**Customization:** ✅ None needed - auto-detects structure
 
 ---
 
-## オプションHooks（カスタマイズ必要）
+## Optional Hooks (Require Customization)
 
-### tsc-check（Stop）
+### tsc-check (Stop)
 
-**目的：** ユーザーが停止した時TypeScriptコンパイルチェック
+**Purpose:** TypeScript compilation check when user stops
 
-**⚠️ 警告：** マルチサービスmonorepo構造用に設定されています
+**⚠️ WARNING:** Configured for multi-service monorepo structure
 
-**統合方法：**
+**Integration:**
 
-**まずこのhookが適切か確認：**
-- ✅ 使用適切: マルチサービスTypeScript monorepo
-- ❌ スキップ: 単一サービスプロジェクトまたは異なるビルド設定
+**First, determine if this is right for you:**
+- ✅ Use if: Multi-service TypeScript monorepo
+- ❌ Skip if: Single-service project or different build setup
 
-**使用する場合：**
-1. tsc-check.shをコピー
-2. **サービス検出部分を修正（約28行目）：**
+**If using:**
+1. Copy tsc-check.sh
+2. **EDIT the service detection (line ~28):**
    ```bash
-   # 例のサービスを実際のサービスに置換:
+   # Replace example services with YOUR services:
    case "$repo" in
-       api|web|auth|payments|...)  # ← 実際のサービス名
+       api|web|auth|payments|...)  # ← Your actual services
    ```
-3. settings.jsonに追加する前に手動でテスト
+3. Test manually before adding to settings.json
 
-**カスタマイズ：** ⚠️⚠️⚠️ 多く必要
-
----
-
-### trigger-build-resolver（Stop）
-
-**目的：** コンパイル失敗時にbuild-error-resolver agentを自動実行
-
-**依存関係：** tsc-check hookが正常動作する必要あり
-
-**カスタマイズ：** ✅ 不要（ただしtsc-checkが先に動作する必要あり）
+**Customization:** ⚠️⚠️⚠️ Heavy
 
 ---
 
-## Claude Code向け案内
+### trigger-build-resolver (Stop)
 
-**ユーザーのためにhooksを設定する時：**
+**Purpose:** Auto-launches build-error-resolver agent when compilation fails
 
-1. **まず[CLAUDE_INTEGRATION_GUIDE.md](../../CLAUDE_INTEGRATION_GUIDE.md)を読む**
-2. **常に2つの必須hooksから始める**
-3. **Stop hooks追加前にまず確認** - 誤設定するとブロックされる可能性
-4. **設定後検証：**
+**Depends on:** tsc-check hook working correctly
+
+**Customization:** ✅ None (but tsc-check must work first)
+
+---
+
+## For Claude Code
+
+**When setting up hooks for a user:**
+
+1. **Read [CLAUDE_INTEGRATION_GUIDE.md](../../CLAUDE_INTEGRATION_GUIDE.md)** first
+2. **Always start with the two essential hooks**
+3. **Ask before adding Stop hooks** - they can block if misconfigured  
+4. **Verify after setup:**
    ```bash
    ls -la .claude/hooks/*.sh | grep rwx
    ```
 
-**質問がありますか？** [CLAUDE_INTEGRATION_GUIDE.md](../../CLAUDE_INTEGRATION_GUIDE.md)を参照してください
+**Questions?** See [CLAUDE_INTEGRATION_GUIDE.md](../../CLAUDE_INTEGRATION_GUIDE.md)

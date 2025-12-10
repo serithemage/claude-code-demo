@@ -1,36 +1,36 @@
-# RoutingとControllers - モベストプラクティス
+# Routing and Controllers - Best Practices
 
-クリーンなルート定義とcontrollerパターンの完全なガイドです。
+Complete guide to clean route definitions and controller patterns.
 
-## 目次
+## Table of Contents
 
-- [Routes: ルーティングのみ](#routes-ルーティングのみ)
-- [BaseControllerパターン](#basecontrollerパターン)
-- [良い例](#良い例)
-- [アンチパターン](#アンチパターン)
-- [リファクタリングガイド](#リファクタリングガイド)
-- [エラー処理](#エラー処理)
-- [HTTPステータスコード](#httpステータスコード)
+- [Routes: Routing Only](#routes-routing-only)
+- [BaseController Pattern](#basecontroller-pattern)
+- [Good Examples](#good-examples)
+- [Anti-Patterns](#anti-patterns)
+- [Refactoring Guide](#refactoring-guide)
+- [Error Handling](#error-handling)
+- [HTTP Status Codes](#http-status-codes)
 
 ---
 
-## Routes: ルーティングのみ
+## Routes: Routing Only
 
-### 黄金ルール
+### The Golden Rule
 
-**Routesは次のことのみを行うべき:**
-- ✅ ルートパス定義
-- ✅ Middleware登録
-- ✅ Controllersへの委譲
+**Routes should ONLY:**
+- ✅ Define route paths
+- ✅ Register middleware
+- ✅ Delegate to controllers
 
-**Routesは絶対に行うべきでない:**
-- ❌ ビジネスロジックの含有
-- ❌ データベースへの直接アクセス
-- ❌ バリデーションロジックの実装（Zod + controller使用）
-- ❌ 複雑なレスポンスフォーマット
-- ❌ 複雑なエラーシナリオの処理
+**Routes should NEVER:**
+- ❌ Contain business logic
+- ❌ Access database directly
+- ❌ Implement validation logic (use Zod + controller)
+- ❌ Format complex responses
+- ❌ Handle complex error scenarios
 
-### クリーンなRouteパターン
+### Clean Route Pattern
 
 ```typescript
 // routes/userRoutes.ts
@@ -42,7 +42,7 @@ import { auditMiddleware } from '../middleware/auditMiddleware';
 const router = Router();
 const controller = new UserController();
 
-// ✅ クリーン: ルート定義のみ
+// ✅ CLEAN: Route definition only
 router.get('/:id',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
@@ -64,29 +64,29 @@ router.put('/:id',
 export default router;
 ```
 
-**キーポイント:**
-- 各route: method、path、middlewareチェーン、controller委譲
-- try-catch不要（controllerがエラー処理）
-- クリーンで、読みやすく、保守しやすい
-- 一目ですべてのエンドポイントを把握可能
+**Key Points:**
+- Each route: method, path, middleware chain, controller delegation
+- No try-catch needed (controller handles errors)
+- Clean, readable, maintainable
+- Easy to see all endpoints at a glance
 
 ---
 
-## BaseControllerパターン
+## BaseController Pattern
 
-### BaseControllerを使用する理由
+### Why BaseController?
 
-**利点:**
-- すべてのcontrollersで一貫したエラー処理
-- 自動Sentry統合
-- 標準化されたレスポンスフォーマット
-- 再利用可能なヘルパーメソッド
-- パフォーマンス追跡ユーティリティ
-- ロギングとbreadcrumbヘルパー
+**Benefits:**
+- Consistent error handling across all controllers
+- Automatic Sentry integration
+- Standardized response formats
+- Reusable helper methods
+- Performance tracking utilities
+- Logging and breadcrumb helpers
 
-### BaseControllerパターン（テンプレート）
+### BaseController Pattern (Template)
 
-**ファイル:** `/email/src/controllers/BaseController.ts`
+**File:** `/email/src/controllers/BaseController.ts`
 
 ```typescript
 import * as Sentry from '@sentry/node';
@@ -94,7 +94,7 @@ import { Response } from 'express';
 
 export abstract class BaseController {
     /**
-     * Sentry統合でエラー処理
+     * Handle errors with Sentry integration
      */
     protected handleError(
         error: unknown,
@@ -127,7 +127,7 @@ export abstract class BaseController {
     }
 
     /**
-     * 成功レスポンス処理
+     * Handle success responses
      */
     protected handleSuccess<T>(
         res: Response,
@@ -143,7 +143,7 @@ export abstract class BaseController {
     }
 
     /**
-     * パフォーマンス追跡ラッパー
+     * Performance tracking wrapper
      */
     protected async withTransaction<T>(
         name: string,
@@ -157,7 +157,7 @@ export abstract class BaseController {
     }
 
     /**
-     * 必須フィールドバリデーション
+     * Validate required fields
      */
     protected validateRequest(
         required: string[],
@@ -186,7 +186,7 @@ export abstract class BaseController {
     }
 
     /**
-     * ロギングヘルパー
+     * Logging helpers
      */
     protected logInfo(message: string, context?: Record<string, any>): void {
         Sentry.addBreadcrumb({
@@ -206,7 +206,7 @@ export abstract class BaseController {
     }
 
     /**
-     * Sentry breadcrumb追加
+     * Add Sentry breadcrumb
      */
     protected addBreadcrumb(
         message: string,
@@ -217,7 +217,7 @@ export abstract class BaseController {
     }
 
     /**
-     * カスタムメトリクスキャプチャ
+     * Capture custom metric
      */
     protected captureMetric(name: string, value: number, unit: string): void {
         Sentry.metrics.gauge(name, value, { unit });
@@ -225,7 +225,7 @@ export abstract class BaseController {
 }
 ```
 
-### BaseControllerの使用
+### Using BaseController
 
 ```typescript
 // controllers/UserController.ts
@@ -265,10 +265,10 @@ export class UserController extends BaseController {
 
     async createUser(req: Request, res: Response): Promise<void> {
         try {
-            // 入力バリデーション
+            // Validate input
             const validated = createUserSchema.parse(req.body);
 
-            // パフォーマンス追跡
+            // Track performance
             const user = await this.withTransaction(
                 'user.create',
                 'db.query',
@@ -293,20 +293,20 @@ export class UserController extends BaseController {
 }
 ```
 
-**利点:**
-- 一貫したエラー処理
-- 自動Sentry統合
-- パフォーマンス追跡
-- クリーンで読みやすいコード
-- テストしやすい
+**Benefits:**
+- Consistent error handling
+- Automatic Sentry integration
+- Performance tracking
+- Clean, readable code
+- Easy to test
 
 ---
 
-## 良い例
+## Good Examples
 
-### 例1: Email Notification Routes（優れている ✅）
+### Example 1: Email Notification Routes (Excellent ✅)
 
-**ファイル:** `/email/src/routes/notificationRoutes.ts`
+**File:** `/email/src/routes/notificationRoutes.ts`
 
 ```typescript
 import { Router } from 'express';
@@ -316,7 +316,7 @@ import { SSOMiddlewareClient } from '../middleware/SSOMiddleware';
 const router = Router();
 const controller = new NotificationController();
 
-// ✅ 優れている: クリーンな委譲
+// ✅ EXCELLENT: Clean delegation
 router.get('/',
     SSOMiddlewareClient.verifyLoginStatus,
     async (req, res) => controller.getNotifications(req, res)
@@ -335,15 +335,15 @@ router.put('/:id/read',
 export default router;
 ```
 
-**優れている理由:**
-- Routesにビジネスロジックなし
-- 明確なmiddlewareチェーン
-- 一貫したパターン
-- 理解しやすい
+**What Makes This Excellent:**
+- Zero business logic in routes
+- Clear middleware chain
+- Consistent pattern
+- Easy to understand
 
-### 例2: バリデーション付きProxy Routes（良い ✅）
+### Example 2: Proxy Routes with Validation (Good ✅)
 
-**ファイル:** `/form/src/routes/proxyRoutes.ts`
+**File:** `/form/src/routes/proxyRoutes.ts`
 
 ```typescript
 import { z } from 'zod';
@@ -369,40 +369,40 @@ router.post('/',
 );
 ```
 
-**良い理由:**
-- Zodバリデーション
-- Serviceへの委譲
-- 適切なHTTPステータスコード
-- エラー処理
+**What Makes This Good:**
+- Zod validation
+- Delegates to service
+- Proper HTTP status codes
+- Error handling
 
-**改善できる点:**
-- バリデーションをcontrollerに移動
-- BaseController使用
+**Could Be Better:**
+- Move validation to controller
+- Use BaseController
 
 ---
 
-## アンチパターン
+## Anti-Patterns
 
-### アンチパターン1: Routesにビジネスロジック（悪い ❌）
+### Anti-Pattern 1: Business Logic in Routes (Bad ❌)
 
-**ファイル:** `/form/src/routes/responseRoutes.ts`（実際のプロダクションコード）
+**File:** `/form/src/routes/responseRoutes.ts` (actual production code)
 
 ```typescript
-// ❌ アンチパターン: routeに200行以上のビジネスロジック
+// ❌ ANTI-PATTERN: 200+ lines of business logic in route
 router.post('/:formID/submit', async (req: Request, res: Response) => {
     try {
         const username = res.locals.claims.preferred_username;
         const responses = req.body.responses;
         const stepInstanceId = req.body.stepInstanceId;
 
-        // ❌ Routeで権限確認
+        // ❌ Permission checking in route
         const userId = await userProfileService.getProfileByEmail(username).then(p => p.id);
         const canComplete = await permissionService.canCompleteStep(userId, stepInstanceId);
         if (!canComplete) {
             return res.status(403).json({ error: 'No permission' });
         }
 
-        // ❌ RouteでWorkflowロジック
+        // ❌ Workflow logic in route
         const { createWorkflowEngine, CompleteStepCommand } = require('../workflow/core/WorkflowEngineV3');
         const engine = await createWorkflowEngine();
         const command = new CompleteStepCommand(
@@ -413,7 +413,7 @@ router.post('/:formID/submit', async (req: Request, res: Response) => {
         );
         const events = await engine.executeCommand(command);
 
-        // ❌ RouteでImpersonation処理
+        // ❌ Impersonation handling in route
         if (res.locals.isImpersonating) {
             impersonationContextStore.storeContext(stepInstanceId, {
                 originalUserId: res.locals.originalUserId,
@@ -421,16 +421,16 @@ router.post('/:formID/submit', async (req: Request, res: Response) => {
             });
         }
 
-        // ❌ Routeでレスポンス処理
+        // ❌ Response processing in route
         const post = await PrismaService.main.post.findUnique({
             where: { id: postData.id },
             include: { comments: true },
         });
 
-        // ❌ Routeで権限確認
+        // ❌ Permission check in route
         await checkPostPermissions(post, userId);
 
-        // ... 100行以上のビジネスロジック
+        // ... 100+ more lines of business logic
 
         res.json({ success: true, data: result });
     } catch (e) {
@@ -439,17 +439,17 @@ router.post('/:formID/submit', async (req: Request, res: Response) => {
 });
 ```
 
-**なぜ酷いのか:**
-- 200行以上のビジネスロジック
-- テストしにくい（HTTPモッキングが必要）
-- 再利用しにくい（routeに依存）
-- 混在した責任
-- デバッグしにくい
-- パフォーマンス追跡しにくい
+**Why This Is Terrible:**
+- 200+ lines of business logic
+- Hard to test (requires HTTP mocking)
+- Hard to reuse (tied to route)
+- Mixed responsibilities
+- Difficult to debug
+- Performance tracking difficult
 
-### リファクタリング方法（ステップバイステップ）
+### How to Refactor (Step-by-Step)
 
-**ステップ1: Controller作成**
+**Step 1: Create Controller**
 
 ```typescript
 // controllers/PostController.ts
@@ -480,7 +480,7 @@ export class PostController extends BaseController {
 }
 ```
 
-**ステップ2: Service作成**
+**Step 2: Create Service**
 
 ```typescript
 // services/postService.ts
@@ -489,23 +489,23 @@ export class PostService {
         data: CreatePostDTO,
         userId: string
     ): Promise<PostResult> {
-        // 権限確認
+        // Permission check
         const canCreate = await permissionService.canCreatePost(userId);
         if (!canCreate) {
             throw new ForbiddenError('No permission to create post');
         }
 
-        // Workflow実行
+        // Execute workflow
         const engine = await createWorkflowEngine();
         const command = new CompleteStepCommand(/* ... */);
         const events = await engine.executeCommand(command);
 
-        // 必要に応じてimpersonation処理
+        // Handle impersonation if needed
         if (context.isImpersonating) {
             await this.handleImpersonation(data.stepInstanceId, context);
         }
 
-        // ロール同期
+        // Synchronize roles
         await this.synchronizeRoles(events, userId);
 
         return { events, success: true };
@@ -519,12 +519,12 @@ export class PostService {
     }
 
     private async synchronizeRoles(events: WorkflowEvent[], userId: string) {
-        // ロール同期ロジック
+        // Role synchronization logic
     }
 }
 ```
 
-**ステップ3: Route更新**
+**Step 3: Update Route**
 
 ```typescript
 // routes/postRoutes.ts
@@ -533,7 +533,7 @@ import { PostController } from '../controllers/PostController';
 const router = Router();
 const controller = new PostController();
 
-// ✅ クリーン: ルーティングのみ
+// ✅ CLEAN: Just routing
 router.post('/',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
@@ -541,17 +541,17 @@ router.post('/',
 );
 ```
 
-**結果:**
-- Route: 8行（200行以上だった）
-- Controller: 25行（リクエスト処理）
-- Service: 50行（ビジネスロジック）
-- テスト可能、再利用可能、保守可能！
+**Result:**
+- Route: 8 lines (was 200+)
+- Controller: 25 lines (request handling)
+- Service: 50 lines (business logic)
+- Testable, reusable, maintainable!
 
 ---
 
-## エラー処理
+## Error Handling
 
-### Controllerエラー処理
+### Controller Error Handling
 
 ```typescript
 async createUser(req: Request, res: Response): Promise<void> {
@@ -559,16 +559,16 @@ async createUser(req: Request, res: Response): Promise<void> {
         const result = await this.userService.create(req.body);
         this.handleSuccess(res, result, 'User created', 201);
     } catch (error) {
-        // BaseController.handleErrorが自動的に:
-        // - コンテキストとともにSentryにキャプチャ
-        // - 適切なステータスコード設定
-        // - フォーマットされたエラーレスポンス返却
+        // BaseController.handleError automatically:
+        // - Captures to Sentry with context
+        // - Sets appropriate status code
+        // - Returns formatted error response
         this.handleError(error, res, 'createUser');
     }
 }
 ```
 
-### カスタムエラーステータスコード
+### Custom Error Status Codes
 
 ```typescript
 async getUser(req: Request, res: Response): Promise<void> {
@@ -576,12 +576,12 @@ async getUser(req: Request, res: Response): Promise<void> {
         const user = await this.userService.findById(req.params.id);
 
         if (!user) {
-            // カスタム404ステータス
+            // Custom 404 status
             return this.handleError(
                 new Error('User not found'),
                 res,
                 'getUser',
-                404  // カスタムステータスコード
+                404  // Custom status code
             );
         }
 
@@ -592,7 +592,7 @@ async getUser(req: Request, res: Response): Promise<void> {
 }
 ```
 
-### バリデーションエラー
+### Validation Errors
 
 ```typescript
 async createUser(req: Request, res: Response): Promise<void> {
@@ -601,7 +601,7 @@ async createUser(req: Request, res: Response): Promise<void> {
         const user = await this.userService.create(validated);
         this.handleSuccess(res, user, 'User created', 201);
     } catch (error) {
-        // Zodエラーは400ステータス
+        // Zod errors get 400 status
         if (error instanceof z.ZodError) {
             return this.handleError(error, res, 'createUser', 400);
         }
@@ -612,160 +612,81 @@ async createUser(req: Request, res: Response): Promise<void> {
 
 ---
 
-## HTTPステータスコード
+## HTTP Status Codes
 
-### 標準コード
+### Standard Codes
 
-| コード | ユースケース | 例 |
+| Code | Use Case | Example |
 |------|----------|---------|
-| 200 | 成功（GET、PUT） | ユーザー取得、更新 |
-| 201 | 作成完了（POST） | ユーザー作成、記事作成 |
-| 204 | 内容なし（DELETE） | ユーザー削除、記事削除 |
-| 400 | 不正なリクエスト | 無効な入力データ |
-| 401 | 認証なし | 認証されていない |
-| 403 | 禁止 | 権限なし（他人の記事編集など） |
-| 404 | 見つからない | リソースが存在しない |
-| 422 | 処理できないエンティティ | バリデーション失敗 |
-| 500 | 内部サーバーエラー | 予期しないエラー |
+| 200 | Success (GET, PUT) | User retrieved, Updated |
+| 201 | Created (POST) | User created |
+| 204 | No Content (DELETE) | User deleted |
+| 400 | Bad Request | Invalid input data |
+| 401 | Unauthorized | Not authenticated |
+| 403 | Forbidden | No permission |
+| 404 | Not Found | Resource doesn't exist |
+| 409 | Conflict | Duplicate resource |
+| 422 | Unprocessable Entity | Validation failed |
+| 500 | Internal Server Error | Unexpected error |
 
----
-
-## RealWorld API エンドポイント
-
-### 認証 API
-
-| メソッド | エンドポイント | 説明 | 認証 |
-|---------|---------------|------|------|
-| POST | `/api/users/login` | ログイン | 不要 |
-| POST | `/api/users` | ユーザー登録 | 不要 |
-| GET | `/api/user` | 現在のユーザー取得 | 必須 |
-| PUT | `/api/user` | ユーザー情報更新 | 必須 |
-
-### プロフィール API
-
-| メソッド | エンドポイント | 説明 | 認証 |
-|---------|---------------|------|------|
-| GET | `/api/profiles/:username` | プロフィール取得 | 任意 |
-| POST | `/api/profiles/:username/follow` | フォロー | 必須 |
-| DELETE | `/api/profiles/:username/follow` | アンフォロー | 必須 |
-
-### 記事 API
-
-| メソッド | エンドポイント | 説明 | 認証 |
-|---------|---------------|------|------|
-| GET | `/api/articles` | 記事一覧取得 | 任意 |
-| GET | `/api/articles/feed` | フィード取得 | 必須 |
-| GET | `/api/articles/:slug` | 記事詳細取得 | 任意 |
-| POST | `/api/articles` | 記事作成 | 必須 |
-| PUT | `/api/articles/:slug` | 記事更新 | 必須 |
-| DELETE | `/api/articles/:slug` | 記事削除 | 必須 |
-
-### コメント API
-
-| メソッド | エンドポイント | 説明 | 認証 |
-|---------|---------------|------|------|
-| GET | `/api/articles/:slug/comments` | コメント一覧取得 | 任意 |
-| POST | `/api/articles/:slug/comments` | コメント作成 | 必須 |
-| DELETE | `/api/articles/:slug/comments/:id` | コメント削除 | 必須 |
-
-### お気に入り API
-
-| メソッド | エンドポイント | 説明 | 認証 |
-|---------|---------------|------|------|
-| POST | `/api/articles/:slug/favorite` | お気に入り追加 | 必須 |
-| DELETE | `/api/articles/:slug/favorite` | お気に入り解除 | 必須 |
-
-### タグ API
-
-| メソッド | エンドポイント | 説明 | 認証 |
-|---------|---------------|------|------|
-| GET | `/api/tags` | タグ一覧取得 | 不要 |
-
----
-
-## 認証ヘッダー
-
-```
-Authorization: Token jwt.token.here
-```
-
-### 共通レスポンス形式
-
-**成功時**
-```json
-{
-  "user": { ... },      // または "article", "articles", etc.
-}
-```
-
-**エラー時**
-```json
-{
-  "errors": {
-    "body": ["can't be empty"],
-    "email": ["has already been taken"]
-  }
-}
-```
-
-### 使用例
+### Usage Examples
 
 ```typescript
-// 200 - 成功（デフォルト）
+// 200 - Success (default)
 this.handleSuccess(res, user);
 
-// 201 - 作成完了
+// 201 - Created
 this.handleSuccess(res, user, 'Created', 201);
 
-// 400 - 不正なリクエスト
+// 400 - Bad Request
 this.handleError(error, res, 'operation', 400);
 
-// 404 - 見つからない
+// 404 - Not Found
 this.handleError(new Error('Not found'), res, 'operation', 404);
 
-// 403 - 禁止
+// 403 - Forbidden
 this.handleError(new ForbiddenError('No permission'), res, 'operation', 403);
 ```
 
 ---
 
-## リファクタリングガイド
+## Refactoring Guide
 
-### リファクタリングが必要なRoutesの識別
+### Identify Routes Needing Refactoring
 
-**危険信号:**
-- Routeファイル > 100行
-- 1つのrouteに複数のtry-catchブロック
-- 直接データベースアクセス（Prisma呼び出し）
-- 複雑なビジネスロジック（if文、ループ）
-- Routesでの権限確認
+**Red Flags:**
+- Route file > 100 lines
+- Multiple try-catch blocks in one route
+- Direct database access (Prisma calls)
+- Complex business logic (if statements, loops)
+- Permission checks in routes
 
-**routes確認:**
+**Check your routes:**
 ```bash
-# 大きなrouteファイルを見つける
+# Find large route files
 wc -l form/src/routes/*.ts | sort -n
 
-# Prisma使用があるroutesを見つける
+# Find routes with Prisma usage
 grep -r "PrismaService" form/src/routes/
 ```
 
-### リファクタリングプロセス
+### Refactoring Process
 
-**1. Controllerに抽出:**
+**1. Extract to Controller:**
 ```typescript
-// 以前: ロジックがあるRoute
+// Before: Route with logic
 router.post('/action', async (req, res) => {
     try {
-        // 50行のロジック
+        // 50 lines of logic
     } catch (e) {
         handler.handleException(res, e);
     }
 });
 
-// 以後: クリーンなroute
+// After: Clean route
 router.post('/action', (req, res) => controller.performAction(req, res));
 
-// 新しいcontrollerメソッド
+// New controller method
 async performAction(req: Request, res: Response): Promise<void> {
     try {
         const result = await this.service.performAction(req.body);
@@ -776,9 +697,9 @@ async performAction(req: Request, res: Response): Promise<void> {
 }
 ```
 
-**2. Serviceに抽出:**
+**2. Extract to Service:**
 ```typescript
-// Controllerは薄く保つ
+// Controller stays thin
 async performAction(req: Request, res: Response): Promise<void> {
     try {
         const validated = actionSchema.parse(req.body);
@@ -789,33 +710,33 @@ async performAction(req: Request, res: Response): Promise<void> {
     }
 }
 
-// Serviceがビジネスロジックを含む
+// Service contains business logic
 export class ActionService {
     async execute(data: ActionDTO): Promise<Result> {
-        // すべてのビジネスロジックはここ
-        // 権限確認
-        // データベース操作
-        // 複雑な変換
+        // All business logic here
+        // Permission checks
+        // Database operations
+        // Complex transformations
         return result;
     }
 }
 ```
 
-**3. Repository追加（必要な場合）:**
+**3. Add Repository (if needed):**
 ```typescript
-// Serviceがrepositoryを呼び出す
+// Service calls repository
 export class ActionService {
     constructor(private actionRepository: ActionRepository) {}
 
     async execute(data: ActionDTO): Promise<Result> {
-        // ビジネスロジック
+        // Business logic
         const entity = await this.actionRepository.findById(data.id);
-        // さらなるロジック
+        // More logic
         return await this.actionRepository.update(data.id, changes);
     }
 }
 
-// Repositoryがデータアクセスを処理
+// Repository handles data access
 export class ActionRepository {
     async findById(id: number): Promise<Entity | null> {
         return PrismaService.main.entity.findUnique({ where: { id } });
@@ -829,7 +750,7 @@ export class ActionRepository {
 
 ---
 
-**関連ファイル:**
-- [SKILL.md](SKILL.md) - メインガイド
-- [services-and-repositories.md](services-and-repositories.md) - Serviceレイヤーの詳細
-- [complete-examples.md](complete-examples.md) - 完全なリファクタリング例
+**Related Files:**
+- [SKILL.md](SKILL.md) - Main guide
+- [services-and-repositories.md](services-and-repositories.md) - Service layer details
+- [complete-examples.md](complete-examples.md) - Full refactoring examples

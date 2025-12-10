@@ -1,14 +1,14 @@
-# スタイリングガイド
+# Styling Guide
 
-MUI v7 sx prop、インラインスタイル、テーマ統合を使用した最新スタイリングパターンです。
+Modern styling patterns for using MUI v7 sx prop, inline styles, and theme integration.
 
 ---
 
-## インライン vs 別ファイルスタイル
+## Inline vs Separate Styles
 
-### 判断基準
+### Decision Threshold
 
-**<100行: コンポーネント上部にインラインスタイル**
+**<100 lines: Inline styles at top of component**
 
 ```typescript
 import type { SxProps, Theme } from '@mui/material';
@@ -24,7 +24,7 @@ const componentStyles: Record<string, SxProps<Theme>> = {
         borderBottom: '1px solid',
         borderColor: 'divider',
     },
-    // ... 更にスタイル
+    // ... more styles
 };
 
 export const MyComponent: React.FC = () => {
@@ -38,7 +38,7 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-**>100行: 別の `.styles.ts` ファイル**
+**>100 lines: Separate `.styles.ts` file**
 
 ```typescript
 // MyComponent.styles.ts
@@ -47,7 +47,7 @@ import type { SxProps, Theme } from '@mui/material';
 export const componentStyles: Record<string, SxProps<Theme>> = {
     container: { ... },
     header: { ... },
-    // ... 100行以上のスタイル
+    // ... 100+ lines of styles
 };
 
 // MyComponent.tsx
@@ -58,9 +58,9 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-### 実例: UnifiedForm.tsx
+### Real Example: UnifiedForm.tsx
 
-**48-126行**: 78行のインラインスタイル (許容)
+**Lines 48-126**: 78 lines of inline styles (acceptable)
 
 ```typescript
 const formStyles: Record<string, SxProps<Theme>> = {
@@ -74,17 +74,17 @@ const formStyles: Record<string, SxProps<Theme>> = {
         overflow: 'auto',
         p: 4,
     },
-    // ... 15個以上のスタイルオブジェクト
+    // ... 15 more style objects
 };
 ```
 
-**ガイドライン**: ユーザーは ~80行インラインが快適。100行付近で判断して決定。
+**Guideline**: User is comfortable with ~80 lines inline. Use your judgment around 100 lines.
 
 ---
 
-## sx Prop パターン
+## sx Prop Patterns
 
-### 基本使用法
+### Basic Usage
 
 ```typescript
 <Box sx={{ p: 2, mb: 3, display: 'flex' }}>
@@ -92,7 +92,7 @@ const formStyles: Record<string, SxProps<Theme>> = {
 </Box>
 ```
 
-### テーマアクセスと共に
+### With Theme Access
 
 ```typescript
 <Box
@@ -107,7 +107,7 @@ const formStyles: Record<string, SxProps<Theme>> = {
 </Box>
 ```
 
-### レスポンシブスタイル
+### Responsive Styles
 
 ```typescript
 <Box
@@ -144,14 +144,14 @@ const formStyles: Record<string, SxProps<Theme>> = {
 
 ---
 
-## MUI v7 パターン
+## MUI v7 Patterns
 
-### Grid コンポーネント (v7 文法)
+### Grid Component (v7 Syntax)
 
 ```typescript
 import { Grid } from '@mui/material';
 
-// ✅ 正しい - size prop がある v7 文法
+// ✅ CORRECT - v7 syntax with size prop
 <Grid container spacing={2}>
     <Grid size={{ xs: 12, md: 6 }}>
         Left Column
@@ -161,17 +161,17 @@ import { Grid } from '@mui/material';
     </Grid>
 </Grid>
 
-// ❌ 間違い - 古い v6 文法
+// ❌ WRONG - Old v6 syntax
 <Grid container spacing={2}>
-    <Grid xs={12} md={6}>  {/* 古い - 使用禁止 */}
+    <Grid xs={12} md={6}>  {/* OLD - Don't use */}
         Content
     </Grid>
 </Grid>
 ```
 
-**核心変更**: `xs={12} md={6}` の代わりに `size={{ xs: 12, md: 6 }}`
+**Key Change**: `size={{ xs: 12, md: 6 }}` instead of `xs={12} md={6}`
 
-### レスポンシブ Grid
+### Responsive Grid
 
 ```typescript
 <Grid container spacing={3}>
@@ -181,7 +181,7 @@ import { Grid } from '@mui/material';
 </Grid>
 ```
 
-### ネスト Grids
+### Nested Grids
 
 ```typescript
 <Grid container spacing={2}>
@@ -204,29 +204,29 @@ import { Grid } from '@mui/material';
 
 ---
 
-## 型安全スタイル
+## Type-Safe Styles
 
-### スタイルオブジェクト型
+### Style Object Type
 
 ```typescript
 import type { SxProps, Theme } from '@mui/material';
 
-// 型安全スタイル
+// Type-safe styles
 const styles: Record<string, SxProps<Theme>> = {
     container: {
         p: 2,
-        // 自動補完と型チェックがここで動作
+        // Autocomplete and type checking work here
     },
 };
 
-// または個別スタイル
+// Or individual style
 const containerStyle: SxProps<Theme> = {
     p: 2,
     display: 'flex',
 };
 ```
 
-### テーマ認識スタイル
+### Theme-Aware Styles
 
 ```typescript
 const styles: Record<string, SxProps<Theme>> = {
@@ -239,19 +239,19 @@ const styles: Record<string, SxProps<Theme>> = {
     },
     customSpacing: {
         padding: (theme) => theme.spacing(2),
-        margin: (theme) => theme.spacing(1, 2), // 上/下: 1, 左/右: 2
+        margin: (theme) => theme.spacing(1, 2), // top/bottom: 1, left/right: 2
     },
 };
 ```
 
 ---
 
-## 使用すべきでないもの
+## What NOT to Use
 
-### ❌ makeStyles (MUI v4 パターン)
+### ❌ makeStyles (MUI v4 pattern)
 
 ```typescript
-// ❌ 避ける - 古い Material-UI v4 パターン
+// ❌ AVOID - Old Material-UI v4 pattern
 import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles((theme) => ({
@@ -261,12 +261,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 ```
 
-**避けるべき理由**: deprecated、v7 で十分にサポートされていない
+**Why avoid**: Deprecated, v7 doesn't support it well
 
-### ❌ styled() コンポーネント
+### ❌ styled() Components
 
 ```typescript
-// ❌ 避ける - styled-components パターン
+// ❌ AVOID - styled-components pattern
 import { styled } from '@mui/material/styles';
 
 const StyledBox = styled(Box)(({ theme }) => ({
@@ -274,12 +274,12 @@ const StyledBox = styled(Box)(({ theme }) => ({
 }));
 ```
 
-**避けるべき理由**: sx prop がより柔軟で新コンポーネントを生成しない
+**Why avoid**: sx prop is more flexible and doesn't create new components
 
-### ✅ 代わりに sx Prop 使用
+### ✅ Use sx Prop Instead
 
 ```typescript
-// ✅ 推奨
+// ✅ PREFERRED
 <Box
     sx={{
         p: 2,
@@ -292,11 +292,11 @@ const StyledBox = styled(Box)(({ theme }) => ({
 
 ---
 
-## コードスタイル標準
+## Code Style Standards
 
-### インデント
+### Indentation
 
-**4 スペース** (2ではなく、タブではなく)
+**4 spaces** (not 2, not tabs)
 
 ```typescript
 const styles: Record<string, SxProps<Theme>> = {
@@ -308,48 +308,48 @@ const styles: Record<string, SxProps<Theme>> = {
 };
 ```
 
-### クォート
+### Quotes
 
-**シングルクォート** 文字列用 (プロジェクト標準)
+**Single quotes** for strings (project standard)
 
 ```typescript
-// ✅ 正しい
+// ✅ CORRECT
 const color = 'primary.main';
 import { Box } from '@mui/material';
 
-// ❌ 間違い
+// ❌ WRONG
 const color = "primary.main";
 import { Box } from "@mui/material";
 ```
 
-### 末尾カンマ
+### Trailing Commas
 
-オブジェクトと配列に**常に末尾カンマ**使用
+**Always use trailing commas** in objects and arrays
 
 ```typescript
-// ✅ 正しい
+// ✅ CORRECT
 const styles = {
     container: { p: 2 },
-    header: { mb: 1 },  // 末尾カンマ
+    header: { mb: 1 },  // Trailing comma
 };
 
 const items = [
     'item1',
-    'item2',  // 末尾カンマ
+    'item2',  // Trailing comma
 ];
 
-// ❌ 間違い - 末尾カンマなし
+// ❌ WRONG - No trailing comma
 const styles = {
     container: { p: 2 },
-    header: { mb: 1 }  // カンマ欠落
+    header: { mb: 1 }  // Missing comma
 };
 ```
 
 ---
 
-## 一般的なスタイルパターン
+## Common Style Patterns
 
-### Flexbox レイアウト
+### Flexbox Layout
 
 ```typescript
 const styles = {
@@ -372,24 +372,24 @@ const styles = {
 };
 ```
 
-### スペーシング
+### Spacing
 
 ```typescript
 // Padding
-p: 2           // 全面
-px: 2          // 水平 (左 + 右)
-py: 2          // 垂直 (上 + 下)
-pt: 2, pr: 1   // 特定面
+p: 2           // All sides
+px: 2          // Horizontal (left + right)
+py: 2          // Vertical (top + bottom)
+pt: 2, pr: 1   // Specific sides
 
 // Margin
 m: 2, mx: 2, my: 2, mt: 2, mr: 1
 
-// 単位: 1 = 8px (theme.spacing(1))
+// Units: 1 = 8px (theme.spacing(1))
 p: 2  // = 16px
 p: 0.5  // = 4px
 ```
 
-### ポジショニング
+### Positioning
 
 ```typescript
 const styles = {
@@ -411,18 +411,18 @@ const styles = {
 
 ---
 
-## まとめ
+## Summary
 
-**スタイリングチェックリスト:**
-- ✅ MUI スタイリングに `sx` prop 使用
-- ✅ `SxProps<Theme>` で型安全
-- ✅ <100行: インライン; >100行: 別ファイル
+**Styling Checklist:**
+- ✅ Use `sx` prop for MUI styling
+- ✅ Type-safe with `SxProps<Theme>`
+- ✅ <100 lines: inline; >100 lines: separate file
 - ✅ MUI v7 Grid: `size={{ xs: 12 }}`
-- ✅ 4 スペースインデント
-- ✅ シングルクォート
-- ✅ 末尾カンマ
-- ❌ makeStyles や styled() 使用禁止
+- ✅ 4 space indentation
+- ✅ Single quotes
+- ✅ Trailing commas
+- ❌ No makeStyles or styled()
 
-**参考:**
-- [component-patterns.md](component-patterns.md) - コンポーネント構造
-- [complete-examples.md](complete-examples.md) - 完全スタイリング例
+**See Also:**
+- [component-patterns.md](component-patterns.md) - Component structure
+- [complete-examples.md](complete-examples.md) - Full styling examples

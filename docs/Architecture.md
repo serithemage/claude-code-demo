@@ -1,8 +1,8 @@
-# RealWorld (Conduit) - アーキテクチャ設計書
+# RealWorld (Conduit) - Architecture Design Document
 
-## 1. システム概要
+## 1. System Overview
 
-### 1.1 アーキテクチャ図
+### 1.1 Architecture Diagram
 
 ```mermaid
 flowchart TB
@@ -36,47 +36,47 @@ flowchart TB
     Repositories -->|Prisma ORM| SQLite
 ```
 
-### 1.2 コンポーネント間の通信
+### 1.2 Communication Between Components
 
-| 通信経路 | プロトコル | 形式 |
-|---------|-----------|------|
+| Communication Path | Protocol | Format |
+|-------------------|----------|--------|
 | Browser ↔ Frontend | HTTP/HTTPS | HTML/JS/CSS |
 | Frontend ↔ Backend | REST API | JSON |
 | Backend ↔ Database | Prisma Client | SQL |
 
 ---
 
-## 2. バックエンドアーキテクチャ
+## 2. Backend Architecture
 
-### 2.1 レイヤードアーキテクチャ
+### 2.1 Layered Architecture
 
 ```mermaid
 flowchart TB
     Request[HTTP Request]
 
     subgraph Routes["Routes Layer"]
-        R1["エンドポイント定義"]
-        R2["ミドルウェア適用（Auth, Validation）"]
-        R3["ルーティング"]
+        R1["Endpoint Definition"]
+        R2["Middleware Application (Auth, Validation)"]
+        R3["Routing"]
     end
 
     subgraph Controllers["Controllers Layer"]
-        C1["リクエストパラメータ抽出"]
-        C2["バリデーション実行"]
-        C3["レスポンス整形"]
-        C4["エラーハンドリング"]
+        C1["Request Parameter Extraction"]
+        C2["Validation Execution"]
+        C3["Response Formatting"]
+        C4["Error Handling"]
     end
 
     subgraph Services["Services Layer"]
-        S1["ビジネスロジック実装"]
-        S2["トランザクション管理"]
-        S3["複数リポジトリの調整"]
+        S1["Business Logic Implementation"]
+        S2["Transaction Management"]
+        S3["Multiple Repository Coordination"]
     end
 
     subgraph Repositories["Repositories Layer"]
-        Repo1["Prisma クエリ実行"]
-        Repo2["データ変換"]
-        Repo3["キャッシュ（将来）"]
+        Repo1["Prisma Query Execution"]
+        Repo2["Data Transformation"]
+        Repo3["Caching (Future)"]
     end
 
     DB[(Database)]
@@ -84,27 +84,27 @@ flowchart TB
     Request --> Routes --> Controllers --> Services --> Repositories --> DB
 ```
 
-### 2.2 各レイヤーの責務
+### 2.2 Layer Responsibilities
 
-| レイヤー | 責務 | 依存関係 |
-|---------|------|---------|
-| **Routes** | エンドポイント定義、ミドルウェア適用 | Controllers |
-| **Controllers** | HTTP 処理、バリデーション、レスポンス | Services |
-| **Services** | ビジネスロジック | Repositories |
-| **Repositories** | データアクセス | Prisma |
+| Layer | Responsibility | Dependencies |
+|-------|---------------|--------------|
+| **Routes** | Endpoint definition, Middleware application | Controllers |
+| **Controllers** | HTTP processing, Validation, Response | Services |
+| **Services** | Business logic | Repositories |
+| **Repositories** | Data access | Prisma |
 
-### 2.3 ミドルウェアスタック
+### 2.3 Middleware Stack
 
 ```mermaid
 flowchart TB
     Request[Request]
-    Helmet["Helmet<br/>セキュリティヘッダー"]
-    CORS["CORS<br/>クロスオリジン設定"]
-    JSONParser["JSON Parser<br/>リクエストボディ解析"]
-    Auth["Auth<br/>JWT 検証（必要な場合）"]
-    Validation["Validation<br/>リクエストバリデーション"]
-    Controller["Controller<br/>ビジネスロジック実行"]
-    ErrorHandler["Error Handler<br/>エラー処理・レスポンス"]
+    Helmet["Helmet<br/>Security Headers"]
+    CORS["CORS<br/>Cross-Origin Settings"]
+    JSONParser["JSON Parser<br/>Request Body Parsing"]
+    Auth["Auth<br/>JWT Verification (if required)"]
+    Validation["Validation<br/>Request Validation"]
+    Controller["Controller<br/>Business Logic Execution"]
+    ErrorHandler["Error Handler<br/>Error Processing & Response"]
     Response[Response]
 
     Request --> Helmet --> CORS --> JSONParser --> Auth --> Validation --> Controller --> ErrorHandler --> Response
@@ -112,30 +112,30 @@ flowchart TB
 
 ---
 
-## 3. フロントエンドアーキテクチャ
+## 3. Frontend Architecture
 
-### 3.1 機能ベースモジュール構成
+### 3.1 Feature-Based Module Structure
 
 ```
 src/
-├── features/                    # 機能モジュール
-│   ├── auth/                    # 認証機能
-│   │   ├── components/          # 認証関連コンポーネント
-│   │   ├── hooks/               # 認証フック
-│   │   ├── api/                 # 認証 API 呼び出し
-│   │   └── types.ts             # 型定義
+├── features/                    # Feature Modules
+│   ├── auth/                    # Authentication Feature
+│   │   ├── components/          # Auth-related Components
+│   │   ├── hooks/               # Auth Hooks
+│   │   ├── api/                 # Auth API Calls
+│   │   └── types.ts             # Type Definitions
 │   │
-│   ├── articles/                # 記事機能
+│   ├── articles/                # Articles Feature
 │   │   ├── components/
 │   │   ├── hooks/
 │   │   ├── api/
 │   │   └── types.ts
 │   │
-│   ├── comments/                # コメント機能
-│   ├── profiles/                # プロフィール機能
-│   └── tags/                    # タグ機能
+│   ├── comments/                # Comments Feature
+│   ├── profiles/                # Profiles Feature
+│   └── tags/                    # Tags Feature
 │
-├── components/                  # 共通コンポーネント
+├── components/                  # Shared Components
 │   ├── layout/
 │   │   ├── Header.tsx
 │   │   ├── Footer.tsx
@@ -145,13 +145,13 @@ src/
 │       ├── ErrorMessage.tsx
 │       └── Pagination.tsx
 │
-├── hooks/                       # 共通フック
+├── hooks/                       # Shared Hooks
 │   ├── useAuth.ts
 │   └── useLocalStorage.ts
 │
-├── lib/                         # ユーティリティ
+├── lib/                         # Utilities
 │   ├── api/
-│   │   └── client.ts            # API クライアント
+│   │   └── client.ts            # API Client
 │   └── utils/
 │       └── formatDate.ts
 │
@@ -163,19 +163,19 @@ src/
     └── ...
 ```
 
-### 3.2 状態管理戦略
+### 3.2 State Management Strategy
 
-| 状態の種類 | 管理方法 | 例 |
-|-----------|---------|-----|
-| **サーバー状態** | TanStack Query | 記事一覧、ユーザー情報 |
-| **認証状態** | Context + localStorage | ログイン状態、JWT |
-| **UI 状態** | React State | モーダル、フォーム |
-| **URL 状態** | TanStack Router | フィルター、ページ番号 |
+| State Type | Management Method | Examples |
+|------------|-------------------|----------|
+| **Server State** | TanStack Query | Article list, User info |
+| **Auth State** | Context + localStorage | Login status, JWT |
+| **UI State** | React State | Modal, Form |
+| **URL State** | TanStack Router | Filters, Page number |
 
-### 3.3 データフェッチパターン
+### 3.3 Data Fetching Pattern
 
 ```typescript
-// useSuspenseQuery パターン
+// useSuspenseQuery Pattern
 function ArticleList() {
   const { data: articles } = useSuspenseQuery({
     queryKey: ['articles'],
@@ -185,7 +185,7 @@ function ArticleList() {
   return <ArticleListView articles={articles} />;
 }
 
-// Suspense 境界
+// Suspense Boundary
 function ArticlesPage() {
   return (
     <Suspense fallback={<Loading />}>
@@ -197,9 +197,9 @@ function ArticlesPage() {
 
 ---
 
-## 4. データモデル（ERD）
+## 4. Data Model (ERD)
 
-### 4.1 エンティティ関係図
+### 4.1 Entity Relationship Diagram
 
 ```mermaid
 erDiagram
@@ -265,7 +265,7 @@ erDiagram
     Tag ||--o{ ArticleTag : "tagged"
 ```
 
-### 4.2 Prisma スキーマ
+### 4.2 Prisma Schema
 
 ```prisma
 // prisma/schema.prisma
@@ -368,9 +368,9 @@ model Follow {
 
 ---
 
-## 5. 認証フロー
+## 5. Authentication Flow
 
-### 5.1 JWT 認証シーケンス
+### 5.1 JWT Authentication Sequence
 
 ```mermaid
 sequenceDiagram
@@ -387,7 +387,7 @@ sequenceDiagram
     Client->>Client: Store token in localStorage
 ```
 
-### 5.2 認証済みリクエスト
+### 5.2 Authenticated Request
 
 ```mermaid
 sequenceDiagram
@@ -402,7 +402,7 @@ sequenceDiagram
     Server-->>Client: {user: {...}}
 ```
 
-### 5.3 トークン構造
+### 5.3 Token Structure
 
 ```json
 // JWT Payload
@@ -415,9 +415,9 @@ sequenceDiagram
 
 ---
 
-## 6. エラーハンドリング
+## 6. Error Handling
 
-### 6.1 エラーレスポンス形式
+### 6.1 Error Response Format
 
 ```json
 {
@@ -427,21 +427,21 @@ sequenceDiagram
 }
 ```
 
-### 6.2 HTTP ステータスコード
+### 6.2 HTTP Status Codes
 
-| コード | 意味 | 使用場面 |
-|--------|------|---------|
-| 200 | OK | 成功（GET, PUT） |
-| 201 | Created | 成功（POST） |
-| 204 | No Content | 成功（DELETE） |
-| 400 | Bad Request | バリデーションエラー |
-| 401 | Unauthorized | 認証必須 |
-| 403 | Forbidden | 権限不足 |
-| 404 | Not Found | リソースなし |
-| 422 | Unprocessable Entity | バリデーションエラー |
-| 500 | Internal Server Error | サーバーエラー |
+| Code | Meaning | Usage |
+|------|---------|-------|
+| 200 | OK | Success (GET, PUT) |
+| 201 | Created | Success (POST) |
+| 204 | No Content | Success (DELETE) |
+| 400 | Bad Request | Validation error |
+| 401 | Unauthorized | Authentication required |
+| 403 | Forbidden | Insufficient permissions |
+| 404 | Not Found | Resource not found |
+| 422 | Unprocessable Entity | Validation error |
+| 500 | Internal Server Error | Server error |
 
-### 6.3 バックエンドエラーハンドリング
+### 6.3 Backend Error Handling
 
 ```typescript
 // middleware/errorHandler.ts
@@ -463,7 +463,7 @@ export function errorHandler(
     });
   }
 
-  // Sentry にエラー送信
+  // Send error to Sentry
   Sentry.captureException(err);
 
   return res.status(500).json({
@@ -474,40 +474,40 @@ export function errorHandler(
 
 ---
 
-## 7. パフォーマンス最適化
+## 7. Performance Optimization
 
-### 7.1 バックエンド
+### 7.1 Backend
 
-| 最適化 | 実装方法 |
-|--------|---------|
-| **データベースインデックス** | 頻繁にクエリされるフィールドにインデックス |
-| **N+1 問題回避** | Prisma の include で関連データを一括取得 |
-| **ページネーション** | offset/limit でデータ取得を制限 |
+| Optimization | Implementation |
+|--------------|----------------|
+| **Database Indexes** | Index frequently queried fields |
+| **N+1 Problem Prevention** | Batch fetch related data with Prisma include |
+| **Pagination** | Limit data retrieval with offset/limit |
 
-### 7.2 フロントエンド
+### 7.2 Frontend
 
-| 最適化 | 実装方法 |
-|--------|---------|
-| **コード分割** | React.lazy + Suspense |
-| **キャッシュ** | TanStack Query の staleTime 設定 |
-| **メモ化** | React.memo, useMemo, useCallback |
-| **バンドル最適化** | Vite のチャンク分割 |
+| Optimization | Implementation |
+|--------------|----------------|
+| **Code Splitting** | React.lazy + Suspense |
+| **Caching** | TanStack Query staleTime configuration |
+| **Memoization** | React.memo, useMemo, useCallback |
+| **Bundle Optimization** | Vite chunk splitting |
 
 ---
 
-## 8. セキュリティ対策
+## 8. Security Measures
 
-### 8.1 実装するセキュリティ対策
+### 8.1 Security Implementations
 
-| 脅威 | 対策 |
-|------|------|
-| **XSS** | React のエスケープ、CSP ヘッダー |
-| **CSRF** | SameSite Cookie（将来） |
-| **SQL Injection** | Prisma ORM（パラメータ化クエリ） |
-| **Brute Force** | Rate Limiting（将来） |
-| **認証情報漏洩** | bcrypt ハッシュ、HTTPS |
+| Threat | Countermeasure |
+|--------|----------------|
+| **XSS** | React escaping, CSP headers |
+| **CSRF** | SameSite Cookie (future) |
+| **SQL Injection** | Prisma ORM (parameterized queries) |
+| **Brute Force** | Rate Limiting (future) |
+| **Credential Leakage** | bcrypt hashing, HTTPS |
 
-### 8.2 セキュリティヘッダー（Helmet）
+### 8.2 Security Headers (Helmet)
 
 ```typescript
 app.use(helmet({

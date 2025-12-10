@@ -1,12 +1,12 @@
-# パフォーマンス最適化
+# Performance Optimization
 
-React コンポーネントのパフォーマンス最適化、不要な再レンダリング防止、メモリリーク防止のためのパターンです。
+Patterns for optimizing React component performance, preventing unnecessary re-renders, and avoiding memory leaks.
 
 ---
 
-## Memoization パターン
+## Memoization Patterns
 
-### 高コスト計算に useMemo 使用
+### useMemo for Expensive Computations
 
 ```typescript
 import { useMemo } from 'react';
@@ -15,12 +15,12 @@ export const DataDisplay: React.FC<{ items: Item[], searchTerm: string }> = ({
     items,
     searchTerm,
 }) => {
-    // ❌ 避けてください - 毎レンダーで実行
+    // ❌ AVOID - Runs on every render
     const filteredItems = items
         .filter(item => item.name.includes(searchTerm))
         .sort((a, b) => a.name.localeCompare(b.name));
 
-    // ✅ 正しい - Memoized、依存性変更時のみ再計算
+    // ✅ CORRECT - Memoized, only recalculates when dependencies change
     const filteredItems = useMemo(() => {
         return items
             .filter(item => item.name.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -31,67 +31,67 @@ export const DataDisplay: React.FC<{ items: Item[], searchTerm: string }> = ({
 };
 ```
 
-**useMemo を使用すべき時:**
-- 大規模配列のフィルタリング/ソート
-- 複雑な計算
-- データ構造変換
-- 高コスト演算 (ループ、再帰)
+**When to use useMemo:**
+- Filtering/sorting large arrays
+- Complex calculations
+- Transforming data structures
+- Expensive computations (loops, recursion)
 
-**useMemo を使用すべきでない時:**
-- 単純な文字列連結
-- 基本的な算術
-- 早期最適化 (まずプロファイリングしてください！)
+**When NOT to use useMemo:**
+- Simple string concatenation
+- Basic arithmetic
+- Premature optimization (profile first!)
 
 ---
 
-## イベントハンドラに useCallback 使用
+## useCallback for Event Handlers
 
-### 問題
+### The Problem
 
 ```typescript
-// ❌ 避けてください - 毎レンダーで新しい関数生成
+// ❌ AVOID - Creates new function on every render
 export const Parent: React.FC = () => {
     const handleClick = (id: string) => {
         console.log('Clicked:', id);
     };
 
-    // Parent がレンダーされるたびに Child が再レンダー
-    // handleClick が毎回新しい関数参照だから
+    // Child re-renders every time Parent renders
+    // because handleClick is a new function reference each time
     return <Child onClick={handleClick} />;
 };
 ```
 
-### 解決策
+### The Solution
 
 ```typescript
 import { useCallback } from 'react';
 
 export const Parent: React.FC = () => {
-    // ✅ 正しい - 安定した関数参照
+    // ✅ CORRECT - Stable function reference
     const handleClick = useCallback((id: string) => {
         console.log('Clicked:', id);
-    }, []); // 空の deps = 関数が絶対変更されない
+    }, []); // Empty deps = function never changes
 
-    // props が実際に変更された時のみ Child 再レンダー
+    // Child only re-renders when props actually change
     return <Child onClick={handleClick} />;
 };
 ```
 
-**useCallback を使用すべき時:**
-- 子に props として渡される関数
-- useEffect の依存性として使用される関数
-- memoized コンポーネントに渡される関数
-- リストのイベントハンドラ
+**When to use useCallback:**
+- Functions passed as props to children
+- Functions used as dependencies in useEffect
+- Functions passed to memoized components
+- Event handlers in lists
 
-**useCallback を使用すべきでない時:**
-- 子に渡されないイベントハンドラ
-- 単純なインラインハンドラ: `onClick={() => doSomething()}`
+**When NOT to use useCallback:**
+- Event handlers not passed to children
+- Simple inline handlers: `onClick={() => doSomething()}`
 
 ---
 
-## コンポーネント Memoization に React.memo 使用
+## React.memo for Component Memoization
 
-### 基本使用法
+### Basic Usage
 
 ```typescript
 import React from 'react';
@@ -101,32 +101,32 @@ interface ExpensiveComponentProps {
     onAction: () => void;
 }
 
-// ✅ 高コストコンポーネントを React.memo でラップ
+// ✅ Wrap expensive components in React.memo
 export const ExpensiveComponent = React.memo<ExpensiveComponentProps>(
     function ExpensiveComponent({ data, onAction }) {
-        // 複雑なレンダリングロジック
+        // Complex rendering logic
         return <ComplexVisualization data={data} />;
     }
 );
 ```
 
-**React.memo を使用すべき時:**
-- 頻繁にレンダーされるコンポーネント
-- 高コストレンダリングがあるコンポーネント
-- props が頻繁に変更されない時
-- リストアイテムコンポーネント
-- DataGrid セル/レンダラー
+**When to use React.memo:**
+- Component renders frequently
+- Component has expensive rendering
+- Props don't change often
+- Component is a list item
+- DataGrid cells/renderers
 
-**React.memo を使用すべきでない時:**
-- props がどうせ頻繁に変更される時
-- レンダリングが既に高速な時
-- 早期最適化
+**When NOT to use React.memo:**
+- Props change frequently anyway
+- Rendering is already fast
+- Premature optimization
 
 ---
 
-## Debounced 検索
+## Debounced Search
 
-### use-debounce Hook 使用
+### Using use-debounce Hook
 
 ```typescript
 import { useState } from 'react';
@@ -136,10 +136,10 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 export const SearchComponent: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
 
-    // 300ms 間 debounce
+    // Debounce for 300ms
     const [debouncedSearchTerm] = useDebounce(searchTerm, 300);
 
-    // クエリは debounced 値を使用
+    // Query uses debounced value
     const { data } = useSuspenseQuery({
         queryKey: ['search', debouncedSearchTerm],
         queryFn: () => api.search(debouncedSearchTerm),
@@ -156,16 +156,16 @@ export const SearchComponent: React.FC = () => {
 };
 ```
 
-**最適な Debounce タイミング:**
-- **300-500ms**: 検索/フィルタリング
-- **1000ms**: 自動保存
-- **100-200ms**: リアルタイム検証
+**Optimal Debounce Timing:**
+- **300-500ms**: Search/filtering
+- **1000ms**: Auto-save
+- **100-200ms**: Real-time validation
 
 ---
 
-## メモリリーク防止
+## Memory Leak Prevention
 
-### Timeout/Interval クリーンアップ
+### Cleanup Timeouts/Intervals
 
 ```typescript
 import { useEffect, useState } from 'react';
@@ -174,24 +174,24 @@ export const MyComponent: React.FC = () => {
     const [count, setCount] = useState(0);
 
     useEffect(() => {
-        // ✅ 正しい - Interval クリーンアップ
+        // ✅ CORRECT - Cleanup interval
         const intervalId = setInterval(() => {
             setCount(c => c + 1);
         }, 1000);
 
         return () => {
-            clearInterval(intervalId);  // クリーンアップ！
+            clearInterval(intervalId);  // Cleanup!
         };
     }, []);
 
     useEffect(() => {
-        // ✅ 正しい - Timeout クリーンアップ
+        // ✅ CORRECT - Cleanup timeout
         const timeoutId = setTimeout(() => {
             console.log('Delayed action');
         }, 5000);
 
         return () => {
-            clearTimeout(timeoutId);  // クリーンアップ！
+            clearTimeout(timeoutId);  // Cleanup!
         };
     }, []);
 
@@ -199,7 +199,7 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-### イベントリスナークリーンアップ
+### Cleanup Event Listeners
 
 ```typescript
 useEffect(() => {
@@ -210,12 +210,12 @@ useEffect(() => {
     window.addEventListener('resize', handleResize);
 
     return () => {
-        window.removeEventListener('resize', handleResize);  // クリーンアップ！
+        window.removeEventListener('resize', handleResize);  // Cleanup!
     };
 }, []);
 ```
 
-### Fetch に Abort Controllers 使用
+### Abort Controllers for Fetch
 
 ```typescript
 useEffect(() => {
@@ -231,18 +231,18 @@ useEffect(() => {
         });
 
     return () => {
-        abortController.abort();  // クリーンアップ！
+        abortController.abort();  // Cleanup!
     };
 }, []);
 ```
 
-**参考**: TanStack Query 使用時はこれが自動的に処理されます。
+**Note**: With TanStack Query, this is handled automatically.
 
 ---
 
-## フォームパフォーマンス
+## Form Performance
 
-### 特定フィールドのみ Watch (全体ではなく)
+### Watch Specific Fields (Not All)
 
 ```typescript
 import { useForm } from 'react-hook-form';
@@ -250,14 +250,14 @@ import { useForm } from 'react-hook-form';
 export const MyForm: React.FC = () => {
     const { register, watch, handleSubmit } = useForm();
 
-    // ❌ 避けてください - すべてのフィールドを watch、すべての変更で再レンダー
+    // ❌ AVOID - Watches all fields, re-renders on any change
     const formValues = watch();
 
-    // ✅ 正しい - 必要なものだけ watch
+    // ✅ CORRECT - Watch only what you need
     const username = watch('username');
     const email = watch('email');
 
-    // または複数の特定フィールド
+    // Or multiple specific fields
     const [username, email] = watch(['username', 'email']);
 
     return (
@@ -266,7 +266,7 @@ export const MyForm: React.FC = () => {
             <input {...register('email')} />
             <input {...register('password')} />
 
-            {/* username/email 変更時のみ再レンダー */}
+            {/* Only re-renders when username/email change */}
             <p>Username: {username}, Email: {email}</p>
         </form>
     );
@@ -275,27 +275,27 @@ export const MyForm: React.FC = () => {
 
 ---
 
-## リストレンダリング最適化
+## List Rendering Optimization
 
-### Key Prop 使用
+### Key Prop Usage
 
 ```typescript
-// ✅ 正しい - 安定した一意のキー
+// ✅ CORRECT - Stable unique keys
 {items.map(item => (
     <ListItem key={item.id}>
         {item.name}
     </ListItem>
 ))}
 
-// ❌ 避けてください - インデックスをキーに (リスト変更時に不安定)
+// ❌ AVOID - Index as key (unstable if list changes)
 {items.map((item, index) => (
-    <ListItem key={index}>  // リスト順序変更時に問題
+    <ListItem key={index}>  // WRONG if list reorders
         {item.name}
     </ListItem>
 ))}
 ```
 
-### Memoized リストアイテム
+### Memoized List Items
 
 ```typescript
 const ListItem = React.memo<ListItemProps>(({ item, onAction }) => {
@@ -327,31 +327,31 @@ export const List: React.FC<{ items: Item[] }> = ({ items }) => {
 
 ---
 
-## コンポーネント再初期化防止
+## Preventing Component Re-initialization
 
-### 問題
+### The Problem
 
 ```typescript
-// ❌ 避けてください - 毎レンダーでコンポーネント再生成
+// ❌ AVOID - Component recreated on every render
 export const Parent: React.FC = () => {
-    // 毎レンダーで新しいコンポーネント定義！
+    // New component definition each render!
     const ChildComponent = () => <div>Child</div>;
 
-    return <ChildComponent />;  // 毎レンダーでアンマウントしてリマウント
+    return <ChildComponent />;  // Unmounts and remounts every render
 };
 ```
 
-### 解決策
+### The Solution
 
 ```typescript
-// ✅ 正しい - 外部に定義するか useMemo 使用
+// ✅ CORRECT - Define outside or use useMemo
 const ChildComponent: React.FC = () => <div>Child</div>;
 
 export const Parent: React.FC = () => {
-    return <ChildComponent />;  // 安定したコンポーネント
+    return <ChildComponent />;  // Stable component
 };
 
-// ✅ または動的な場合は useMemo 使用
+// ✅ OR if dynamic, use useMemo
 export const Parent: React.FC<{ config: Config }> = ({ config }) => {
     const DynamicComponent = useMemo(() => {
         return () => <div>{config.title}</div>;
@@ -363,44 +363,44 @@ export const Parent: React.FC<{ config: Config }> = ({ config }) => {
 
 ---
 
-## 重い依存関係の Lazy Loading
+## Lazy Loading Heavy Dependencies
 
-### コードスプリッティング
+### Code Splitting
 
 ```typescript
-// ❌ 避けてください - トップレベルで重いライブラリを import
-import jsPDF from 'jspdf';  // 大きなライブラリが即座にロード
-import * as XLSX from 'xlsx';  // 大きなライブラリが即座にロード
+// ❌ AVOID - Import heavy libraries at top level
+import jsPDF from 'jspdf';  // Large library loaded immediately
+import * as XLSX from 'xlsx';  // Large library loaded immediately
 
-// ✅ 正しい - 必要な時に動的 import
+// ✅ CORRECT - Dynamic import when needed
 const handleExportPDF = async () => {
     const { jsPDF } = await import('jspdf');
     const doc = new jsPDF();
-    // 使用
+    // Use it
 };
 
 const handleExportExcel = async () => {
     const XLSX = await import('xlsx');
-    // 使用
+    // Use it
 };
 ```
 
 ---
 
-## まとめ
+## Summary
 
-**パフォーマンスチェックリスト:**
-- ✅ 高コスト計算に `useMemo` (filter, sort, map)
-- ✅ 子に渡される関数に `useCallback`
-- ✅ 高コストコンポーネントに `React.memo`
-- ✅ 検索/フィルター debounce (300-500ms)
-- ✅ useEffect で timeout/interval クリーンアップ
-- ✅ 特定フォームフィールドのみ watch (全体ではなく)
-- ✅ リストに安定したキー
-- ✅ 重いライブラリを lazy load
-- ✅ React.lazy でコードスプリッティング
+**Performance Checklist:**
+- ✅ `useMemo` for expensive computations (filter, sort, map)
+- ✅ `useCallback` for functions passed to children
+- ✅ `React.memo` for expensive components
+- ✅ Debounce search/filter (300-500ms)
+- ✅ Cleanup timeouts/intervals in useEffect
+- ✅ Watch specific form fields (not all)
+- ✅ Stable keys in lists
+- ✅ Lazy load heavy libraries
+- ✅ Code splitting with React.lazy
 
-**参考:**
+**See Also:**
 - [component-patterns.md](component-patterns.md) - Lazy loading
-- [data-fetching.md](data-fetching.md) - TanStack Query 最適化
-- [complete-examples.md](complete-examples.md) - コンテキスト内パフォーマンスパターン
+- [data-fetching.md](data-fetching.md) - TanStack Query optimization
+- [complete-examples.md](complete-examples.md) - Performance patterns in context

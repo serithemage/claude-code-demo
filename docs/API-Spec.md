@@ -1,27 +1,27 @@
-# RealWorld (Conduit) - API 仕様書
+# RealWorld (Conduit) - API Specification
 
-## 1. 概要
+## 1. Overview
 
-### 1.1 ベース URL
+### 1.1 Base URL
 ```
 http://localhost:3000/api
 ```
 
-### 1.2 認証ヘッダー
+### 1.2 Authentication Header
 ```
 Authorization: Token jwt.token.here
 ```
 
-### 1.3 共通レスポンス形式
+### 1.3 Common Response Format
 
-**成功時**
+**Success**
 ```json
 {
-  "user": { ... },      // または "article", "articles", etc.
+  "user": { ... },      // or "article", "articles", etc.
 }
 ```
 
-**エラー時**
+**Error**
 ```json
 {
   "errors": {
@@ -33,18 +33,18 @@ Authorization: Token jwt.token.here
 
 ---
 
-## 2. 認証 API
+## 2. Authentication API
 
-### 2.1 ユーザー登録
+### 2.1 User Registration
 
-**エンドポイント**
+**Endpoint**
 ```
 POST /api/users
 ```
 
-**認証**: 不要
+**Authentication**: Not required
 
-**リクエスト**
+**Request**
 ```json
 {
   "user": {
@@ -55,7 +55,7 @@ POST /api/users
 }
 ```
 
-**レスポンス** (201 Created)
+**Response** (201 Created)
 ```json
 {
   "user": {
@@ -68,7 +68,7 @@ POST /api/users
 }
 ```
 
-**エラー** (422 Unprocessable Entity)
+**Error** (422 Unprocessable Entity)
 ```json
 {
   "errors": {
@@ -80,16 +80,16 @@ POST /api/users
 
 ---
 
-### 2.2 ログイン
+### 2.2 Login
 
-**エンドポイント**
+**Endpoint**
 ```
 POST /api/users/login
 ```
 
-**認証**: 不要
+**Authentication**: Not required
 
-**リクエスト**
+**Request**
 ```json
 {
   "user": {
@@ -99,7 +99,7 @@ POST /api/users/login
 }
 ```
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "user": {
@@ -112,7 +112,7 @@ POST /api/users/login
 }
 ```
 
-**エラー** (401 Unauthorized)
+**Error** (401 Unauthorized)
 ```json
 {
   "errors": {
@@ -123,16 +123,16 @@ POST /api/users/login
 
 ---
 
-### 2.3 現在のユーザー取得
+### 2.3 Get Current User
 
-**エンドポイント**
+**Endpoint**
 ```
 GET /api/user
 ```
 
-**認証**: 必須
+**Authentication**: Required
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "user": {
@@ -147,16 +147,16 @@ GET /api/user
 
 ---
 
-### 2.4 ユーザー情報更新
+### 2.4 Update User
 
-**エンドポイント**
+**Endpoint**
 ```
 PUT /api/user
 ```
 
-**認証**: 必須
+**Authentication**: Required
 
-**リクエスト**
+**Request**
 ```json
 {
   "user": {
@@ -167,9 +167,9 @@ PUT /api/user
 }
 ```
 
-※ 指定したフィールドのみ更新。password フィールドで新しいパスワードを設定可能。
+※ Only specified fields are updated. New password can be set via password field.
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "user": {
@@ -184,18 +184,18 @@ PUT /api/user
 
 ---
 
-## 3. プロフィール API
+## 3. Profile API
 
-### 3.1 プロフィール取得
+### 3.1 Get Profile
 
-**エンドポイント**
+**Endpoint**
 ```
 GET /api/profiles/:username
 ```
 
-**認証**: 任意（ログイン時は following フラグを含む）
+**Authentication**: Optional (includes following flag when logged in)
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "profile": {
@@ -209,18 +209,18 @@ GET /api/profiles/:username
 
 ---
 
-### 3.2 ユーザーをフォロー
+### 3.2 Follow User
 
-**エンドポイント**
+**Endpoint**
 ```
 POST /api/profiles/:username/follow
 ```
 
-**認証**: 必須
+**Authentication**: Required
 
-**リクエスト**: ボディなし
+**Request**: No body
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "profile": {
@@ -234,16 +234,16 @@ POST /api/profiles/:username/follow
 
 ---
 
-### 3.3 フォロー解除
+### 3.3 Unfollow User
 
-**エンドポイント**
+**Endpoint**
 ```
 DELETE /api/profiles/:username/follow
 ```
 
-**認証**: 必須
+**Authentication**: Required
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "profile": {
@@ -257,28 +257,28 @@ DELETE /api/profiles/:username/follow
 
 ---
 
-## 4. 記事 API
+## 4. Articles API
 
-### 4.1 記事一覧取得
+### 4.1 List Articles
 
-**エンドポイント**
+**Endpoint**
 ```
 GET /api/articles
 ```
 
-**認証**: 任意
+**Authentication**: Optional
 
-**クエリパラメータ**
+**Query Parameters**
 
-| パラメータ | 説明 | 例 |
-|-----------|------|-----|
-| `tag` | タグでフィルタ | `?tag=AngularJS` |
-| `author` | 著者でフィルタ | `?author=jake` |
-| `favorited` | お気に入りユーザーでフィルタ | `?favorited=jake` |
-| `limit` | 取得件数（デフォルト: 20） | `?limit=20` |
-| `offset` | オフセット（デフォルト: 0） | `?offset=0` |
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `tag` | Filter by tag | `?tag=AngularJS` |
+| `author` | Filter by author | `?author=jake` |
+| `favorited` | Filter by favorited user | `?favorited=jake` |
+| `limit` | Number of items (default: 20) | `?limit=20` |
+| `offset` | Offset (default: 0) | `?offset=0` |
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "articles": [
@@ -306,23 +306,23 @@ GET /api/articles
 
 ---
 
-### 4.2 フィード取得
+### 4.2 Get Feed
 
-**エンドポイント**
+**Endpoint**
 ```
 GET /api/articles/feed
 ```
 
-**認証**: 必須
+**Authentication**: Required
 
-**クエリパラメータ**
+**Query Parameters**
 
-| パラメータ | 説明 | 例 |
-|-----------|------|-----|
-| `limit` | 取得件数（デフォルト: 20） | `?limit=20` |
-| `offset` | オフセット（デフォルト: 0） | `?offset=0` |
+| Parameter | Description | Example |
+|-----------|-------------|---------|
+| `limit` | Number of items (default: 20) | `?limit=20` |
+| `offset` | Offset (default: 0) | `?offset=0` |
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "articles": [ ... ],
@@ -332,16 +332,16 @@ GET /api/articles/feed
 
 ---
 
-### 4.3 記事詳細取得
+### 4.3 Get Article
 
-**エンドポイント**
+**Endpoint**
 ```
 GET /api/articles/:slug
 ```
 
-**認証**: 任意
+**Authentication**: Optional
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "article": {
@@ -366,16 +366,16 @@ GET /api/articles/:slug
 
 ---
 
-### 4.4 記事作成
+### 4.4 Create Article
 
-**エンドポイント**
+**Endpoint**
 ```
 POST /api/articles
 ```
 
-**認証**: 必須
+**Authentication**: Required
 
-**リクエスト**
+**Request**
 ```json
 {
   "article": {
@@ -387,7 +387,7 @@ POST /api/articles
 }
 ```
 
-**レスポンス** (201 Created)
+**Response** (201 Created)
 ```json
 {
   "article": {
@@ -412,16 +412,16 @@ POST /api/articles
 
 ---
 
-### 4.5 記事更新
+### 4.5 Update Article
 
-**エンドポイント**
+**Endpoint**
 ```
 PUT /api/articles/:slug
 ```
 
-**認証**: 必須（著者のみ）
+**Authentication**: Required (author only)
 
-**リクエスト**
+**Request**
 ```json
 {
   "article": {
@@ -430,9 +430,9 @@ PUT /api/articles/:slug
 }
 ```
 
-※ 指定したフィールドのみ更新。title を更新すると slug も再生成。
+※ Only specified fields are updated. Updating title regenerates the slug.
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "article": { ... }
@@ -441,31 +441,31 @@ PUT /api/articles/:slug
 
 ---
 
-### 4.6 記事削除
+### 4.6 Delete Article
 
-**エンドポイント**
+**Endpoint**
 ```
 DELETE /api/articles/:slug
 ```
 
-**認証**: 必須（著者のみ）
+**Authentication**: Required (author only)
 
-**レスポンス** (204 No Content)
+**Response** (204 No Content)
 
 ---
 
-## 5. コメント API
+## 5. Comments API
 
-### 5.1 コメント一覧取得
+### 5.1 List Comments
 
-**エンドポイント**
+**Endpoint**
 ```
 GET /api/articles/:slug/comments
 ```
 
-**認証**: 任意
+**Authentication**: Optional
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "comments": [
@@ -487,16 +487,16 @@ GET /api/articles/:slug/comments
 
 ---
 
-### 5.2 コメント作成
+### 5.2 Create Comment
 
-**エンドポイント**
+**Endpoint**
 ```
 POST /api/articles/:slug/comments
 ```
 
-**認証**: 必須
+**Authentication**: Required
 
-**リクエスト**
+**Request**
 ```json
 {
   "comment": {
@@ -505,7 +505,7 @@ POST /api/articles/:slug/comments
 }
 ```
 
-**レスポンス** (201 Created)
+**Response** (201 Created)
 ```json
 {
   "comment": {
@@ -525,33 +525,33 @@ POST /api/articles/:slug/comments
 
 ---
 
-### 5.3 コメント削除
+### 5.3 Delete Comment
 
-**エンドポイント**
+**Endpoint**
 ```
 DELETE /api/articles/:slug/comments/:id
 ```
 
-**認証**: 必須（コメント著者のみ）
+**Authentication**: Required (comment author only)
 
-**レスポンス** (204 No Content)
+**Response** (204 No Content)
 
 ---
 
-## 6. お気に入り API
+## 6. Favorites API
 
-### 6.1 お気に入り追加
+### 6.1 Add Favorite
 
-**エンドポイント**
+**Endpoint**
 ```
 POST /api/articles/:slug/favorite
 ```
 
-**認証**: 必須
+**Authentication**: Required
 
-**リクエスト**: ボディなし
+**Request**: No body
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "article": {
@@ -576,16 +576,16 @@ POST /api/articles/:slug/favorite
 
 ---
 
-### 6.2 お気に入り解除
+### 6.2 Remove Favorite
 
-**エンドポイント**
+**Endpoint**
 ```
 DELETE /api/articles/:slug/favorite
 ```
 
-**認証**: 必須
+**Authentication**: Required
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "article": {
@@ -599,18 +599,18 @@ DELETE /api/articles/:slug/favorite
 
 ---
 
-## 7. タグ API
+## 7. Tags API
 
-### 7.1 タグ一覧取得
+### 7.1 List Tags
 
-**エンドポイント**
+**Endpoint**
 ```
 GET /api/tags
 ```
 
-**認証**: 不要
+**Authentication**: Not required
 
-**レスポンス** (200 OK)
+**Response** (200 OK)
 ```json
 {
   "tags": [
@@ -624,7 +624,7 @@ GET /api/tags
 
 ---
 
-## 8. データ型定義
+## 8. Data Type Definitions
 
 ### 8.1 User
 
@@ -680,40 +680,40 @@ interface Comment {
 
 ---
 
-## 9. エラーコード一覧
+## 9. Error Codes
 
-| HTTP Status | エラー種別 | 説明 |
-|-------------|-----------|------|
-| 400 | Bad Request | リクエスト形式エラー |
-| 401 | Unauthorized | 認証が必要 |
-| 403 | Forbidden | 権限なし（他人の記事編集など） |
-| 404 | Not Found | リソースが存在しない |
-| 422 | Unprocessable Entity | バリデーションエラー |
-| 500 | Internal Server Error | サーバー内部エラー |
+| HTTP Status | Error Type | Description |
+|-------------|------------|-------------|
+| 400 | Bad Request | Invalid request format |
+| 401 | Unauthorized | Authentication required |
+| 403 | Forbidden | No permission (e.g., editing another's article) |
+| 404 | Not Found | Resource does not exist |
+| 422 | Unprocessable Entity | Validation error |
+| 500 | Internal Server Error | Server internal error |
 
 ---
 
-## 10. バリデーションルール
+## 10. Validation Rules
 
-### 10.1 ユーザー登録
+### 10.1 User Registration
 
-| フィールド | ルール |
-|-----------|--------|
-| `username` | 必須、一意、1-20文字 |
-| `email` | 必須、一意、有効なメール形式 |
-| `password` | 必須、8文字以上 |
+| Field | Rules |
+|-------|-------|
+| `username` | Required, unique, 1-20 characters |
+| `email` | Required, unique, valid email format |
+| `password` | Required, 8+ characters |
 
-### 10.2 記事作成
+### 10.2 Article Creation
 
-| フィールド | ルール |
-|-----------|--------|
-| `title` | 必須、1-100文字 |
-| `description` | 必須、1-200文字 |
-| `body` | 必須 |
-| `tagList` | 任意、配列 |
+| Field | Rules |
+|-------|-------|
+| `title` | Required, 1-100 characters |
+| `description` | Required, 1-200 characters |
+| `body` | Required |
+| `tagList` | Optional, array |
 
-### 10.3 コメント作成
+### 10.3 Comment Creation
 
-| フィールド | ルール |
-|-----------|--------|
-| `body` | 必須、1-1000文字 |
+| Field | Rules |
+|-------|-------|
+| `body` | Required, 1-1000 characters |
