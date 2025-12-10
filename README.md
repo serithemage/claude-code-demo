@@ -1,255 +1,255 @@
-# Claude Code Demo - Agentic Coding 학습 프로젝트
+# Claude Code Demo - Agentic Coding 学習プロジェクト
 
-[Claude Code is a Beast](https://www.youtube.com/watch?v=...) 영상에서 소개된 고급 설정들을 실제 애플리케이션 구현을 통해 체험해 볼 수 있는 학습용 프로젝트입니다.
+[Claude Code is a Beast](https://www.youtube.com/watch?v=...) 動画で紹介された高度な設定を、実際のアプリケーション実装を通じて体験できる学習用プロジェクトです。
 
-## 이 프로젝트의 목적
+## このプロジェクトの目的
 
-**RealWorld (Conduit)** 앱 - Medium.com 클론 블로그 플랫폼 - 을 구현하면서 Claude Code의 다양한 기능을 실습합니다:
+**RealWorld (Conduit)** アプリ - Medium.com クローンのブログプラットフォーム - を実装しながら Claude Code の様々な機能を実習します：
 
-- **Skills**: 컨텍스트 기반 자동 활성화 지침
-- **Hooks**: 도구 사용 전/후 자동 실행 스크립트
-- **Custom Agents**: 특화된 작업을 위한 커스텀 에이전트
-- **Slash Commands**: 반복 작업을 위한 커스텀 명령어
+- **Skills**: コンテキスト基盤の自動活性化指針
+- **Hooks**: ツール使用前/後の自動実行スクリプト
+- **Custom Agents**: 特化した作業のためのカスタムエージェント
+- **Slash Commands**: 繰り返し作業のためのカスタムコマンド
 
 ---
 
-## 프로젝트 구조
+## プロジェクト構造
 
 ```
 claude-code-demo/
-├── .claude/                    # Claude Code 설정
-│   ├── settings.json           # 권한, hooks 설정
-│   ├── skills/                 # 자동 활성화 스킬들
+├── .claude/                    # Claude Code 設定
+│   ├── settings.json           # 権限、hooks 設定
+│   ├── skills/                 # 自動活性化スキル
 │   │   ├── backend-dev-guidelines/
 │   │   ├── frontend-dev-guidelines/
 │   │   ├── route-tester/
 │   │   ├── error-tracking/
-│   │   └── skill-rules.json    # 스킬 활성화 규칙
-│   ├── hooks/                  # 자동화 훅 스크립트
-│   ├── agents/                 # 커스텀 에이전트 정의
-│   └── commands/               # 슬래시 커맨드 정의
-├── docs/                       # 하이레벨 설계 문서
-│   ├── PRD.md                  # 제품 요구사항
-│   ├── TechStack.md            # 기술 스택
-│   ├── Architecture.md         # 시스템 아키텍처
-│   └── API-Spec.md             # API 명세
+│   │   └── skill-rules.json    # スキル活性化ルール
+│   ├── hooks/                  # 自動化フックスクリプト
+│   ├── agents/                 # カスタムエージェント定義
+│   └── commands/               # スラッシュコマンド定義
+├── docs/                       # ハイレベル設計文書
+│   ├── PRD.md                  # 製品要求仕様
+│   ├── TechStack.md            # 技術スタック
+│   ├── Architecture.md         # システムアーキテクチャ
+│   └── API-Spec.md             # API 仕様
 ├── frontend/                   # React 19 + TypeScript + MUI v7
 ├── backend/                    # Express + TypeScript + Prisma
-└── CLAUDE.md                   # Claude Code 메인 지침
+└── CLAUDE.md                   # Claude Code メイン指針
 ```
 
-### docs/ vs .claude/skills/ 의 관계
+### docs/ vs .claude/skills/ の関係
 
-| 폴더 | 역할 | 대상 |
-|------|------|------|
-| `docs/` | 하이레벨 설계 문서 | 사람이 읽는 문서 |
-| `.claude/skills/` | 에이전트 실행 지침 | Claude가 사용하는 지침 |
+| フォルダ | 役割 | 対象 |
+|----------|------|------|
+| `docs/` | ハイレベル設計文書 | 人が読む文書 |
+| `.claude/skills/` | エージェント実行指針 | Claude が使用する指針 |
 
-`docs/`의 설계 내용을 `.claude/skills/`의 리소스 문서로 변환하여 Claude가 코딩 시 참조할 수 있게 합니다.
+`docs/` の設計内容を `.claude/skills/` のリソース文書に変換し、Claude がコーディング時に参照できるようにします。
 
 ---
 
-## 핵심 개념
+## 核心概念
 
-### 1. Skills (스킬)
+### 1. Skills（スキル）
 
-**스킬**은 Claude가 특정 작업을 수행할 때 자동으로 로드되는 지식 베이스입니다.
+**スキル**は Claude が特定の作業を実行する際に自動的にロードされるナレッジベースです。
 
 ```
 .claude/skills/
-├── backend-dev-guidelines/     # 백엔드 개발 가이드라인
-│   ├── SKILL.md                # 메인 스킬 파일
-│   └── resources/              # 상세 리소스 문서
+├── backend-dev-guidelines/     # バックエンド開発ガイドライン
+│   ├── SKILL.md                # メインスキルファイル
+│   └── resources/              # 詳細リソース文書
 │       ├── architecture-overview.md
 │       ├── routing-and-controllers.md
 │       └── ...
-├── frontend-dev-guidelines/    # 프론트엔드 개발 가이드라인
-└── skill-rules.json            # 스킬 활성화 규칙
+├── frontend-dev-guidelines/    # フロントエンド開発ガイドライン
+└── skill-rules.json            # スキル活性化ルール
 ```
 
-**자동 활성화 방식** (`skill-rules.json`):
-- `pathPatterns`: 특정 파일 편집 시 (`backend/**/*.ts`)
-- `keywords`: 프롬프트에 키워드 포함 시 (`"backend"`, `"API"`)
-- `intentPatterns`: 사용자 의도 패턴 매칭
+**自動活性化方式** (`skill-rules.json`):
+- `pathPatterns`: 特定ファイル編集時 (`backend/**/*.ts`)
+- `keywords`: プロンプトにキーワード含む時 (`"backend"`, `"API"`)
+- `intentPatterns`: ユーザー意図パターンマッチング
 
-### 2. Hooks (훅)
+### 2. Hooks（フック）
 
-**훅**은 특정 이벤트 발생 시 자동으로 실행되는 스크립트입니다.
+**フック**は特定のイベント発生時に自動的に実行されるスクリプトです。
 
 ```json
 // .claude/settings.json
 {
   "hooks": {
-    "UserPromptSubmit": [...],  // 프롬프트 제출 시
-    "PostToolUse": [...],       // 도구 사용 후
-    "Stop": [...]               // 작업 완료 시
+    "UserPromptSubmit": [...],  // プロンプト送信時
+    "PostToolUse": [...],       // ツール使用後
+    "Stop": [...]               // 作業完了時
   }
 }
 ```
 
-**이 프로젝트의 훅들**:
-- `skill-activation-prompt.sh`: 프롬프트 분석 후 관련 스킬 추천
-- `post-tool-use-tracker.sh`: 파일 편집 추적
-- `tsc-check.sh`: TypeScript 컴파일 체크
+**このプロジェクトのフック**:
+- `skill-activation-prompt.sh`: プロンプト分析後に関連スキル推奨
+- `post-tool-use-tracker.sh`: ファイル編集追跡
+- `tsc-check.sh`: TypeScript コンパイルチェック
 
-### 3. Custom Agents (커스텀 에이전트)
+### 3. Custom Agents（カスタムエージェント）
 
-**커스텀 에이전트**는 특화된 작업을 위해 정의된 AI 페르소나입니다.
+**カスタムエージェント**は特化した作業のために定義された AI ペルソナです。
 
 ```
 .claude/agents/
-├── auth-route-debugger.md      # 인증 문제 디버깅
-├── code-refactor-master.md     # 코드 리팩토링
-├── frontend-error-fixer.md     # 프론트엔드 에러 수정
+├── auth-route-debugger.md      # 認証問題デバッグ
+├── code-refactor-master.md     # コードリファクタリング
+├── frontend-error-fixer.md     # フロントエンドエラー修正
 └── ...
 ```
 
-### 4. Slash Commands (슬래시 커맨드)
+### 4. Slash Commands（スラッシュコマンド）
 
-**슬래시 커맨드**는 반복 작업을 위한 커스텀 명령어입니다.
+**スラッシュコマンド**は繰り返し作業のためのカスタムコマンドです。
 
 ```
 .claude/commands/
-├── dev-docs.md                 # 개발 문서 생성
-├── dev-docs-update.md          # 개발 문서 업데이트
+├── dev-docs.md                 # 開発文書生成
+├── dev-docs-update.md          # 開発文書更新
 └── route-research-for-testing.md
 ```
 
-사용법: `/dev-docs 인증 시스템 구현 계획`
+使用法: `/dev-docs 認証システム実装計画`
 
 ---
 
-## 시작하기
+## 始め方
 
-### 사전 요구사항
+### 前提条件
 
 - Node.js 20+
 - pnpm
-- Claude Code CLI ([설치 가이드](https://claude.ai/code))
+- Claude Code CLI ([インストールガイド](https://claude.ai/code))
 
-### 설치
+### インストール
 
 ```bash
-# 저장소 클론
+# リポジトリクローン
 git clone https://github.com/serithemage/claude-code-demo.git
 cd claude-code-demo
 
-# 의존성 설치
+# 依存関係インストール
 pnpm install
 
-# 데이터베이스 마이그레이션
+# データベースマイグレーション
 pnpm --filter backend prisma migrate dev
 
-# 개발 서버 시작
+# 開発サーバー起動
 pnpm dev
 ```
 
-### Claude Code 실행
+### Claude Code 実行
 
 ```bash
-# 프로젝트 디렉토리에서
+# プロジェクトディレクトリで
 claude
 
-# 또는 특정 작업 시작
-claude "백엔드에 새로운 API 엔드포인트 추가해줘"
+# または特定作業開始
+claude "バックエンドに新しい API エンドポイントを追加して"
 ```
 
 ---
 
-## 학습 가이드
+## 学習ガイド
 
-### 레벨 1: 기본 구조 이해
+### レベル 1: 基本構造の理解
 
-1. **CLAUDE.md 읽기**: 프로젝트 전체 지침 확인
-2. **docs/ 탐색**: 하이레벨 설계 문서 이해
-3. **settings.json 확인**: 권한과 훅 설정 이해
+1. **CLAUDE.md を読む**: プロジェクト全体の指針を確認
+2. **docs/ を探索**: ハイレベル設計文書を理解
+3. **settings.json を確認**: 権限とフック設定を理解
 
-### 레벨 2: Skills 체험
+### レベル 2: Skills 体験
 
-1. `backend/` 폴더에서 `.ts` 파일 편집 시도
-2. 자동으로 `backend-dev-guidelines` 스킬이 활성화되는지 확인
-3. `skill-rules.json`에서 활성화 조건 분석
+1. `backend/` フォルダで `.ts` ファイルを編集してみる
+2. 自動的に `backend-dev-guidelines` スキルが活性化されるか確認
+3. `skill-rules.json` で活性化条件を分析
 
 ```bash
-# 예시: 백엔드 파일 편집
-claude "backend/src/routes/ 에 새로운 라우트 추가해줘"
-# → backend-dev-guidelines 스킬 자동 활성화
+# 例: バックエンドファイル編集
+claude "backend/src/routes/ に新しいルートを追加して"
+# → backend-dev-guidelines スキル自動活性化
 ```
 
-### 레벨 3: Hooks 분석
+### レベル 3: Hooks 分析
 
-1. `.claude/hooks/` 폴더의 스크립트 분석
-2. `settings.json`의 hooks 설정과 매핑 이해
-3. 훅 실행 로그 관찰
+1. `.claude/hooks/` フォルダのスクリプトを分析
+2. `settings.json` の hooks 設定とのマッピングを理解
+3. フック実行ログを観察
 
-### 레벨 4: 커스터마이징
+### レベル 4: カスタマイズ
 
-1. 새로운 스킬 추가해보기
-2. `skill-rules.json`에 활성화 규칙 추가
-3. 커스텀 슬래시 커맨드 만들기
+1. 新しいスキルを追加してみる
+2. `skill-rules.json` に活性化ルールを追加
+3. カスタムスラッシュコマンドを作成
 
 ---
 
-## 기술 스택
+## 技術スタック
 
-| 영역 | 기술 |
+| 領域 | 技術 |
 |------|------|
 | **Frontend** | React 19, TypeScript, MUI v7, TanStack Query/Router, Vite |
 | **Backend** | Node.js 20, Express 4, TypeScript, Prisma 5, SQLite |
-| **인증** | JWT (localStorage 저장) |
-| **테스트** | Vitest, Testing Library, Supertest |
+| **認証** | JWT (localStorage 保存) |
+| **テスト** | Vitest, Testing Library, Supertest |
 
 ---
 
-## 주요 파일 설명
+## 主要ファイル説明
 
-| 파일 | 설명 |
-|------|------|
-| `CLAUDE.md` | Claude Code가 프로젝트 작업 시 참조하는 메인 지침 |
-| `.claude/settings.json` | 권한, MCP 서버, 훅 설정 |
-| `.claude/skills/skill-rules.json` | 스킬 자동 활성화 규칙 정의 |
-| `docs/Architecture.md` | 시스템 아키텍처 (Mermaid 다이어그램 포함) |
+| ファイル | 説明 |
+|----------|------|
+| `CLAUDE.md` | Claude Code がプロジェクト作業時に参照するメイン指針 |
+| `.claude/settings.json` | 権限、MCP サーバー、フック設定 |
+| `.claude/skills/skill-rules.json` | スキル自動活性化ルール定義 |
+| `docs/Architecture.md` | システムアーキテクチャ（Mermaid ダイアグラム含む）|
 
 ---
 
-## 유용한 명령어
+## 便利なコマンド
 
 ```bash
-# 개발 서버
-pnpm dev                        # 전체 (프론트엔드 + 백엔드)
-pnpm --filter frontend dev      # 프론트엔드만
-pnpm --filter backend dev       # 백엔드만
+# 開発サーバー
+pnpm dev                        # 全体（フロントエンド + バックエンド）
+pnpm --filter frontend dev      # フロントエンドのみ
+pnpm --filter backend dev       # バックエンドのみ
 
-# 테스트
-pnpm test                       # 전체 테스트
-pnpm --filter backend test      # 백엔드 테스트만
+# テスト
+pnpm test                       # 全テスト
+pnpm --filter backend test      # バックエンドテストのみ
 
-# 빌드
-pnpm build                      # 프로덕션 빌드
+# ビルド
+pnpm build                      # プロダクションビルド
 
-# 린트/포맷
+# リント/フォーマット
 pnpm lint
 pnpm format
 ```
 
 ---
 
-## 참고 자료
+## 参考資料
 
-- [Claude Code 공식 문서](https://docs.anthropic.com/claude-code)
-- [RealWorld 스펙](https://realworld-docs.netlify.app/)
-- [Skills 상세 가이드](.claude/skills/README.md)
-- [Hooks 설정 가이드](.claude/hooks/README.md)
-- [Agents 가이드](.claude/agents/README.md)
+- [Claude Code 公式ドキュメント](https://docs.anthropic.com/claude-code)
+- [RealWorld スペック](https://realworld-docs.netlify.app/)
+- [Skills 詳細ガイド](.claude/skills/README.md)
+- [Hooks 設定ガイド](.claude/hooks/README.md)
+- [Agents ガイド](.claude/agents/README.md)
 
 ---
 
-## 라이선스
+## ライセンス
 
 MIT License
 
 ---
 
-## 기여
+## 貢献
 
-이슈와 PR을 환영합니다. Agentic Coding 학습에 도움이 되는 개선사항이 있다면 제안해주세요.
+Issue と PR を歓迎します。Agentic Coding 学習に役立つ改善点があればご提案ください。
