@@ -248,11 +248,11 @@ pnpm format
 
 このプロジェクトは多言語で提供されています：
 
-| ブランチ | 言語 |
-|----------|------|
-| `main` | English |
-| `korean` | 한국어 |
-| `japanese` | 日本語 (現在) |
+| ブランチ | 言語 | リンク |
+|----------|------|--------|
+| `main` | English | [View](https://github.com/serithemage/claude-code-demo/tree/main) |
+| `korean` | 한국어 | [View](https://github.com/serithemage/claude-code-demo/tree/korean) |
+| `japanese` | 日本語 (現在) | [View](https://github.com/serithemage/claude-code-demo/tree/japanese) |
 
 ---
 
