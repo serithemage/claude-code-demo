@@ -1,78 +1,78 @@
-# Configuration Management - UnifiedConfig Pattern
+# 설정 관리 - UnifiedConfig 패턴
 
-Complete guide to managing configuration in backend microservices.
+백엔드 마이크로서비스의 설정 관리에 대한 완전한 가이드입니다.
 
-## Table of Contents
+## 목차
 
-- [UnifiedConfig Overview](#unifiedconfig-overview)
-- [NEVER Use process.env Directly](#never-use-processenv-directly)
-- [Configuration Structure](#configuration-structure)
-- [Environment-Specific Configs](#environment-specific-configs)
-- [Secrets Management](#secrets-management)
-- [Migration Guide](#migration-guide)
-
----
-
-## UnifiedConfig Overview
-
-### Why UnifiedConfig?
-
-**Problems with process.env:**
-- ❌ No type safety
-- ❌ No validation
-- ❌ Hard to test
-- ❌ Scattered throughout code
-- ❌ No default values
-- ❌ Runtime errors for typos
-
-**Benefits of unifiedConfig:**
-- ✅ Type-safe configuration
-- ✅ Single source of truth
-- ✅ Validated at startup
-- ✅ Easy to test with mocks
-- ✅ Clear structure
-- ✅ Fallback to environment variables
+- [UnifiedConfig 개요](#unifiedconfig-개요)
+- [process.env 직접 사용 금지](#processenv-직접-사용-금지)
+- [설정 구조](#설정-구조)
+- [환경별 설정](#환경별-설정)
+- [시크릿 관리](#시크릿-관리)
+- [마이그레이션 가이드](#마이그레이션-가이드)
 
 ---
 
-## NEVER Use process.env Directly
+## UnifiedConfig 개요
 
-### The Rule
+### UnifiedConfig를 사용하는 이유
+
+**process.env의 문제점:**
+- ❌ 타입 안전성 없음
+- ❌ 유효성 검사 없음
+- ❌ 테스트하기 어려움
+- ❌ 코드 전체에 분산됨
+- ❌ 기본값 없음
+- ❌ 오타에 대한 런타임 에러
+
+**unifiedConfig의 장점:**
+- ✅ 타입 안전 설정
+- ✅ 단일 진실 공급원
+- ✅ 시작 시 유효성 검사
+- ✅ 모킹으로 쉬운 테스트
+- ✅ 명확한 구조
+- ✅ 환경 변수로 폴백
+
+---
+
+## process.env 직접 사용 금지
+
+### 규칙
 
 ```typescript
-// ❌ NEVER DO THIS
+// ❌ 절대 이렇게 하지 마세요
 const timeout = parseInt(process.env.TIMEOUT_MS || '5000');
 const dbHost = process.env.DB_HOST || 'localhost';
 
-// ✅ ALWAYS DO THIS
+// ✅ 항상 이렇게 하세요
 import { config } from './config/unifiedConfig';
 const timeout = config.timeouts.default;
 const dbHost = config.database.host;
 ```
 
-### Why This Matters
+### 이것이 중요한 이유
 
-**Example of problems:**
+**문제 예시:**
 ```typescript
-// Typo in environment variable name
-const host = process.env.DB_HSOT; // undefined! No error!
+// 환경 변수 이름 오타
+const host = process.env.DB_HSOT; // undefined! 에러 없음!
 
-// Type safety
-const port = process.env.PORT; // string! Need parseInt
-const timeout = parseInt(process.env.TIMEOUT); // NaN if not set!
+// 타입 안전성
+const port = process.env.PORT; // 문자열! parseInt 필요
+const timeout = parseInt(process.env.TIMEOUT); // 설정 안 되면 NaN!
 ```
 
-**With unifiedConfig:**
+**unifiedConfig 사용 시:**
 ```typescript
-const port = config.server.port; // number, guaranteed
-const timeout = config.timeouts.default; // number, with fallback
+const port = config.server.port; // number, 보장됨
+const timeout = config.timeouts.default; // number, 폴백 포함
 ```
 
 ---
 
-## Configuration Structure
+## 설정 구조
 
-### UnifiedConfig Interface
+### UnifiedConfig 인터페이스
 
 ```typescript
 export interface UnifiedConfig {
@@ -109,13 +109,13 @@ export interface UnifiedConfig {
         environment: string;
         tracesSampleRate: number;
     };
-    // ... more sections
+    // ... 더 많은 섹션
 }
 ```
 
-### Implementation Pattern
+### 구현 패턴
 
-**File:** `/blog-api/src/config/unifiedConfig.ts`
+**파일:** `/blog-api/src/config/unifiedConfig.ts`
 
 ```typescript
 import * as fs from 'fs';
@@ -137,27 +137,27 @@ export const config: UnifiedConfig = {
         port: parseInt(iniConfig.server?.port || process.env.PORT || '3002'),
         sessionSecret: iniConfig.server?.sessionSecret || process.env.SESSION_SECRET || 'dev-secret',
     },
-    // ... more configuration
+    // ... 더 많은 설정
 };
 
-// Validate critical config
+// 중요 설정 유효성 검사
 if (!config.tokens.jwt) {
     throw new Error('JWT secret not configured!');
 }
 ```
 
-**Key Points:**
-- Read from config.ini first
-- Fallback to process.env
-- Default values for development
-- Validation at startup
-- Type-safe access
+**핵심 포인트:**
+- config.ini에서 먼저 읽기
+- process.env로 폴백
+- 개발용 기본값
+- 시작 시 유효성 검사
+- 타입 안전 액세스
 
 ---
 
-## Environment-Specific Configs
+## 환경별 설정
 
-### config.ini Structure
+### config.ini 구조
 
 ```ini
 [database]
@@ -188,25 +188,25 @@ environment = development
 tracesSampleRate = 0.1
 ```
 
-### Environment Overrides
+### 환경 오버라이드
 
 ```bash
-# .env file (optional overrides)
+# .env 파일 (선택적 오버라이드)
 DB_HOST=production-db.example.com
 DB_PASSWORD=secure-password
 PORT=80
 ```
 
-**Precedence:**
-1. config.ini (highest priority)
-2. process.env variables
-3. Hard-coded defaults (lowest priority)
+**우선순위:**
+1. config.ini (최고 우선순위)
+2. process.env 변수
+3. 하드코딩된 기본값 (최저 우선순위)
 
 ---
 
-## Secrets Management
+## 시크릿 관리
 
-### DO NOT Commit Secrets
+### 시크릿 커밋 금지
 
 ```gitignore
 # .gitignore
@@ -217,11 +217,11 @@ sentry.ini
 *.key
 ```
 
-### Use Environment Variables in Production
+### 프로덕션에서 환경 변수 사용
 
 ```typescript
-// Development: config.ini
-// Production: Environment variables
+// 개발: config.ini
+// 프로덕션: 환경 변수
 
 export const config: UnifiedConfig = {
     database: {
@@ -235,25 +235,25 @@ export const config: UnifiedConfig = {
 
 ---
 
-## Migration Guide
+## 마이그레이션 가이드
 
-### Find All process.env Usage
+### 모든 process.env 사용 찾기
 
 ```bash
 grep -r "process.env" blog-api/src/ --include="*.ts" | wc -l
 ```
 
-### Migration Example
+### 마이그레이션 예시
 
-**Before:**
+**이전:**
 ```typescript
-// Scattered throughout code
+// 코드 전체에 분산됨
 const timeout = parseInt(process.env.OPENID_HTTP_TIMEOUT_MS || '15000');
 const keycloakUrl = process.env.KEYCLOAK_BASE_URL;
 const jwtSecret = process.env.JWT_SECRET;
 ```
 
-**After:**
+**이후:**
 ```typescript
 import { config } from './config/unifiedConfig';
 
@@ -262,14 +262,14 @@ const keycloakUrl = config.keycloak.baseUrl;
 const jwtSecret = config.tokens.jwt;
 ```
 
-**Benefits:**
-- Type-safe
-- Centralized
-- Easy to test
-- Validated at startup
+**장점:**
+- 타입 안전
+- 중앙 집중화
+- 테스트하기 쉬움
+- 시작 시 유효성 검사
 
 ---
 
-**Related Files:**
+**관련 파일:**
 - [SKILL.md](SKILL.md)
 - [testing-guide.md](testing-guide.md)

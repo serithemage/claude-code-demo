@@ -1,21 +1,21 @@
-# Complete Examples - Full Working Code
+# 완전한 예제 - 실제 작동하는 코드
 
-Real-world examples showing complete implementation patterns.
+모든 구현 패턴을 보여주는 실제 예제입니다.
 
-## Table of Contents
+## 목차
 
-- [Complete Controller Example](#complete-controller-example)
-- [Complete Service with DI](#complete-service-with-di)
-- [Complete Route File](#complete-route-file)
-- [Complete Repository](#complete-repository)
-- [Refactoring Example: Bad to Good](#refactoring-example-bad-to-good)
-- [End-to-End Feature Example](#end-to-end-feature-example)
+- [완전한 Controller 예제](#완전한-controller-예제)
+- [DI가 포함된 완전한 Service](#di가-포함된-완전한-service)
+- [완전한 Route 파일](#완전한-route-파일)
+- [완전한 Repository](#완전한-repository)
+- [리팩토링 예제: 나쁜 코드에서 좋은 코드로](#리팩토링-예제-나쁜-코드에서-좋은-코드로)
+- [End-to-End 기능 예제](#end-to-end-기능-예제)
 
 ---
 
-## Complete Controller Example
+## 완전한 Controller 예제
 
-### UserController (Following All Best Practices)
+### UserController (모든 모범 사례 적용)
 
 ```typescript
 // controllers/UserController.ts
@@ -71,10 +71,10 @@ export class UserController extends BaseController {
 
     async createUser(req: Request, res: Response): Promise<void> {
         try {
-            // Validate input with Zod
+            // Zod로 입력 유효성 검사
             const validated = createUserSchema.parse(req.body);
 
-            // Track performance
+            // 성능 추적
             const user = await this.withTransaction(
                 'user.create',
                 'db.mutation',
@@ -121,7 +121,7 @@ export class UserController extends BaseController {
 
 ---
 
-## Complete Service with DI
+## DI가 포함된 완전한 Service
 
 ### UserService
 
@@ -147,18 +147,18 @@ export class UserService {
     }
 
     async create(data: CreateUserDTO): Promise<User> {
-        // Business rule: validate age
+        // 비즈니스 규칙: 나이 검증
         if (data.age < 18) {
             throw new ValidationError('User must be 18 or older');
         }
 
-        // Business rule: check email uniqueness
+        // 비즈니스 규칙: 이메일 고유성 확인
         const existing = await this.userRepository.findByEmail(data.email);
         if (existing) {
             throw new ConflictError('Email already in use');
         }
 
-        // Create user with profile
+        // 프로필과 함께 사용자 생성
         return await this.userRepository.create({
             email: data.email,
             profile: {
@@ -172,13 +172,13 @@ export class UserService {
     }
 
     async update(id: string, data: UpdateUserDTO): Promise<User> {
-        // Check exists
+        // 존재 여부 확인
         const existing = await this.userRepository.findById(id);
         if (!existing) {
             throw new NotFoundError('User not found');
         }
 
-        // Business rule: email uniqueness if changing
+        // 비즈니스 규칙: 변경 시 이메일 고유성
         if (data.email && data.email !== existing.email) {
             const emailTaken = await this.userRepository.findByEmail(data.email);
             if (emailTaken) {
@@ -202,7 +202,7 @@ export class UserService {
 
 ---
 
-## Complete Route File
+## 완전한 Route 파일
 
 ### userRoutes.ts
 
@@ -216,35 +216,35 @@ import { auditMiddleware } from '../middleware/auditMiddleware';
 const router = Router();
 const controller = new UserController();
 
-// GET /users - List all users
+// GET /users - 모든 사용자 목록
 router.get('/',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
     async (req, res) => controller.listUsers(req, res)
 );
 
-// GET /users/:id - Get single user
+// GET /users/:id - 단일 사용자 조회
 router.get('/:id',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
     async (req, res) => controller.getUser(req, res)
 );
 
-// POST /users - Create user
+// POST /users - 사용자 생성
 router.post('/',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
     async (req, res) => controller.createUser(req, res)
 );
 
-// PUT /users/:id - Update user
+// PUT /users/:id - 사용자 업데이트
 router.put('/:id',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
     async (req, res) => controller.updateUser(req, res)
 );
 
-// DELETE /users/:id - Delete user
+// DELETE /users/:id - 사용자 삭제
 router.delete('/:id',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
@@ -256,7 +256,7 @@ export default router;
 
 ---
 
-## Complete Repository
+## 완전한 Repository
 
 ### UserRepository
 
@@ -318,38 +318,38 @@ export class UserRepository {
 
 ---
 
-## Refactoring Example: Bad to Good
+## 리팩토링 예제: 나쁜 코드에서 좋은 코드로
 
-### BEFORE: Business Logic in Routes ❌
+### 이전: Routes에 비즈니스 로직 ❌
 
 ```typescript
-// routes/postRoutes.ts (BAD - 200+ lines)
+// routes/postRoutes.ts (나쁜 예 - 200줄 이상)
 router.post('/posts', async (req, res) => {
     try {
         const username = res.locals.claims.preferred_username;
         const responses = req.body.responses;
         const stepInstanceId = req.body.stepInstanceId;
 
-        // ❌ Permission check in route
+        // ❌ Route에서 권한 확인
         const userId = await userProfileService.getProfileByEmail(username).then(p => p.id);
         const canComplete = await permissionService.canCompleteStep(userId, stepInstanceId);
         if (!canComplete) {
             return res.status(403).json({ error: 'No permission' });
         }
 
-        // ❌ Business logic in route
+        // ❌ Route에서 비즈니스 로직
         const post = await postRepository.create({
             title: req.body.title,
             content: req.body.content,
             authorId: userId
         });
 
-        // ❌ More business logic...
+        // ❌ 더 많은 비즈니스 로직...
         if (res.locals.isImpersonating) {
             impersonationContextStore.storeContext(...);
         }
 
-        // ... 100+ more lines
+        // ... 100줄 이상
 
         res.json({ success: true, data: result });
     } catch (e) {
@@ -358,9 +358,9 @@ router.post('/posts', async (req, res) => {
 });
 ```
 
-### AFTER: Clean Separation ✅
+### 이후: 깔끔한 분리 ✅
 
-**1. Clean Route:**
+**1. 깔끔한 Route:**
 ```typescript
 // routes/postRoutes.ts
 import { PostController } from '../controllers/PostController';
@@ -368,7 +368,7 @@ import { PostController } from '../controllers/PostController';
 const router = Router();
 const controller = new PostController();
 
-// ✅ CLEAN: 8 lines total!
+// ✅ 깔끔함: 총 8줄!
 router.post('/',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
@@ -416,7 +416,7 @@ export class PostService {
         data: CreatePostDTO,
         userId: string
     ): Promise<SubmissionResult> {
-        // Permission check
+        // 권한 확인
         const canComplete = await permissionService.canCompleteStep(
             userId,
             data.stepInstanceId
@@ -426,7 +426,7 @@ export class PostService {
             throw new ForbiddenError('No permission to complete step');
         }
 
-        // Execute workflow
+        // Workflow 실행
         const engine = await createWorkflowEngine();
         const command = new CompleteStepCommand(
             data.stepInstanceId,
@@ -435,7 +435,7 @@ export class PostService {
         );
         const events = await engine.executeCommand(command);
 
-        // Handle impersonation
+        // Impersonation 처리
         if (context.isImpersonating) {
             await this.handleImpersonation(data.stepInstanceId, context);
         }
@@ -452,17 +452,17 @@ export class PostService {
 }
 ```
 
-**Result:**
-- Route: 8 lines (was 200+)
-- Controller: 25 lines
-- Service: 40 lines
-- **Testable, maintainable, reusable!**
+**결과:**
+- Route: 8줄 (200줄 이상이었음)
+- Controller: 25줄
+- Service: 40줄
+- **테스트 가능, 유지보수 가능, 재사용 가능!**
 
 ---
 
-## End-to-End Feature Example
+## End-to-End 기능 예제
 
-### Complete User Management Feature
+### 완전한 사용자 관리 기능
 
 **1. Types:**
 ```typescript
@@ -594,7 +594,7 @@ router.post('/',
 export default router;
 ```
 
-**7. Register in app.ts:**
+**7. app.ts에 등록:**
 ```typescript
 // app.ts
 import userRoutes from './routes/userRoutes';
@@ -602,36 +602,36 @@ import userRoutes from './routes/userRoutes';
 app.use('/api/users', userRoutes);
 ```
 
-**Complete Request Flow:**
+**전체 요청 흐름:**
 ```
 POST /api/users
   ↓
-userRoutes matches /
+userRoutes가 /와 매칭
   ↓
-SSOMiddleware authenticates
+SSOMiddleware가 인증
   ↓
-controller.createUser called
+controller.createUser 호출
   ↓
-Validates with Zod
+Zod로 유효성 검사
   ↓
-userService.create called
+userService.create 호출
   ↓
-Checks business rules
+비즈니스 규칙 확인
   ↓
-userRepository.create called
+userRepository.create 호출
   ↓
-Prisma creates user
+Prisma가 사용자 생성
   ↓
-Returns up the chain
+역순으로 응답 반환
   ↓
-Controller formats response
+Controller가 응답 포맷
   ↓
-200/201 sent to client
+200/201을 클라이언트로 전송
 ```
 
 ---
 
-**Related Files:**
+**관련 파일:**
 - [SKILL.md](SKILL.md)
 - [routing-and-controllers.md](routing-and-controllers.md)
 - [services-and-repositories.md](services-and-repositories.md)

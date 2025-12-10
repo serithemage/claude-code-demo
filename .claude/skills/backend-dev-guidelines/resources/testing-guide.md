@@ -1,21 +1,21 @@
-# Testing Guide - Backend Testing Strategies
+# 테스트 가이드 - 백엔드 테스트 전략
 
-Complete guide to testing backend services with Jest and best practices.
+Jest와 모범 사례를 사용한 백엔드 서비스 테스트에 대한 완전한 가이드입니다.
 
-## Table of Contents
+## 목차
 
-- [Unit Testing](#unit-testing)
-- [Integration Testing](#integration-testing)
-- [Mocking Strategies](#mocking-strategies)
-- [Test Data Management](#test-data-management)
-- [Testing Authenticated Routes](#testing-authenticated-routes)
-- [Coverage Targets](#coverage-targets)
+- [단위 테스트](#단위-테스트)
+- [통합 테스트](#통합-테스트)
+- [모킹 전략](#모킹-전략)
+- [테스트 데이터 관리](#테스트-데이터-관리)
+- [인증된 라우트 테스트](#인증된-라우트-테스트)
+- [커버리지 목표](#커버리지-목표)
 
 ---
 
-## Unit Testing
+## 단위 테스트
 
-### Test Structure
+### 테스트 구조
 
 ```typescript
 // services/userService.test.ts
@@ -43,7 +43,7 @@ describe('UserService', () => {
     });
 
     describe('create', () => {
-        it('should throw error if email exists', async () => {
+        it('이메일이 존재하면 에러를 던져야 한다', async () => {
             mockRepository.findByEmail.mockResolvedValue({ id: '123' } as any);
 
             await expect(
@@ -51,7 +51,7 @@ describe('UserService', () => {
             ).rejects.toThrow('Email already in use');
         });
 
-        it('should create user if email is unique', async () => {
+        it('이메일이 고유하면 사용자를 생성해야 한다', async () => {
             mockRepository.findByEmail.mockResolvedValue(null);
             mockRepository.create.mockResolvedValue({ id: '123' } as any);
 
@@ -74,9 +74,9 @@ describe('UserService', () => {
 
 ---
 
-## Integration Testing
+## 통합 테스트
 
-### Test with Real Database
+### 실제 데이터베이스로 테스트
 
 ```typescript
 import { PrismaService } from '@project-lifecycle-portal/database';
@@ -85,7 +85,7 @@ describe('UserService Integration', () => {
     let testUser: any;
 
     beforeAll(async () => {
-        // Create test data
+        // 테스트 데이터 생성
         testUser = await PrismaService.main.user.create({
             data: {
                 email: 'test@test.com',
@@ -95,11 +95,11 @@ describe('UserService Integration', () => {
     });
 
     afterAll(async () => {
-        // Cleanup
+        // 정리
         await PrismaService.main.user.delete({ where: { id: testUser.id } });
     });
 
-    it('should find user by email', async () => {
+    it('이메일로 사용자를 찾아야 한다', async () => {
         const user = await userService.findByEmail('test@test.com');
         expect(user).toBeDefined();
         expect(user?.email).toBe('test@test.com');
@@ -109,9 +109,9 @@ describe('UserService Integration', () => {
 
 ---
 
-## Mocking Strategies
+## 모킹 전략
 
-### Mock PrismaService
+### PrismaService 모킹
 
 ```typescript
 jest.mock('@project-lifecycle-portal/database', () => ({
@@ -129,7 +129,7 @@ jest.mock('@project-lifecycle-portal/database', () => ({
 }));
 ```
 
-### Mock Services
+### Services 모킹
 
 ```typescript
 const mockUserService = {
@@ -141,16 +141,16 @@ const mockUserService = {
 
 ---
 
-## Test Data Management
+## 테스트 데이터 관리
 
-### Setup and Teardown
+### Setup과 Teardown
 
 ```typescript
 describe('PermissionService', () => {
     let instanceId: number;
 
     beforeAll(async () => {
-        // Create test post
+        // 테스트 post 생성
         const post = await PrismaService.main.post.create({
             data: { title: 'Test Post', content: 'Test', authorId: 'test-user' },
         });
@@ -158,18 +158,18 @@ describe('PermissionService', () => {
     });
 
     afterAll(async () => {
-        // Cleanup
+        // 정리
         await PrismaService.main.post.delete({
             where: { id: instanceId },
         });
     });
 
     beforeEach(() => {
-        // Clear caches
+        // 캐시 클리어
         permissionService.clearCache();
     });
 
-    it('should check permissions', async () => {
+    it('권한을 확인해야 한다', async () => {
         const hasPermission = await permissionService.checkPermission(
             'user-id',
             instanceId,
@@ -182,22 +182,22 @@ describe('PermissionService', () => {
 
 ---
 
-## Testing Authenticated Routes
+## 인증된 라우트 테스트
 
-### Using test-auth-route.js
+### test-auth-route.js 사용
 
 ```bash
-# Test authenticated endpoint
+# 인증된 엔드포인트 테스트
 node scripts/test-auth-route.js http://localhost:3002/form/api/users
 
-# Test with POST data
+# POST 데이터로 테스트
 node scripts/test-auth-route.js http://localhost:3002/form/api/users POST '{"email":"test@test.com"}'
 ```
 
-### Mock Authentication in Tests
+### 테스트에서 인증 모킹
 
 ```typescript
-// Mock auth middleware
+// auth middleware 모킹
 jest.mock('../middleware/SSOMiddleware', () => ({
     SSOMiddlewareClient: {
         verifyLoginStatus: (req, res, next) => {
@@ -213,15 +213,15 @@ jest.mock('../middleware/SSOMiddleware', () => ({
 
 ---
 
-## Coverage Targets
+## 커버리지 목표
 
-### Recommended Coverage
+### 권장 커버리지
 
-- **Unit Tests**: 70%+ coverage
-- **Integration Tests**: Critical paths covered
-- **E2E Tests**: Happy paths covered
+- **단위 테스트**: 70% 이상 커버리지
+- **통합 테스트**: 중요 경로 커버
+- **E2E 테스트**: 성공 경로 커버
 
-### Run Coverage
+### 커버리지 실행
 
 ```bash
 npm test -- --coverage
@@ -229,7 +229,7 @@ npm test -- --coverage
 
 ---
 
-**Related Files:**
+**관련 파일:**
 - [SKILL.md](SKILL.md)
 - [services-and-repositories.md](services-and-repositories.md)
 - [complete-examples.md](complete-examples.md)

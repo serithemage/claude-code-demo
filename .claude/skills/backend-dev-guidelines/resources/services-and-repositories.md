@@ -1,70 +1,70 @@
-# Services and Repositories - Business Logic Layer
+# Services와 Repositories - 비즈니스 로직 계층
 
-Complete guide to organizing business logic with services and data access with repositories.
+Services로 비즈니스 로직을 구성하고 repositories로 데이터 액세스를 관리하는 완전한 가이드입니다.
 
-## Table of Contents
+## 목차
 
-- [Service Layer Overview](#service-layer-overview)
-- [Dependency Injection Pattern](#dependency-injection-pattern)
-- [Singleton Pattern](#singleton-pattern)
-- [Repository Pattern](#repository-pattern)
-- [Service Design Principles](#service-design-principles)
-- [Caching Strategies](#caching-strategies)
-- [Testing Services](#testing-services)
-
----
-
-## Service Layer Overview
-
-### Purpose of Services
-
-**Services contain business logic** - the 'what' and 'why' of your application:
-
-```
-Controller asks: "Should I do this?"
-Service answers: "Yes/No, here's why, and here's what happens"
-Repository executes: "Here's the data you requested"
-```
-
-**Services are responsible for:**
-- ✅ Business rules enforcement
-- ✅ Orchestrating multiple repositories
-- ✅ Transaction management
-- ✅ Complex calculations
-- ✅ External service integration
-- ✅ Business validations
-
-**Services should NOT:**
-- ❌ Know about HTTP (Request/Response)
-- ❌ Direct Prisma access (use repositories)
-- ❌ Handle route-specific logic
-- ❌ Format HTTP responses
+- [Service 계층 개요](#service-계층-개요)
+- [의존성 주입 패턴](#의존성-주입-패턴)
+- [Singleton 패턴](#singleton-패턴)
+- [Repository 패턴](#repository-패턴)
+- [Service 설계 원칙](#service-설계-원칙)
+- [캐싱 전략](#캐싱-전략)
+- [Services 테스트](#services-테스트)
 
 ---
 
-## Dependency Injection Pattern
+## Service 계층 개요
 
-### Why Dependency Injection?
+### Services의 목적
 
-**Benefits:**
-- Easy to test (inject mocks)
-- Clear dependencies
-- Flexible configuration
-- Promotes loose coupling
+**Services는 비즈니스 로직을 포함합니다** - 애플리케이션의 '무엇'과 '왜':
 
-### Excellent Example: NotificationService
+```
+Controller 질문: "이것을 해야 하나요?"
+Service 답변: "예/아니오, 이유는 이것이고, 이것이 발생합니다"
+Repository 실행: "요청한 데이터입니다"
+```
 
-**File:** `/blog-api/src/services/NotificationService.ts`
+**Services의 책임:**
+- ✅ 비즈니스 규칙 적용
+- ✅ 여러 repositories 오케스트레이션
+- ✅ 트랜잭션 관리
+- ✅ 복잡한 계산
+- ✅ 외부 서비스 통합
+- ✅ 비즈니스 유효성 검사
+
+**Services가 하면 안 되는 것:**
+- ❌ HTTP 알기 (Request/Response)
+- ❌ Prisma 직접 액세스 (repositories 사용)
+- ❌ Route 전용 로직 처리
+- ❌ HTTP 응답 포맷팅
+
+---
+
+## 의존성 주입 패턴
+
+### 의존성 주입을 사용하는 이유
+
+**장점:**
+- 테스트하기 쉬움 (mock 주입)
+- 명확한 의존성
+- 유연한 설정
+- 느슨한 결합 촉진
+
+### 훌륭한 예시: NotificationService
+
+**파일:** `/blog-api/src/services/NotificationService.ts`
 
 ```typescript
-// Define dependencies interface for clarity
+// 명확성을 위한 의존성 인터페이스 정의
 export interface NotificationServiceDependencies {
     prisma: PrismaClient;
     batchingService: BatchingService;
     emailComposer: EmailComposer;
 }
 
-// Service with dependency injection
+// 의존성 주입이 있는 Service
 export class NotificationService {
     private prisma: PrismaClient;
     private batchingService: BatchingService;
@@ -72,7 +72,7 @@ export class NotificationService {
     private preferencesCache: Map<string, { preferences: UserPreference; timestamp: number }> = new Map();
     private CACHE_TTL = (notificationConfig.preferenceCacheTTLMinutes || 5) * 60 * 1000;
 
-    // Dependencies injected via constructor
+    // 생성자를 통해 의존성 주입
     constructor(dependencies: NotificationServiceDependencies) {
         this.prisma = dependencies.prisma;
         this.batchingService = dependencies.batchingService;
@@ -80,17 +80,17 @@ export class NotificationService {
     }
 
     /**
-     * Create a notification and route it appropriately
+     * 알림 생성 및 적절한 라우팅
      */
     async createNotification(params: CreateNotificationParams) {
         const { recipientID, type, title, message, link, context = {}, channel = 'both', priority = NotificationPriority.NORMAL } = params;
 
         try {
-            // Get template and render content
+            // 템플릿 가져와서 콘텐츠 렌더링
             const template = getNotificationTemplate(type);
             const rendered = renderNotificationContent(template, context);
 
-            // Create in-app notification record
+            // 인앱 알림 레코드 생성
             const notificationId = await createNotificationRecord({
                 instanceId: parseInt(context.instanceId || '0', 10),
                 template: type,
@@ -102,7 +102,7 @@ export class NotificationService {
                 link: finalLink,
             });
 
-            // Route notification based on channel
+            // 채널에 따라 알림 라우팅
             if (channel === 'email' || channel === 'both') {
                 await this.routeNotification({
                     notificationId,
@@ -131,13 +131,13 @@ export class NotificationService {
     }
 
     /**
-     * Route notification based on user preferences
+     * 사용자 설정에 따라 알림 라우팅
      */
     private async routeNotification(params: { notificationId: number; userId: string; type: string; priority: NotificationPriority; title: string; message: string; link?: string; context?: Record<string, any> }) {
-        // Get user preferences with caching
+        // 캐싱과 함께 사용자 설정 가져오기
         const preferences = await this.getUserPreferences(params.userId);
 
-        // Check if we should batch or send immediately
+        // 배치할지 즉시 보낼지 확인
         if (this.shouldBatchEmail(preferences, params.type, params.priority)) {
             await this.batchingService.queueNotificationForBatch({
                 notificationId: params.notificationId,
@@ -146,7 +146,7 @@ export class NotificationService {
                 priority: params.priority,
             });
         } else {
-            // Send immediately via EmailComposer
+            // EmailComposer를 통해 즉시 전송
             await this.sendImmediateEmail({
                 userId: params.userId,
                 title: params.title,
@@ -159,24 +159,24 @@ export class NotificationService {
     }
 
     /**
-     * Determine if email should be batched
+     * 이메일을 배치해야 하는지 결정
      */
     shouldBatchEmail(preferences: UserPreference, notificationType: string, priority: NotificationPriority): boolean {
-        // HIGH priority always immediate
+        // HIGH 우선순위는 항상 즉시
         if (priority === NotificationPriority.HIGH) {
             return false;
         }
 
-        // Check batch mode
+        // 배치 모드 확인
         const batchMode = preferences.emailBatchMode || BatchMode.IMMEDIATE;
         return batchMode !== BatchMode.IMMEDIATE;
     }
 
     /**
-     * Get user preferences with caching
+     * 캐싱과 함께 사용자 설정 가져오기
      */
     async getUserPreferences(userId: string): Promise<UserPreference> {
-        // Check cache first
+        // 먼저 캐시 확인
         const cached = this.preferencesCache.get(userId);
         if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
             return cached.preferences;
@@ -188,7 +188,7 @@ export class NotificationService {
 
         const finalPreferences = preference || DEFAULT_PREFERENCES;
 
-        // Update cache
+        // 캐시 업데이트
         this.preferencesCache.set(userId, {
             preferences: finalPreferences,
             timestamp: Date.now(),
@@ -199,17 +199,17 @@ export class NotificationService {
 }
 ```
 
-**Usage in Controller:**
+**Controller에서 사용:**
 
 ```typescript
-// Instantiate with dependencies
+// 의존성과 함께 인스턴스화
 const notificationService = new NotificationService({
     prisma: PrismaService.main,
     batchingService: new BatchingService(PrismaService.main),
     emailComposer: new EmailComposer(),
 });
 
-// Use in controller
+// Controller에서 사용
 const notification = await notificationService.createNotification({
     recipientID: 'user-123',
     type: 'AFRLWorkflowNotification',
@@ -217,29 +217,29 @@ const notification = await notificationService.createNotification({
 });
 ```
 
-**Key Takeaways:**
-- Dependencies passed via constructor
-- Clear interface defines required dependencies
-- Easy to test (inject mocks)
-- Encapsulated caching logic
-- Business rules isolated from HTTP
+**핵심 포인트:**
+- 생성자를 통해 의존성 전달
+- 명확한 인터페이스가 필요한 의존성 정의
+- 테스트하기 쉬움 (mock 주입)
+- 캡슐화된 캐싱 로직
+- HTTP와 분리된 비즈니스 규칙
 
 ---
 
-## Singleton Pattern
+## Singleton 패턴
 
-### When to Use Singletons
+### Singleton을 사용해야 할 때
 
-**Use for:**
-- Services with expensive initialization
-- Services with shared state (caching)
-- Services accessed from many places
+**사용 대상:**
+- 비싼 초기화가 있는 Services
+- 공유 상태가 있는 Services (캐싱)
+- 여러 곳에서 액세스되는 Services
 - Permission services
 - Configuration services
 
-### Example: PermissionService (Singleton)
+### 예시: PermissionService (Singleton)
 
-**File:** `/blog-api/src/services/permissionService.ts`
+**파일:** `/blog-api/src/services/permissionService.ts`
 
 ```typescript
 import { PrismaClient } from '@prisma/client';
@@ -248,14 +248,14 @@ class PermissionService {
     private static instance: PermissionService;
     private prisma: PrismaClient;
     private permissionCache: Map<string, { canAccess: boolean; timestamp: number }> = new Map();
-    private CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+    private CACHE_TTL = 5 * 60 * 1000; // 5분
 
-    // Private constructor prevents direct instantiation
+    // private 생성자로 직접 인스턴스화 방지
     private constructor() {
         this.prisma = PrismaService.main;
     }
 
-    // Get singleton instance
+    // Singleton 인스턴스 가져오기
     public static getInstance(): PermissionService {
         if (!PermissionService.instance) {
             PermissionService.instance = new PermissionService();
@@ -264,12 +264,12 @@ class PermissionService {
     }
 
     /**
-     * Check if user can complete a workflow step
+     * 사용자가 workflow 단계를 완료할 수 있는지 확인
      */
     async canCompleteStep(userId: string, stepInstanceId: number): Promise<boolean> {
         const cacheKey = `${userId}:${stepInstanceId}`;
 
-        // Check cache
+        // 캐시 확인
         const cached = this.permissionCache.get(cacheKey);
         if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
             return cached.canAccess;
@@ -292,11 +292,11 @@ class PermissionService {
                 return false;
             }
 
-            // Check if user has permission
+            // 사용자에게 권한이 있는지 확인
             const canEdit = post.authorId === userId ||
                 await this.isUserAdmin(userId);
 
-            // Cache result
+            // 결과 캐시
             this.permissionCache.set(cacheKey, {
                 canAccess: isAssigned,
                 timestamp: Date.now(),
@@ -310,7 +310,7 @@ class PermissionService {
     }
 
     /**
-     * Clear cache for user
+     * 사용자 캐시 클리어
      */
     clearUserCache(userId: string): void {
         for (const [key] of this.permissionCache) {
@@ -321,23 +321,23 @@ class PermissionService {
     }
 
     /**
-     * Clear all cache
+     * 전체 캐시 클리어
      */
     clearCache(): void {
         this.permissionCache.clear();
     }
 }
 
-// Export singleton instance
+// Singleton 인스턴스 export
 export const permissionService = PermissionService.getInstance();
 ```
 
-**Usage:**
+**사용:**
 
 ```typescript
 import { permissionService } from '../services/permissionService';
 
-// Use anywhere in the codebase
+// 코드베이스 어디서든 사용
 const canComplete = await permissionService.canCompleteStep(userId, stepId);
 
 if (!canComplete) {
@@ -347,30 +347,30 @@ if (!canComplete) {
 
 ---
 
-## Repository Pattern
+## Repository 패턴
 
-### Purpose of Repositories
+### Repositories의 목적
 
-**Repositories abstract data access** - the 'how' of data operations:
+**Repositories는 데이터 액세스를 추상화합니다** - 데이터 작업의 '어떻게':
 
 ```
-Service: "Get me all active users sorted by name"
-Repository: "Here's the Prisma query that does that"
+Service: "이름순으로 정렬된 모든 활성 사용자를 주세요"
+Repository: "이것을 수행하는 Prisma 쿼리입니다"
 ```
 
-**Repositories are responsible for:**
-- ✅ All Prisma operations
-- ✅ Query construction
-- ✅ Query optimization (select, include)
-- ✅ Database error handling
-- ✅ Caching database results
+**Repositories의 책임:**
+- ✅ 모든 Prisma 작업
+- ✅ 쿼리 구성
+- ✅ 쿼리 최적화 (select, include)
+- ✅ 데이터베이스 에러 처리
+- ✅ 데이터베이스 결과 캐싱
 
-**Repositories should NOT:**
-- ❌ Contain business logic
-- ❌ Know about HTTP
-- ❌ Make decisions (that's service layer)
+**Repositories가 하면 안 되는 것:**
+- ❌ 비즈니스 로직 포함
+- ❌ HTTP 알기
+- ❌ 결정 내리기 (그건 service 계층)
 
-### Repository Template
+### Repository 템플릿
 
 ```typescript
 // repositories/UserRepository.ts
@@ -379,7 +379,7 @@ import type { User, Prisma } from '@project-lifecycle-portal/database';
 
 export class UserRepository {
     /**
-     * Find user by ID with optimized query
+     * 최적화된 쿼리로 ID로 사용자 찾기
      */
     async findById(userId: string): Promise<User | null> {
         try {
@@ -402,7 +402,7 @@ export class UserRepository {
     }
 
     /**
-     * Find all active users
+     * 모든 활성 사용자 찾기
      */
     async findActive(options?: { orderBy?: Prisma.UserOrderByWithRelationInput }): Promise<User[]> {
         try {
@@ -423,7 +423,7 @@ export class UserRepository {
     }
 
     /**
-     * Find user by email
+     * 이메일로 사용자 찾기
      */
     async findByEmail(email: string): Promise<User | null> {
         try {
@@ -437,7 +437,7 @@ export class UserRepository {
     }
 
     /**
-     * Create new user
+     * 새 사용자 생성
      */
     async create(data: Prisma.UserCreateInput): Promise<User> {
         try {
@@ -449,7 +449,7 @@ export class UserRepository {
     }
 
     /**
-     * Update user
+     * 사용자 업데이트
      */
     async update(userId: string, data: Prisma.UserUpdateInput): Promise<User> {
         try {
@@ -464,7 +464,7 @@ export class UserRepository {
     }
 
     /**
-     * Delete user (soft delete by setting isActive = false)
+     * 사용자 삭제 (isActive = false로 soft delete)
      */
     async delete(userId: string): Promise<User> {
         try {
@@ -479,7 +479,7 @@ export class UserRepository {
     }
 
     /**
-     * Check if email exists
+     * 이메일 존재 여부 확인
      */
     async emailExists(email: string): Promise<boolean> {
         try {
@@ -494,11 +494,11 @@ export class UserRepository {
     }
 }
 
-// Export singleton instance
+// Singleton 인스턴스 export
 export const userRepository = new UserRepository();
 ```
 
-**Using Repository in Service:**
+**Service에서 Repository 사용:**
 
 ```typescript
 // services/userService.ts
@@ -507,23 +507,23 @@ import { ConflictError, NotFoundError } from '../utils/errors';
 
 export class UserService {
     /**
-     * Create new user with business rules
+     * 비즈니스 규칙과 함께 새 사용자 생성
      */
     async createUser(data: { email: string; name: string; roles: string[] }): Promise<User> {
-        // Business rule: Check if email already exists
+        // 비즈니스 규칙: 이메일이 이미 존재하는지 확인
         const emailExists = await userRepository.emailExists(data.email);
         if (emailExists) {
             throw new ConflictError('Email already exists');
         }
 
-        // Business rule: Validate roles
+        // 비즈니스 규칙: 역할 검증
         const validRoles = ['admin', 'operations', 'user'];
         const invalidRoles = data.roles.filter((role) => !validRoles.includes(role));
         if (invalidRoles.length > 0) {
             throw new ValidationError(`Invalid roles: ${invalidRoles.join(', ')}`);
         }
 
-        // Create user via repository
+        // Repository를 통해 사용자 생성
         return await userRepository.create({
             email: data.email,
             name: data.name,
@@ -533,7 +533,7 @@ export class UserService {
     }
 
     /**
-     * Get user by ID
+     * ID로 사용자 가져오기
      */
     async getUser(userId: string): Promise<User> {
         const user = await userRepository.findById(userId);
@@ -549,14 +549,14 @@ export class UserService {
 
 ---
 
-## Service Design Principles
+## Service 설계 원칙
 
-### 1. Single Responsibility
+### 1. 단일 책임
 
-Each service should have ONE clear purpose:
+각 service는 하나의 명확한 목적을 가져야 합니다:
 
 ```typescript
-// ✅ GOOD - Single responsibility
+// ✅ 좋음 - 단일 책임
 class UserService {
     async createUser() {}
     async updateUser() {}
@@ -568,53 +568,53 @@ class EmailService {
     async sendBulkEmails() {}
 }
 
-// ❌ BAD - Too many responsibilities
+// ❌ 나쁨 - 너무 많은 책임
 class UserService {
     async createUser() {}
-    async sendWelcomeEmail() {}  // Should be EmailService
-    async logUserActivity() {}   // Should be AuditService
-    async processPayment() {}    // Should be PaymentService
+    async sendWelcomeEmail() {}  // EmailService여야 함
+    async logUserActivity() {}   // AuditService여야 함
+    async processPayment() {}    // PaymentService여야 함
 }
 ```
 
-### 2. Clear Method Names
+### 2. 명확한 메서드 이름
 
-Method names should describe WHAT they do:
+메서드 이름은 무엇을 하는지 설명해야 합니다:
 
 ```typescript
-// ✅ GOOD - Clear intent
+// ✅ 좋음 - 명확한 의도
 async createNotification()
 async getUserPreferences()
 async shouldBatchEmail()
 async routeNotification()
 
-// ❌ BAD - Vague or misleading
+// ❌ 나쁨 - 모호하거나 오해의 소지
 async process()
 async handle()
 async doIt()
 async execute()
 ```
 
-### 3. Return Types
+### 3. 반환 타입
 
-Always use explicit return types:
+항상 명시적 반환 타입 사용:
 
 ```typescript
-// ✅ GOOD - Explicit types
+// ✅ 좋음 - 명시적 타입
 async createUser(data: CreateUserDTO): Promise<User> {}
 async findUsers(): Promise<User[]> {}
 async deleteUser(id: string): Promise<void> {}
 
-// ❌ BAD - Implicit any
-async createUser(data) {}  // No types!
+// ❌ 나쁨 - 암묵적 any
+async createUser(data) {}  // 타입 없음!
 ```
 
-### 4. Error Handling
+### 4. 에러 처리
 
-Services should throw meaningful errors:
+Services는 의미 있는 에러를 던져야 합니다:
 
 ```typescript
-// ✅ GOOD - Meaningful errors
+// ✅ 좋음 - 의미 있는 에러
 if (!user) {
     throw new NotFoundError(`User not found: ${userId}`);
 }
@@ -623,29 +623,29 @@ if (emailExists) {
     throw new ConflictError('Email already exists');
 }
 
-// ❌ BAD - Generic errors
+// ❌ 나쁨 - 일반적인 에러
 if (!user) {
-    throw new Error('Error');  // What error?
+    throw new Error('Error');  // 무슨 에러?
 }
 ```
 
-### 5. Avoid God Services
+### 5. God Services 피하기
 
-Don't create services that do everything:
+모든 것을 하는 services 만들지 마세요:
 
 ```typescript
-// ❌ BAD - God service
+// ❌ 나쁨 - God service
 class WorkflowService {
     async startWorkflow() {}
     async completeStep() {}
     async assignRoles() {}
-    async sendNotifications() {}  // Should be NotificationService
-    async validatePermissions() {}  // Should be PermissionService
-    async logAuditTrail() {}  // Should be AuditService
-    // ... 50 more methods
+    async sendNotifications() {}  // NotificationService여야 함
+    async validatePermissions() {}  // PermissionService여야 함
+    async logAuditTrail() {}  // AuditService여야 함
+    // ... 50개 이상의 메서드
 }
 
-// ✅ GOOD - Focused services
+// ✅ 좋음 - 집중된 services
 class WorkflowService {
     constructor(
         private notificationService: NotificationService,
@@ -654,7 +654,7 @@ class WorkflowService {
     ) {}
 
     async startWorkflow() {
-        // Orchestrate other services
+        // 다른 services 오케스트레이션
         await this.permissionService.checkPermission();
         await this.workflowRepository.create();
         await this.notificationService.notify();
@@ -665,26 +665,26 @@ class WorkflowService {
 
 ---
 
-## Caching Strategies
+## 캐싱 전략
 
-### 1. In-Memory Caching
+### 1. In-Memory 캐싱
 
 ```typescript
 class UserService {
     private cache: Map<string, { user: User; timestamp: number }> = new Map();
-    private CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+    private CACHE_TTL = 5 * 60 * 1000; // 5분
 
     async getUser(userId: string): Promise<User> {
-        // Check cache
+        // 캐시 확인
         const cached = this.cache.get(userId);
         if (cached && Date.now() - cached.timestamp < this.CACHE_TTL) {
             return cached.user;
         }
 
-        // Fetch from database
+        // 데이터베이스에서 가져오기
         const user = await userRepository.findById(userId);
 
-        // Update cache
+        // 캐시 업데이트
         if (user) {
             this.cache.set(userId, { user, timestamp: Date.now() });
         }
@@ -698,15 +698,15 @@ class UserService {
 }
 ```
 
-### 2. Cache Invalidation
+### 2. 캐시 무효화
 
 ```typescript
 class UserService {
     async updateUser(userId: string, data: UpdateUserDTO): Promise<User> {
-        // Update in database
+        // 데이터베이스에서 업데이트
         const user = await userRepository.update(userId, data);
 
-        // Invalidate cache
+        // 캐시 무효화
         this.clearUserCache(userId);
 
         return user;
@@ -716,9 +716,9 @@ class UserService {
 
 ---
 
-## Testing Services
+## Services 테스트
 
-### Unit Tests
+### 단위 테스트
 
 ```typescript
 // tests/userService.test.ts
@@ -726,7 +726,7 @@ import { UserService } from '../services/userService';
 import { userRepository } from '../repositories/UserRepository';
 import { ConflictError } from '../utils/errors';
 
-// Mock repository
+// Repository 모킹
 jest.mock('../repositories/UserRepository');
 
 describe('UserService', () => {
@@ -738,7 +738,7 @@ describe('UserService', () => {
     });
 
     describe('createUser', () => {
-        it('should create user when email does not exist', async () => {
+        it('이메일이 존재하지 않으면 사용자를 생성해야 한다', async () => {
             // Arrange
             const userData = {
                 email: 'test@example.com',
@@ -762,7 +762,7 @@ describe('UserService', () => {
             expect(userRepository.create).toHaveBeenCalled();
         });
 
-        it('should throw ConflictError when email exists', async () => {
+        it('이메일이 존재하면 ConflictError를 던져야 한다', async () => {
             // Arrange
             const userData = {
                 email: 'existing@example.com',
@@ -782,8 +782,8 @@ describe('UserService', () => {
 
 ---
 
-**Related Files:**
-- [SKILL.md](SKILL.md) - Main guide
-- [routing-and-controllers.md](routing-and-controllers.md) - Controllers that use services
-- [database-patterns.md](database-patterns.md) - Prisma and repository patterns
-- [complete-examples.md](complete-examples.md) - Full service/repository examples
+**관련 파일:**
+- [SKILL.md](SKILL.md) - 메인 가이드
+- [routing-and-controllers.md](routing-and-controllers.md) - Services를 사용하는 Controllers
+- [database-patterns.md](database-patterns.md) - Prisma와 repository 패턴
+- [complete-examples.md](complete-examples.md) - 전체 service/repository 예제

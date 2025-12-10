@@ -1,168 +1,168 @@
-# RealWorld (Conduit) - Tech Stack
+# RealWorld (Conduit) - 기술 스택
 
-## 1. Overview
+## 1. 개요
 
-This project uses a monorepo structure to integrate Frontend and Backend management.
-We adopt a proven toolchain with efficient development with Claude Code as the top priority.
+이 프로젝트는 프론트엔드와 백엔드 관리를 통합하는 모노레포 구조를 사용합니다.
+Claude Code를 사용한 효율적인 개발을 최우선으로 하여 검증된 도구 체인을 채택합니다.
 
 ---
 
-## 2. Frontend Tech Stack
+## 2. 프론트엔드 기술 스택
 
-### 2.1 Core Framework
+### 2.1 핵심 프레임워크
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **React** | 19.x | UI Framework |
-| **TypeScript** | 5.x | Type Safety |
-| **Vite** | 6.x | Build Tool & Dev Server |
+| 기술 | 버전 | 목적 |
+|------|------|------|
+| **React** | 19.x | UI 프레임워크 |
+| **TypeScript** | 5.x | 타입 안전성 |
+| **Vite** | 6.x | 빌드 도구 및 개발 서버 |
 
-### 2.2 State Management & Data Fetching
+### 2.2 상태 관리 및 데이터 페칭
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **TanStack Query** | 5.x | Server State Management, Data Fetching |
-| **TanStack Router** | 1.x | File-based Routing |
+| 기술 | 버전 | 목적 |
+|------|------|------|
+| **TanStack Query** | 5.x | 서버 상태 관리, 데이터 페칭 |
+| **TanStack Router** | 1.x | 파일 기반 라우팅 |
 
-### 2.3 UI Library
+### 2.3 UI 라이브러리
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **MUI (Material UI)** | 7.x | UI Components |
+| 기술 | 버전 | 목적 |
+|------|------|------|
+| **MUI (Material UI)** | 7.x | UI 컴포넌트 |
 | **@emotion/react** | 11.x | CSS-in-JS |
 | **@emotion/styled** | 11.x | Styled Components |
 
-### 2.4 Utilities
+### 2.4 유틸리티
 
-| Technology | Purpose |
-|------------|---------|
-| **react-markdown** | Markdown Rendering |
-| **date-fns** | Date Formatting |
-| **zod** | Schema Validation |
+| 기술 | 목적 |
+|------|------|
+| **react-markdown** | Markdown 렌더링 |
+| **date-fns** | 날짜 포맷팅 |
+| **zod** | 스키마 검증 |
 
-### 2.5 Selection Rationale
+### 2.5 선택 이유
 
-- **React 19**: Leverage latest Suspense, concurrent rendering features
-- **TanStack Query**: Declarative data fetching with useSuspenseQuery
-- **TanStack Router**: Type-safe file-based routing
-- **MUI v7**: Latest design system, good accessibility
-- **Vite**: Fast HMR, optimized builds
+- **React 19**: 최신 Suspense, 동시성 렌더링 기능 활용
+- **TanStack Query**: useSuspenseQuery를 사용한 선언적 데이터 페칭
+- **TanStack Router**: 타입 안전 파일 기반 라우팅
+- **MUI v7**: 최신 디자인 시스템, 우수한 접근성
+- **Vite**: 빠른 HMR, 최적화된 빌드
 
 ---
 
-## 3. Backend Tech Stack
+## 3. 백엔드 기술 스택
 
-### 3.1 Runtime & Framework
+### 3.1 런타임 및 프레임워크
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **Node.js** | 20.x LTS | JavaScript Runtime |
-| **Express** | 4.x | Web Framework |
-| **TypeScript** | 5.x | Type Safety |
+| 기술 | 버전 | 목적 |
+|------|------|------|
+| **Node.js** | 20.x LTS | JavaScript 런타임 |
+| **Express** | 4.x | 웹 프레임워크 |
+| **TypeScript** | 5.x | 타입 안전성 |
 
-### 3.2 Database & ORM
+### 3.2 데이터베이스 및 ORM
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| **SQLite** | 3.x | Database |
+| 기술 | 버전 | 목적 |
+|------|------|------|
+| **SQLite** | 3.x | 데이터베이스 |
 | **Prisma** | 5.x | ORM |
 
-### 3.3 Authentication & Security
+### 3.3 인증 및 보안
 
-| Technology | Purpose |
-|------------|---------|
-| **jsonwebtoken** | JWT Token Generation & Verification |
-| **bcryptjs** | Password Hashing |
-| **cors** | CORS Configuration |
-| **helmet** | Security Headers |
+| 기술 | 목적 |
+|------|------|
+| **jsonwebtoken** | JWT 토큰 생성 및 검증 |
+| **bcryptjs** | 비밀번호 해싱 |
+| **cors** | CORS 설정 |
+| **helmet** | 보안 헤더 |
 
-### 3.4 Validation & Utilities
+### 3.4 검증 및 유틸리티
 
-| Technology | Purpose |
-|------------|---------|
-| **zod** | Request Validation |
-| **slugify** | URL Slug Generation |
-| **uuid** | Unique Identifier Generation |
+| 기술 | 목적 |
+|------|------|
+| **zod** | 요청 검증 |
+| **slugify** | URL Slug 생성 |
+| **uuid** | 고유 식별자 생성 |
 
-### 3.5 Architecture Pattern
+### 3.5 아키텍처 패턴
 
-Adopting **Layered Architecture**:
+**레이어드 아키텍처** 채택:
 
 ```
 Routes → Controllers → Services → Repositories → Database
 ```
 
-| Layer | Responsibility |
-|-------|----------------|
-| **Routes** | Endpoint Definition, Middleware Application |
-| **Controllers** | Request/Response Processing, Validation |
-| **Services** | Business Logic |
-| **Repositories** | Data Access (Prisma Operations) |
+| 레이어 | 책임 |
+|--------|------|
+| **Routes** | 엔드포인트 정의, 미들웨어 적용 |
+| **Controllers** | 요청/응답 처리, 검증 |
+| **Services** | 비즈니스 로직 |
+| **Repositories** | 데이터 액세스 (Prisma 작업) |
 
-### 3.6 Selection Rationale
+### 3.6 선택 이유
 
-- **Express**: Simple and flexible, rich ecosystem
-- **Prisma**: Type-safe ORM, migration management
-- **SQLite**: Simplified setup for development environment
-- **Layered Architecture**: Separation of concerns, improved testability
-
----
-
-## 4. Common Tools
-
-### 4.1 Development Tools
-
-| Technology | Purpose |
-|------------|---------|
-| **pnpm** | Package Manager (Workspace Support) |
-| **ESLint** | Code Quality Check |
-| **Prettier** | Code Formatting |
-| **tsx** | TypeScript Execution (Development) |
-
-### 4.2 Testing
-
-| Technology | Purpose |
-|------------|---------|
-| **Vitest** | Unit Tests & Integration Tests |
-| **Testing Library** | React Component Testing |
-| **Supertest** | API Endpoint Testing |
-
-### 4.3 Process Management & Monitoring
-
-| Technology | Purpose |
-|------------|---------|
-| **PM2** | Process Management, Log Monitoring |
-| **Sentry** | Error Tracking, Performance Monitoring |
+- **Express**: 간단하고 유연함, 풍부한 생태계
+- **Prisma**: 타입 안전 ORM, 마이그레이션 관리
+- **SQLite**: 개발 환경을 위한 간소화된 설정
+- **레이어드 아키텍처**: 관심사 분리, 테스트 용이성 향상
 
 ---
 
-## 5. Directory Structure
+## 4. 공통 도구
+
+### 4.1 개발 도구
+
+| 기술 | 목적 |
+|------|------|
+| **pnpm** | 패키지 매니저 (Workspace 지원) |
+| **ESLint** | 코드 품질 검사 |
+| **Prettier** | 코드 포맷팅 |
+| **tsx** | TypeScript 실행 (개발) |
+
+### 4.2 테스팅
+
+| 기술 | 목적 |
+|------|------|
+| **Vitest** | 유닛 테스트 및 통합 테스트 |
+| **Testing Library** | React 컴포넌트 테스팅 |
+| **Supertest** | API 엔드포인트 테스팅 |
+
+### 4.3 프로세스 관리 및 모니터링
+
+| 기술 | 목적 |
+|------|------|
+| **PM2** | 프로세스 관리, 로그 모니터링 |
+| **Sentry** | 에러 추적, 성능 모니터링 |
+
+---
+
+## 5. 디렉토리 구조
 
 ```
 claude-code-demo/
-├── docs/                          # Project Documentation
+├── docs/                          # 프로젝트 문서
 │   ├── PRD.md
 │   ├── TechStack.md
 │   ├── Architecture.md
 │   └── API-Spec.md
 │
-├── frontend/                      # Frontend Application
+├── frontend/                      # 프론트엔드 애플리케이션
 │   ├── src/
-│   │   ├── features/              # Feature-based Modules
-│   │   │   ├── auth/              # Authentication Feature
-│   │   │   ├── articles/          # Articles Feature
-│   │   │   ├── comments/          # Comments Feature
-│   │   │   ├── profiles/          # Profiles Feature
-│   │   │   └── tags/              # Tags Feature
-│   │   ├── components/            # Shared Components
-│   │   │   ├── layout/            # Layout
-│   │   │   └── ui/                # UI Parts
-│   │   ├── hooks/                 # Custom Hooks
-│   │   ├── lib/                   # Utilities
-│   │   │   ├── api/               # API Client
-│   │   │   └── utils/             # Helper Functions
-│   │   ├── routes/                # Route Definitions (TanStack Router)
-│   │   ├── types/                 # Type Definitions
+│   │   ├── features/              # 기능 기반 모듈
+│   │   │   ├── auth/              # 인증 기능
+│   │   │   ├── articles/          # 게시글 기능
+│   │   │   ├── comments/          # 댓글 기능
+│   │   │   ├── profiles/          # 프로필 기능
+│   │   │   └── tags/              # 태그 기능
+│   │   ├── components/            # 공유 컴포넌트
+│   │   │   ├── layout/            # 레이아웃
+│   │   │   └── ui/                # UI 파츠
+│   │   ├── hooks/                 # 커스텀 Hooks
+│   │   ├── lib/                   # 유틸리티
+│   │   │   ├── api/               # API 클라이언트
+│   │   │   └── utils/             # 헬퍼 함수
+│   │   ├── routes/                # 라우트 정의 (TanStack Router)
+│   │   ├── types/                 # 타입 정의
 │   │   ├── App.tsx
 │   │   └── main.tsx
 │   ├── public/
@@ -171,93 +171,93 @@ claude-code-demo/
 │   ├── tsconfig.json
 │   └── package.json
 │
-├── backend/                       # Backend Application
+├── backend/                       # 백엔드 애플리케이션
 │   ├── src/
-│   │   ├── routes/                # Route Definitions
-│   │   ├── controllers/           # Controllers
-│   │   ├── services/              # Business Logic
-│   │   ├── repositories/          # Data Access
-│   │   ├── middleware/            # Middleware
-│   │   │   ├── auth.ts            # Authentication Middleware
-│   │   │   ├── errorHandler.ts    # Error Handling
-│   │   │   └── validation.ts      # Validation
-│   │   ├── lib/                   # Utilities
-│   │   │   ├── prisma.ts          # Prisma Client
-│   │   │   └── jwt.ts             # JWT Utilities
-│   │   ├── types/                 # Type Definitions
-│   │   └── index.ts               # Entry Point
+│   │   ├── routes/                # 라우트 정의
+│   │   ├── controllers/           # 컨트롤러
+│   │   ├── services/              # 비즈니스 로직
+│   │   ├── repositories/          # 데이터 액세스
+│   │   ├── middleware/            # 미들웨어
+│   │   │   ├── auth.ts            # 인증 미들웨어
+│   │   │   ├── errorHandler.ts    # 에러 처리
+│   │   │   └── validation.ts      # 검증
+│   │   ├── lib/                   # 유틸리티
+│   │   │   ├── prisma.ts          # Prisma 클라이언트
+│   │   │   └── jwt.ts             # JWT 유틸리티
+│   │   ├── types/                 # 타입 정의
+│   │   └── index.ts               # 진입점
 │   ├── prisma/
-│   │   ├── schema.prisma          # Database Schema
-│   │   └── migrations/            # Migrations
+│   │   ├── schema.prisma          # 데이터베이스 스키마
+│   │   └── migrations/            # 마이그레이션
 │   ├── tsconfig.json
 │   └── package.json
 │
-├── .claude/                       # Claude Code Configuration (Existing)
-├── dev/                           # Dev Docs (Existing)
-├── pnpm-workspace.yaml            # Workspace Configuration
-├── package.json                   # Root package.json
-├── .prettierrc                    # Prettier Configuration
-├── .eslintrc.js                   # ESLint Configuration
-└── CLAUDE.md                      # Project Configuration (Existing)
+├── .claude/                       # Claude Code 설정 (기존)
+├── dev/                           # 개발 문서 (기존)
+├── pnpm-workspace.yaml            # Workspace 설정
+├── package.json                   # 루트 package.json
+├── .prettierrc                    # Prettier 설정
+├── .eslintrc.js                   # ESLint 설정
+└── CLAUDE.md                      # 프로젝트 설정 (기존)
 ```
 
 ---
 
-## 6. Development Environment Setup
+## 6. 개발 환경 설정
 
-### 6.1 Prerequisites
+### 6.1 필수 조건
 
-- Node.js 20.x or higher
-- pnpm 8.x or higher
+- Node.js 20.x 이상
+- pnpm 8.x 이상
 
-### 6.2 Initial Setup
+### 6.2 초기 설정
 
 ```bash
-# Install dependencies
+# 의존성 설치
 pnpm install
 
-# Database migration
+# 데이터베이스 마이그레이션
 pnpm --filter backend prisma migrate dev
 
-# Start development server (Frontend + Backend)
+# 개발 서버 시작 (프론트엔드 + 백엔드)
 pnpm dev
 ```
 
-### 6.3 Available Scripts
+### 6.3 사용 가능한 스크립트
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server (all) |
-| `pnpm --filter frontend dev` | Start frontend only |
-| `pnpm --filter backend dev` | Start backend only |
-| `pnpm build` | Production build |
-| `pnpm test` | Run tests |
-| `pnpm lint` | Lint check |
-| `pnpm format` | Code formatting |
+| 명령어 | 설명 |
+|--------|------|
+| `pnpm dev` | 개발 서버 시작 (전체) |
+| `pnpm --filter frontend dev` | 프론트엔드만 시작 |
+| `pnpm --filter backend dev` | 백엔드만 시작 |
+| `pnpm build` | 프로덕션 빌드 |
+| `pnpm test` | 테스트 실행 |
+| `pnpm lint` | 린트 검사 |
+| `pnpm format` | 코드 포맷팅 |
 
 ---
 
-## 7. Environment Variables
+## 7. 환경 변수
 
-### 7.1 Backend (.env)
+### 7.1 백엔드 (.env)
 
 ```env
-# Database
+# 데이터베이스
 DATABASE_URL="file:./dev.db"
 
 # JWT
 JWT_SECRET="your-secret-key"
 JWT_EXPIRES_IN="7d"
 
-# Server
+# 서버
 PORT=3000
 NODE_ENV="development"
 
-# Sentry (Optional)
+# Sentry (선택)
 SENTRY_DSN=""
 ```
 
-### 7.2 Frontend (.env)
+### 7.2 프론트엔드 (.env)
 
 ```env
 # API
@@ -266,9 +266,9 @@ VITE_API_URL="http://localhost:3000/api"
 
 ---
 
-## 8. Dependency List
+## 8. 의존성 목록
 
-### 8.1 Frontend
+### 8.1 프론트엔드
 
 ```json
 {
@@ -296,7 +296,7 @@ VITE_API_URL="http://localhost:3000/api"
 }
 ```
 
-### 8.2 Backend
+### 8.2 백엔드
 
 ```json
 {
@@ -327,22 +327,22 @@ VITE_API_URL="http://localhost:3000/api"
 
 ---
 
-## 9. Claude Code Integration
+## 9. Claude Code 통합
 
-### 9.1 Using Existing Skills
+### 9.1 기존 Skills 사용
 
-This project integrates with existing Claude Code skills:
+이 프로젝트는 기존 Claude Code skills와 통합됩니다:
 
-- **backend-dev-guidelines**: Express/TypeScript patterns
-- **frontend-dev-guidelines**: React/MUI patterns
-- **error-tracking**: Sentry integration
-- **route-tester**: API testing
+- **backend-dev-guidelines**: Express/TypeScript 패턴
+- **frontend-dev-guidelines**: React/MUI 패턴
+- **error-tracking**: Sentry 통합
+- **route-tester**: API 테스팅
 
-### 9.2 Development Flow
+### 9.2 개발 플로우
 
-1. Review functional requirements (refer to PRD)
-2. API design (refer to API-Spec)
-3. Backend implementation (Layered Architecture)
-4. Frontend implementation (Feature-based modules)
-5. Run tests
-6. Update Dev Docs
+1. 기능 요구사항 검토 (PRD 참조)
+2. API 설계 (API-Spec 참조)
+3. 백엔드 구현 (레이어드 아키텍처)
+4. 프론트엔드 구현 (기능 기반 모듈)
+5. 테스트 실행
+6. 개발 문서 업데이트

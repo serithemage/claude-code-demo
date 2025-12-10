@@ -1,51 +1,51 @@
-# Validation Patterns - Input Validation with Zod
+# 유효성 검사 패턴 - Zod를 사용한 입력 검증
 
-Complete guide to input validation using Zod schemas for type-safe validation.
+타입 안전 유효성 검사를 위한 Zod 스키마 사용에 대한 완전한 가이드입니다.
 
-## Table of Contents
+## 목차
 
-- [Why Zod?](#why-zod)
-- [Basic Zod Patterns](#basic-zod-patterns)
-- [Schema Examples from Codebase](#schema-examples-from-codebase)
-- [Route-Level Validation](#route-level-validation)
-- [Controller Validation](#controller-validation)
-- [DTO Pattern](#dto-pattern)
-- [Error Handling](#error-handling)
-- [Advanced Patterns](#advanced-patterns)
+- [Zod를 사용하는 이유](#zod를-사용하는-이유)
+- [기본 Zod 패턴](#기본-zod-패턴)
+- [코드베이스 스키마 예시](#코드베이스-스키마-예시)
+- [Route 레벨 유효성 검사](#route-레벨-유효성-검사)
+- [Controller 유효성 검사](#controller-유효성-검사)
+- [DTO 패턴](#dto-패턴)
+- [에러 처리](#에러-처리)
+- [고급 패턴](#고급-패턴)
 
 ---
 
-## Why Zod?
+## Zod를 사용하는 이유
 
-### Benefits Over Joi/Other Libraries
+### Joi/다른 라이브러리 대비 장점
 
-**Type Safety:**
-- ✅ Full TypeScript inference
-- ✅ Runtime + compile-time validation
-- ✅ Automatic type generation
+**타입 안전성:**
+- ✅ 완전한 TypeScript 추론
+- ✅ 런타임 + 컴파일 타임 유효성 검사
+- ✅ 자동 타입 생성
 
-**Developer Experience:**
-- ✅ Intuitive API
-- ✅ Composable schemas
-- ✅ Excellent error messages
+**개발자 경험:**
+- ✅ 직관적인 API
+- ✅ 조합 가능한 스키마
+- ✅ 훌륭한 에러 메시지
 
-**Performance:**
-- ✅ Fast validation
-- ✅ Small bundle size
+**성능:**
+- ✅ 빠른 유효성 검사
+- ✅ 작은 번들 사이즈
 - ✅ Tree-shakeable
 
-### Migration from Joi
+### Joi에서 마이그레이션
 
-Modern validation uses Zod instead of Joi:
+현대적인 유효성 검사는 Joi 대신 Zod를 사용합니다:
 
 ```typescript
-// ❌ OLD - Joi (being phased out)
+// ❌ 구식 - Joi (단계적 폐지 중)
 const schema = Joi.object({
     email: Joi.string().email().required(),
     name: Joi.string().min(3).required(),
 });
 
-// ✅ NEW - Zod (preferred)
+// ✅ 신식 - Zod (선호)
 const schema = z.object({
     email: z.string().email(),
     name: z.string().min(3),
@@ -54,14 +54,14 @@ const schema = z.object({
 
 ---
 
-## Basic Zod Patterns
+## 기본 Zod 패턴
 
-### Primitive Types
+### 기본 타입
 
 ```typescript
 import { z } from 'zod';
 
-// Strings
+// 문자열
 const nameSchema = z.string();
 const emailSchema = z.string().email();
 const urlSchema = z.string().url();
@@ -69,34 +69,34 @@ const uuidSchema = z.string().uuid();
 const minLengthSchema = z.string().min(3);
 const maxLengthSchema = z.string().max(100);
 
-// Numbers
+// 숫자
 const ageSchema = z.number().int().positive();
 const priceSchema = z.number().positive();
 const rangeSchema = z.number().min(0).max(100);
 
-// Booleans
+// 불리언
 const activeSchema = z.boolean();
 
-// Dates
-const dateSchema = z.string().datetime(); // ISO 8601 string
-const nativeDateSchema = z.date(); // Native Date object
+// 날짜
+const dateSchema = z.string().datetime(); // ISO 8601 문자열
+const nativeDateSchema = z.date(); // 네이티브 Date 객체
 
-// Enums
+// 열거형
 const roleSchema = z.enum(['admin', 'operations', 'user']);
 const statusSchema = z.enum(['PENDING', 'APPROVED', 'REJECTED']);
 ```
 
-### Objects
+### 객체
 
 ```typescript
-// Simple object
+// 간단한 객체
 const userSchema = z.object({
     email: z.string().email(),
     name: z.string(),
     age: z.number().int().positive(),
 });
 
-// Nested objects
+// 중첩 객체
 const addressSchema = z.object({
     street: z.string(),
     city: z.string(),
@@ -108,28 +108,28 @@ const userWithAddressSchema = z.object({
     address: addressSchema,
 });
 
-// Optional fields
+// 선택적 필드
 const userSchema = z.object({
     name: z.string(),
     email: z.string().email().optional(),
     phone: z.string().optional(),
 });
 
-// Nullable fields
+// Nullable 필드
 const userSchema = z.object({
     name: z.string(),
     middleName: z.string().nullable(),
 });
 ```
 
-### Arrays
+### 배열
 
 ```typescript
-// Array of primitives
+// 기본 타입 배열
 const rolesSchema = z.array(z.string());
 const numbersSchema = z.array(z.number());
 
-// Array of objects
+// 객체 배열
 const usersSchema = z.array(
     z.object({
         id: z.string(),
@@ -137,23 +137,23 @@ const usersSchema = z.array(
     })
 );
 
-// Array with constraints
+// 제약 조건이 있는 배열
 const tagsSchema = z.array(z.string()).min(1).max(10);
 const nonEmptyArray = z.array(z.string()).nonempty();
 ```
 
 ---
 
-## Schema Examples from Codebase
+## 코드베이스 스키마 예시
 
-### Form Validation Schemas
+### 폼 유효성 검사 스키마
 
-**File:** `/form/src/helpers/zodSchemas.ts`
+**파일:** `/form/src/helpers/zodSchemas.ts`
 
 ```typescript
 import { z } from 'zod';
 
-// Question types enum
+// 질문 타입 열거형
 export const questionTypeSchema = z.enum([
     'input',
     'textbox',
@@ -165,17 +165,17 @@ export const questionTypeSchema = z.enum([
     'upload',
 ]);
 
-// Upload types
+// 업로드 타입
 export const uploadTypeSchema = z.array(
     z.enum(['pdf', 'image', 'excel', 'video', 'powerpoint', 'word']).nullable()
 );
 
-// Input types
+// 입력 타입
 export const inputTypeSchema = z
     .enum(['date', 'number', 'input', 'currency'])
     .nullable();
 
-// Question option
+// 질문 옵션
 export const questionOptionSchema = z.object({
     id: z.number().int().positive().optional(),
     controlTag: z.string().max(150).nullable().optional(),
@@ -183,7 +183,7 @@ export const questionOptionSchema = z.object({
     order: z.number().int().min(0).default(0),
 });
 
-// Question schema
+// 질문 스키마
 export const questionSchema = z.object({
     id: z.number().int().positive().optional(),
     formID: z.number().int().positive(),
@@ -202,7 +202,7 @@ export const questionSchema = z.object({
     isOptionsSorted: z.boolean().optional(),
 });
 
-// Form section schema
+// 폼 섹션 스키마
 export const formSectionSchema = z.object({
     id: z.number().int().positive(),
     formID: z.number().int().positive(),
@@ -212,7 +212,7 @@ export const formSectionSchema = z.object({
     isStandard: z.boolean(),
 });
 
-// Create form schema
+// 폼 생성 스키마
 export const createFormSchema = z.object({
     id: z.number().int().positive(),
     label: z.string().max(150),
@@ -221,7 +221,7 @@ export const createFormSchema = z.object({
     username: z.string(),
 });
 
-// Update order schema
+// 순서 업데이트 스키마
 export const updateOrderSchema = z.object({
     source: z.object({
         index: z.number().int().min(0),
@@ -233,7 +233,7 @@ export const updateOrderSchema = z.object({
     }),
 });
 
-// Controller-specific validation schemas
+// Controller 전용 유효성 검사 스키마
 export const createQuestionValidationSchema = z.object({
     formID: z.number().int().positive(),
     sectionID: z.number().int().positive(),
@@ -249,10 +249,10 @@ export const updateQuestionValidationSchema = z.object({
 });
 ```
 
-### Proxy Relationship Schema
+### 프록시 관계 스키마
 
 ```typescript
-// Proxy relationship validation
+// 프록시 관계 유효성 검사
 const createProxySchema = z.object({
     originalUserID: z.string().min(1),
     proxyUserID: z.string().min(1),
@@ -260,7 +260,7 @@ const createProxySchema = z.object({
     expiresAt: z.string().datetime(),
 });
 
-// With custom validation
+// 커스텀 유효성 검사 포함
 const createProxySchemaWithValidation = createProxySchema.refine(
     (data) => new Date(data.expiresAt) > new Date(data.startsAt),
     {
@@ -270,10 +270,10 @@ const createProxySchemaWithValidation = createProxySchema.refine(
 );
 ```
 
-### Workflow Validation
+### Workflow 유효성 검사
 
 ```typescript
-// Workflow start schema
+// Workflow 시작 스키마
 const startWorkflowSchema = z.object({
     workflowCode: z.string().min(1),
     entityType: z.enum(['Post', 'User', 'Comment']),
@@ -281,7 +281,7 @@ const startWorkflowSchema = z.object({
     dryRun: z.boolean().optional().default(false),
 });
 
-// Workflow step completion schema
+// Workflow 단계 완료 스키마
 const completeStepSchema = z.object({
     stepInstanceID: z.number().int().positive(),
     answers: z.record(z.string(), z.any()),
@@ -291,9 +291,9 @@ const completeStepSchema = z.object({
 
 ---
 
-## Route-Level Validation
+## Route 레벨 유효성 검사
 
-### Pattern 1: Inline Validation
+### 패턴 1: 인라인 유효성 검사
 
 ```typescript
 // routes/proxyRoutes.ts
@@ -311,10 +311,10 @@ router.post(
     SSOMiddlewareClient.verifyLoginStatus,
     async (req, res) => {
         try {
-            // Validate at route level
+            // Route 레벨에서 유효성 검사
             const validated = createProxySchema.parse(req.body);
 
-            // Delegate to service
+            // Service로 위임
             const proxy = await proxyService.createProxyRelationship(validated);
 
             res.status(201).json({ success: true, data: proxy });
@@ -334,20 +334,20 @@ router.post(
 );
 ```
 
-**Pros:**
-- Quick and simple
-- Good for simple routes
+**장점:**
+- 빠르고 간단
+- 단순한 routes에 좋음
 
-**Cons:**
-- Validation logic in routes
-- Harder to test
-- Not reusable
+**단점:**
+- 유효성 검사 로직이 routes에 있음
+- 테스트하기 어려움
+- 재사용 불가
 
 ---
 
-## Controller Validation
+## Controller 유효성 검사
 
-### Pattern 2: Controller Validation (Recommended)
+### 패턴 2: Controller 유효성 검사 (권장)
 
 ```typescript
 // validators/userSchemas.ts
@@ -389,16 +389,16 @@ export class UserController extends BaseController {
 
     async createUser(req: Request, res: Response): Promise<void> {
         try {
-            // Validate input
+            // 입력 유효성 검사
             const validated = createUserSchema.parse(req.body);
 
-            // Call service
+            // Service 호출
             const user = await this.userService.createUser(validated);
 
             this.handleSuccess(res, user, 'User created successfully', 201);
         } catch (error) {
             if (error instanceof z.ZodError) {
-                // Handle validation errors with 400 status
+                // 400 상태로 유효성 검사 에러 처리
                 return this.handleError(error, res, 'createUser', 400);
             }
             this.handleError(error, res, 'createUser');
@@ -407,7 +407,7 @@ export class UserController extends BaseController {
 
     async updateUser(req: Request, res: Response): Promise<void> {
         try {
-            // Validate params and body
+            // params와 body 유효성 검사
             const userId = req.params.id;
             const validated = updateUserSchema.parse(req.body);
 
@@ -424,68 +424,68 @@ export class UserController extends BaseController {
 }
 ```
 
-**Pros:**
-- Clean separation
-- Reusable schemas
-- Easy to test
-- Type-safe DTOs
+**장점:**
+- 깔끔한 분리
+- 재사용 가능한 스키마
+- 테스트하기 쉬움
+- 타입 안전 DTOs
 
-**Cons:**
-- More files to manage
+**단점:**
+- 관리할 파일이 더 많음
 
 ---
 
-## DTO Pattern
+## DTO 패턴
 
-### Type Inference from Schemas
+### 스키마에서 타입 추론
 
 ```typescript
 import { z } from 'zod';
 
-// Define schema
+// 스키마 정의
 const createUserSchema = z.object({
     email: z.string().email(),
     name: z.string(),
     age: z.number().int().positive(),
 });
 
-// Infer TypeScript type from schema
+// 스키마에서 TypeScript 타입 추론
 type CreateUserDTO = z.infer<typeof createUserSchema>;
 
-// Equivalent to:
+// 다음과 동일:
 // type CreateUserDTO = {
 //     email: string;
 //     name: string;
 //     age: number;
 // }
 
-// Use in service
+// Service에서 사용
 class UserService {
     async createUser(data: CreateUserDTO): Promise<User> {
-        // data is fully typed!
-        console.log(data.email); // ✅ TypeScript knows this exists
-        console.log(data.invalid); // ❌ TypeScript error!
+        // data는 완전히 타입화됨!
+        console.log(data.email); // ✅ TypeScript가 이것이 존재함을 알고 있음
+        console.log(data.invalid); // ❌ TypeScript 에러!
     }
 }
 ```
 
-### Input vs Output Types
+### 입력 vs 출력 타입
 
 ```typescript
-// Input schema (what API receives)
+// 입력 스키마 (API가 받는 것)
 const createUserInputSchema = z.object({
     email: z.string().email(),
     name: z.string(),
     password: z.string().min(8),
 });
 
-// Output schema (what API returns)
+// 출력 스키마 (API가 반환하는 것)
 const userOutputSchema = z.object({
     id: z.string().uuid(),
     email: z.string().email(),
     name: z.string(),
     createdAt: z.string().datetime(),
-    // password excluded!
+    // password 제외!
 });
 
 type CreateUserInput = z.infer<typeof createUserInputSchema>;
@@ -494,9 +494,9 @@ type UserOutput = z.infer<typeof userOutputSchema>;
 
 ---
 
-## Error Handling
+## 에러 처리
 
-### Zod Error Format
+### Zod 에러 포맷
 
 ```typescript
 try {
@@ -517,7 +517,7 @@ try {
 }
 ```
 
-### Custom Error Messages
+### 커스텀 에러 메시지
 
 ```typescript
 const userSchema = z.object({
@@ -527,10 +527,10 @@ const userSchema = z.object({
 });
 ```
 
-### Formatted Error Response
+### 포맷된 에러 응답
 
 ```typescript
-// Helper function to format Zod errors
+// Zod 에러를 포맷하는 헬퍼 함수
 function formatZodError(error: z.ZodError) {
     return {
         message: 'Validation failed',
@@ -542,7 +542,7 @@ function formatZodError(error: z.ZodError) {
     };
 }
 
-// In controller
+// Controller에서
 catch (error) {
     if (error instanceof z.ZodError) {
         return res.status(400).json({
@@ -552,7 +552,7 @@ catch (error) {
     }
 }
 
-// Response example:
+// 응답 예시:
 // {
 //   "success": false,
 //   "error": {
@@ -570,18 +570,18 @@ catch (error) {
 
 ---
 
-## Advanced Patterns
+## 고급 패턴
 
-### Conditional Validation
+### 조건부 유효성 검사
 
 ```typescript
-// Validate based on other field values
+// 다른 필드 값에 기반한 유효성 검사
 const submissionSchema = z.object({
     type: z.enum(['NEW', 'UPDATE']),
     postId: z.number().optional(),
 }).refine(
     (data) => {
-        // If type is UPDATE, postId is required
+        // type이 UPDATE면 postId 필수
         if (data.type === 'UPDATE') {
             return data.postId !== undefined;
         }
@@ -594,26 +594,26 @@ const submissionSchema = z.object({
 );
 ```
 
-### Transform Data
+### 데이터 변환
 
 ```typescript
-// Transform strings to numbers
+// 문자열을 숫자로 변환
 const userSchema = z.object({
     name: z.string(),
     age: z.string().transform((val) => parseInt(val, 10)),
 });
 
-// Transform dates
+// 날짜 변환
 const eventSchema = z.object({
     name: z.string(),
     date: z.string().transform((str) => new Date(str)),
 });
 ```
 
-### Preprocess Data
+### 데이터 전처리
 
 ```typescript
-// Trim strings before validation
+// 유효성 검사 전에 문자열 trim
 const userSchema = z.object({
     email: z.preprocess(
         (val) => typeof val === 'string' ? val.trim().toLowerCase() : val,
@@ -626,13 +626,13 @@ const userSchema = z.object({
 });
 ```
 
-### Union Types
+### 유니온 타입
 
 ```typescript
-// Multiple possible types
+// 여러 가능한 타입
 const idSchema = z.union([z.string(), z.number()]);
 
-// Discriminated unions
+// 구별된 유니온
 const notificationSchema = z.discriminatedUnion('type', [
     z.object({
         type: z.literal('email'),
@@ -647,10 +647,10 @@ const notificationSchema = z.discriminatedUnion('type', [
 ]);
 ```
 
-### Recursive Schemas
+### 재귀 스키마
 
 ```typescript
-// For nested structures like trees
+// 트리 같은 중첩 구조용
 type Category = {
     id: number;
     name: string;
@@ -666,10 +666,10 @@ const categorySchema: z.ZodType<Category> = z.lazy(() =>
 );
 ```
 
-### Schema Composition
+### 스키마 조합
 
 ```typescript
-// Base schemas
+// 기본 스키마
 const timestampsSchema = z.object({
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
@@ -680,27 +680,27 @@ const auditSchema = z.object({
     updatedBy: z.string(),
 });
 
-// Compose schemas
+// 스키마 조합
 const userSchema = z.object({
     id: z.string(),
     email: z.string().email(),
     name: z.string(),
 }).merge(timestampsSchema).merge(auditSchema);
 
-// Extend schemas
+// 스키마 확장
 const adminUserSchema = userSchema.extend({
     adminLevel: z.number().int().min(1).max(5),
     permissions: z.array(z.string()),
 });
 
-// Pick specific fields
+// 특정 필드 선택
 const publicUserSchema = userSchema.pick({
     id: true,
     name: true,
-    // email excluded
+    // email 제외
 });
 
-// Omit fields
+// 필드 제외
 const userWithoutTimestamps = userSchema.omit({
     createdAt: true,
     updatedAt: true,
@@ -710,7 +710,7 @@ const userWithoutTimestamps = userSchema.omit({
 ### Validation Middleware
 
 ```typescript
-// Create reusable validation middleware
+// 재사용 가능한 validation middleware 생성
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 
@@ -734,11 +734,11 @@ export function validateBody<T extends z.ZodType>(schema: T) {
     };
 }
 
-// Usage
+// 사용법
 router.post('/users',
     validateBody(createUserSchema),
     async (req, res) => {
-        // req.body is validated and typed!
+        // req.body가 유효성 검사되고 타입화됨!
         const user = await userService.createUser(req.body);
         res.json({ success: true, data: user });
     }
@@ -747,8 +747,8 @@ router.post('/users',
 
 ---
 
-**Related Files:**
-- [SKILL.md](SKILL.md) - Main guide
-- [routing-and-controllers.md](routing-and-controllers.md) - Using validation in controllers
-- [services-and-repositories.md](services-and-repositories.md) - Using DTOs in services
-- [async-and-errors.md](async-and-errors.md) - Error handling patterns
+**관련 파일:**
+- [SKILL.md](SKILL.md) - 메인 가이드
+- [routing-and-controllers.md](routing-and-controllers.md) - Controller에서 유효성 검사 사용
+- [services-and-repositories.md](services-and-repositories.md) - Services에서 DTOs 사용
+- [async-and-errors.md](async-and-errors.md) - 에러 처리 패턴

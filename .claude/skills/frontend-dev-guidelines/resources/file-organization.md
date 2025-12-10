@@ -1,61 +1,142 @@
-# File Organization
+# 파일 구성
 
-Proper file and directory structure for maintainable, scalable frontend code in the the application.
+애플리케이션에서 유지보수 가능하고 확장 가능한 프론트엔드 코드를 위한 올바른 파일 및 디렉토리 구조입니다.
 
 ---
 
-## features/ vs components/ Distinction
+## RealWorld (Conduit) 프론트엔드 구조
 
-### features/ Directory
+이 프로젝트의 기능 기반 모듈 구조입니다:
 
-**Purpose**: Domain-specific features with their own logic, API, and components
+```
+frontend/src/
+├── features/                    # 기능 모듈
+│   ├── auth/                    # 인증 기능
+│   │   ├── components/          # Login, Register, Settings
+│   │   ├── hooks/               # useAuth
+│   │   ├── api/                 # authApi.ts
+│   │   └── types.ts
+│   ├── articles/                # 게시글 기능
+│   │   ├── components/          # ArticleList, ArticleDetail, Editor
+│   │   ├── hooks/               # useArticles, useSuspenseArticle
+│   │   ├── api/                 # articleApi.ts
+│   │   └── types.ts
+│   ├── comments/                # 댓글 기능
+│   │   ├── components/          # CommentList, CommentForm
+│   │   ├── hooks/               # useComments
+│   │   └── api/                 # commentApi.ts
+│   ├── profiles/                # 프로필 기능
+│   │   ├── components/          # Profile, ProfileHeader
+│   │   ├── hooks/               # useProfile
+│   │   └── api/                 # profileApi.ts
+│   └── tags/                    # 태그 기능
+│       ├── components/          # TagList, PopularTags
+│       └── api/                 # tagApi.ts
+│
+├── components/                  # 공유 컴포넌트
+│   ├── layout/
+│   │   ├── Header.tsx           # 네비게이션
+│   │   ├── Footer.tsx
+│   │   └── Layout.tsx
+│   └── ui/
+│       ├── Loading.tsx
+│       ├── ErrorMessage.tsx
+│       └── Pagination.tsx
+│
+├── hooks/                       # 공유 Hooks
+│   ├── useAuth.ts
+│   └── useLocalStorage.ts
+│
+├── lib/                         # 유틸리티
+│   ├── api/
+│   │   └── client.ts            # API 클라이언트 (axios)
+│   └── utils/
+│       └── formatDate.ts
+│
+├── routes/                      # TanStack Router
+│   ├── __root.tsx
+│   ├── index.tsx                # 홈 (글로벌 피드)
+│   ├── login.tsx
+│   ├── register.tsx
+│   ├── settings.tsx
+│   ├── editor/
+│   │   ├── index.tsx            # 새 글 작성
+│   │   └── $slug.tsx            # 글 수정
+│   ├── article/
+│   │   └── $slug.tsx            # 글 상세
+│   └── profile/
+│       └── $username.tsx        # 사용자 프로필
+│
+└── types/                       # 공유 타입
+    ├── user.ts
+    ├── article.ts
+    └── common.ts
+```
 
-**When to use:**
-- Feature has multiple related components
-- Feature has its own API endpoints
-- Feature has domain-specific logic
-- Feature has custom hooks/utilities
+### 핵심 기능 설명
 
-**Examples:**
-- `features/posts/` - Project catalog/post management
-- `features/blogs/` - Blog builder and rendering
-- `features/auth/` - Authentication flows
+| 기능 | 설명 | 주요 컴포넌트 |
+|------|------|--------------|
+| **auth** | 인증 및 설정 | Login, Register, Settings |
+| **articles** | 게시글 CRUD | ArticleList, ArticleDetail, Editor |
+| **comments** | 댓글 관리 | CommentList, CommentForm |
+| **profiles** | 사용자 프로필 | Profile, FollowButton |
+| **tags** | 인기 태그 | PopularTags, TagFilter |
 
-**Structure:**
+---
+
+## features/ vs components/ 구분
+
+### features/ 디렉토리
+
+**목적**: 자체 로직, API, 컴포넌트가 있는 도메인별 기능
+
+**사용 시점:**
+- 기능에 여러 관련 컴포넌트가 있을 때
+- 기능에 자체 API 엔드포인트가 있을 때
+- 도메인별 로직이 있을 때
+- 커스텀 hooks/유틸리티가 있을 때
+
+**예시:**
+- `features/posts/` - 프로젝트 카탈로그/포스트 관리
+- `features/blogs/` - 블로그 빌더 및 렌더링
+- `features/auth/` - 인증 플로우
+
+**구조:**
 ```
 features/
   my-feature/
     api/
-      myFeatureApi.ts         # API service layer
+      myFeatureApi.ts         # API 서비스 레이어
     components/
-      MyFeatureMain.tsx       # Main component
-      SubComponents/          # Related components
+      MyFeatureMain.tsx       # 메인 컴포넌트
+      SubComponents/          # 관련 컴포넌트
     hooks/
-      useMyFeature.ts         # Custom hooks
+      useMyFeature.ts         # 커스텀 hooks
       useSuspenseMyFeature.ts # Suspense hooks
     helpers/
-      myFeatureHelpers.ts     # Utility functions
+      myFeatureHelpers.ts     # 유틸리티 함수
     types/
-      index.ts                # TypeScript types
+      index.ts                # TypeScript 타입
     index.ts                  # Public exports
 ```
 
-### components/ Directory
+### components/ 디렉토리
 
-**Purpose**: Truly reusable components used across multiple features
+**목적**: 여러 기능에서 사용되는 진정한 재사용 가능 컴포넌트
 
-**When to use:**
-- Component is used in 3+ places
-- Component is generic (no feature-specific logic)
-- Component is a UI primitive or pattern
+**사용 시점:**
+- 컴포넌트가 3개 이상의 곳에서 사용될 때
+- 컴포넌트가 제네릭 (기능별 로직 없음)
+- 컴포넌트가 UI 원시 또는 패턴일 때
 
-**Examples:**
-- `components/SuspenseLoader/` - Loading wrapper
-- `components/CustomAppBar/` - Application header
-- `components/ErrorBoundary/` - Error handling
-- `components/LoadingOverlay/` - Loading overlay
+**예시:**
+- `components/SuspenseLoader/` - 로딩 wrapper
+- `components/CustomAppBar/` - 애플리케이션 헤더
+- `components/ErrorBoundary/` - 에러 처리
+- `components/LoadingOverlay/` - 로딩 오버레이
 
-**Structure:**
+**구조:**
 ```
 components/
   SuspenseLoader/
@@ -68,20 +149,20 @@ components/
 
 ---
 
-## Feature Directory Structure (Detailed)
+## Feature 디렉토리 구조 (상세)
 
-### Complete Feature Example
+### 완전한 Feature 예시
 
-Based on `features/posts/` structure:
+`features/posts/` 구조 기반:
 
 ```
 features/
   posts/
     api/
-      postApi.ts              # API service layer (GET, POST, PUT, DELETE)
+      postApi.ts              # API 서비스 레이어 (GET, POST, PUT, DELETE)
 
     components/
-      PostTable.tsx           # Main container component
+      PostTable.tsx           # 메인 컨테이너 컴포넌트
       grids/
         PostDataGrid/
           PostDataGrid.tsx
@@ -97,37 +178,37 @@ features/
         CustomToolbar.tsx
 
     hooks/
-      usePostQueries.ts       # Regular queries
-      useSuspensePost.ts      # Suspense queries
+      usePostQueries.ts       # 일반 쿼리
+      useSuspensePost.ts      # Suspense 쿼리
       usePostMutations.ts     # Mutations
-      useGridLayout.ts              # Feature-specific hooks
+      useGridLayout.ts        # 기능별 hooks
 
     helpers/
-      postHelpers.ts          # Utility functions
-      validation.ts                 # Validation logic
+      postHelpers.ts          # 유틸리티 함수
+      validation.ts           # 유효성 검사 로직
 
     types/
-      index.ts                      # TypeScript types/interfaces
+      index.ts                # TypeScript 타입/인터페이스
 
     queries/
-      postQueries.ts          # Query key factories (optional)
+      postQueries.ts          # 쿼리 키 팩토리 (선택적)
 
     context/
-      PostContext.tsx         # React context (if needed)
+      PostContext.tsx         # React context (필요한 경우)
 
-    index.ts                        # Public API exports
+    index.ts                  # Public API exports
 ```
 
-### Subdirectory Guidelines
+### 하위 디렉토리 가이드라인
 
-#### api/ Directory
+#### api/ 디렉토리
 
-**Purpose**: Centralized API calls for the feature
+**목적**: 기능에 대한 중앙화된 API 호출
 
-**Files:**
-- `{feature}Api.ts` - Main API service
+**파일:**
+- `{feature}Api.ts` - 메인 API 서비스
 
-**Pattern:**
+**패턴:**
 ```typescript
 // features/my-feature/api/myFeatureApi.ts
 import apiClient from '@/lib/apiClient';
@@ -144,22 +225,22 @@ export const myFeatureApi = {
 };
 ```
 
-#### components/ Directory
+#### components/ 디렉토리
 
-**Purpose**: Feature-specific components
+**목적**: 기능별 컴포넌트
 
-**Organization:**
-- Flat structure if <5 components
-- Subdirectories by responsibility if >5 components
+**구성:**
+- 5개 미만 컴포넌트면 평면 구조
+- 5개 이상 컴포넌트면 책임별 하위 디렉토리
 
-**Examples:**
+**예시:**
 ```
 components/
-  MyFeatureMain.tsx           # Main component
-  MyFeatureHeader.tsx         # Supporting components
+  MyFeatureMain.tsx           # 메인 컴포넌트
+  MyFeatureHeader.tsx         # 지원 컴포넌트
   MyFeatureFooter.tsx
 
-  # OR with subdirectories:
+  # 또는 하위 디렉토리:
   containers/
     MyFeatureContainer.tsx
   presentational/
@@ -168,91 +249,91 @@ components/
     MyFeatureBlog.tsx
 ```
 
-#### hooks/ Directory
+#### hooks/ 디렉토리
 
-**Purpose**: Custom hooks for the feature
+**목적**: 기능에 대한 커스텀 hooks
 
-**Naming:**
-- `use` prefix (camelCase)
-- Descriptive of what they do
+**네이밍:**
+- `use` 접두사 (camelCase)
+- 기능을 설명하는 이름
 
-**Examples:**
+**예시:**
 ```
 hooks/
-  useMyFeature.ts               # Main hook
-  useSuspenseMyFeature.ts       # Suspense version
+  useMyFeature.ts               # 메인 hook
+  useSuspenseMyFeature.ts       # Suspense 버전
   useMyFeatureMutations.ts      # Mutations
-  useMyFeatureFilters.ts        # Filters/search
+  useMyFeatureFilters.ts        # 필터/검색
 ```
 
-#### helpers/ Directory
+#### helpers/ 디렉토리
 
-**Purpose**: Utility functions specific to the feature
+**목적**: 기능에 특화된 유틸리티 함수
 
-**Examples:**
+**예시:**
 ```
 helpers/
-  myFeatureHelpers.ts           # General utilities
-  validation.ts                 # Validation logic
-  transblogers.ts               # Data transblogations
-  constants.ts                  # Constants
+  myFeatureHelpers.ts           # 일반 유틸리티
+  validation.ts                 # 유효성 검사 로직
+  transformers.ts               # 데이터 변환
+  constants.ts                  # 상수
 ```
 
-#### types/ Directory
+#### types/ 디렉토리
 
-**Purpose**: TypeScript types and interfaces
+**목적**: TypeScript 타입 정의
 
-**Files:**
+**파일:**
 ```
 types/
-  index.ts                      # Main types, exported
-  internal.ts                   # Internal types (not exported)
+  index.ts                      # 메인 타입, 내보내기
+  internal.ts                   # 내부 타입 (내보내지 않음)
 ```
 
 ---
 
-## Import Aliases (Vite Configuration)
+## Import 별칭 (Vite 설정)
 
-### Available Aliases
+### 사용 가능한 별칭
 
-From `vite.config.ts` lines 180-185:
+`vite.config.ts` 180-185번 줄 참조:
 
-| Alias | Resolves To | Use For |
+| 별칭 | 해석 | 용도 |
 |-------|-------------|---------|
-| `@/` | `src/` | Absolute imports from src root |
-| `~types` | `src/types` | Shared TypeScript types |
-| `~components` | `src/components` | Reusable components |
+| `@/` | `src/` | src 루트에서 절대 경로 import |
+| `~types` | `src/types` | 공유 TypeScript 타입 |
+| `~components` | `src/components` | 재사용 가능 컴포넌트 |
 | `~features` | `src/features` | Feature imports |
 
-### Usage Examples
+### 사용 예시
 
 ```typescript
-// ✅ PREFERRED - Use aliases for absolute imports
+// ✅ 권장 - 절대 경로 import에 별칭 사용
 import { apiClient } from '@/lib/apiClient';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 import { postApi } from '~features/posts/api/postApi';
 import type { User } from '~types/user';
 
-// ❌ AVOID - Relative paths from deep nesting
+// ❌ 피하세요 - 깊은 중첩에서 상대 경로
 import { apiClient } from '../../../lib/apiClient';
 import { SuspenseLoader } from '../../../components/SuspenseLoader';
 ```
 
-### When to Use Which Alias
+### 어떤 별칭을 사용할지
 
-**@/ (General)**:
-- Lib utilities: `@/lib/apiClient`
+**@/ (일반)**:
+- Lib 유틸리티: `@/lib/apiClient`
 - Hooks: `@/hooks/useAuth`
 - Config: `@/config/theme`
-- Shared services: `@/services/authService`
+- 공유 서비스: `@/services/authService`
 
-**~types (Type Imports)**:
+**~types (타입 Import)**:
 ```typescript
 import type { Post } from '~types/post';
 import type { User, UserRole } from '~types/user';
 ```
 
-**~components (Reusable Components)**:
+**~components (재사용 가능 컴포넌트)**:
 ```typescript
 import { SuspenseLoader } from '~components/SuspenseLoader';
 import { CustomAppBar } from '~components/CustomAppBar';
@@ -267,11 +348,11 @@ import { useAuth } from '~features/auth/hooks/useAuth';
 
 ---
 
-## File Naming Conventions
+## 파일 네이밍 규칙
 
-### Components
+### 컴포넌트
 
-**Pattern**: PascalCase with `.tsx` extension
+**패턴**: PascalCase + `.tsx` 확장자
 
 ```
 MyComponent.tsx
@@ -279,14 +360,14 @@ PostDataGrid.tsx
 CustomAppBar.tsx
 ```
 
-**Avoid:**
+**피하세요:**
 - camelCase: `myComponent.tsx` ❌
 - kebab-case: `my-component.tsx` ❌
-- All caps: `MYCOMPONENT.tsx` ❌
+- 모두 대문자: `MYCOMPONENT.tsx` ❌
 
 ### Hooks
 
-**Pattern**: camelCase with `use` prefix, `.ts` extension
+**패턴**: camelCase + `use` 접두사 + `.ts` 확장자
 
 ```
 useMyFeature.ts
@@ -295,9 +376,9 @@ useAuth.ts
 useGridLayout.ts
 ```
 
-### API Services
+### API 서비스
 
-**Pattern**: camelCase with `Api` suffix, `.ts` extension
+**패턴**: camelCase + `Api` 접미사 + `.ts` 확장자
 
 ```
 myFeatureApi.ts
@@ -305,20 +386,20 @@ postApi.ts
 userApi.ts
 ```
 
-### Helpers/Utilities
+### Helpers/유틸리티
 
-**Pattern**: camelCase with descriptive name, `.ts` extension
+**패턴**: camelCase + 설명적 이름 + `.ts` 확장자
 
 ```
 myFeatureHelpers.ts
 validation.ts
-transblogers.ts
+transformers.ts
 constants.ts
 ```
 
-### Types
+### 타입
 
-**Pattern**: camelCase, `index.ts` or descriptive name
+**패턴**: camelCase, `index.ts` 또는 설명적 이름
 
 ```
 types/index.ts
@@ -328,118 +409,118 @@ types/user.ts
 
 ---
 
-## When to Create a New Feature
+## 새 Feature 생성 시점
 
-### Create New Feature When:
+### 새 Feature 생성:
 
-- Multiple related components (>3)
-- Has own API endpoints
-- Domain-specific logic
-- Will grow over time
-- Reused across multiple routes
+- 여러 관련 컴포넌트 (3개 이상)
+- 자체 API 엔드포인트가 있음
+- 도메인별 로직
+- 시간이 지나면서 성장할 것
+- 여러 routes에서 재사용
 
-**Example:** `features/posts/`
-- 20+ components
-- Own API service
-- Complex state management
-- Used in multiple routes
+**예시:** `features/posts/`
+- 20개 이상 컴포넌트
+- 자체 API 서비스
+- 복잡한 상태 관리
+- 여러 routes에서 사용
 
-### Add to Existing Feature When:
+### 기존 Feature에 추가:
 
-- Related to existing feature
-- Shares same API
-- Logically grouped
-- Extends existing functionality
+- 기존 기능과 관련
+- 같은 API 공유
+- 논리적으로 그룹화됨
+- 기존 기능 확장
 
-**Example:** Adding export dialog to posts feature
+**예시:** posts feature에 export dialog 추가
 
-### Create Reusable Component When:
+### 재사용 가능 컴포넌트 생성:
 
-- Used across 3+ features
-- Generic, no domain logic
-- Pure presentation
-- Shared pattern
+- 3개 이상 기능에서 사용
+- 제네릭, 도메인 로직 없음
+- 순수 프레젠테이션
+- 공유 패턴
 
-**Example:** `components/SuspenseLoader/`
+**예시:** `components/SuspenseLoader/`
 
 ---
 
-## Import Organization
+## Import 구성
 
-### Import Order (Recommended)
+### Import 순서 (권장)
 
 ```typescript
-// 1. React and React-related
+// 1. React 및 React 관련
 import React, { useState, useCallback, useMemo } from 'react';
 import { lazy } from 'react';
 
-// 2. Third-party libraries (alphabetical)
+// 2. 서드파티 라이브러리 (알파벳순)
 import { Box, Paper, Button, Grid } from '@mui/material';
 import type { SxProps, Theme } from '@mui/material';
 import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
 import { createFileRoute } from '@tanstack/react-router';
 
-// 3. Alias imports (@ first, then ~)
+// 3. 별칭 imports (@ 먼저, 그 다음 ~)
 import { apiClient } from '@/lib/apiClient';
 import { useAuth } from '@/hooks/useAuth';
 import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 import { SuspenseLoader } from '~components/SuspenseLoader';
 import { postApi } from '~features/posts/api/postApi';
 
-// 4. Type imports (grouped)
+// 4. 타입 imports (그룹화)
 import type { Post } from '~types/post';
 import type { User } from '~types/user';
 
-// 5. Relative imports (same feature)
+// 5. 상대 경로 imports (같은 feature)
 import { MySubComponent } from './MySubComponent';
 import { useMyFeature } from '../hooks/useMyFeature';
 import { myFeatureHelpers } from '../helpers/myFeatureHelpers';
 ```
 
-**Use single quotes** for all imports (project standard)
+모든 imports에 **작은따옴표** 사용 (프로젝트 표준)
 
 ---
 
-## Public API Pattern
+## Public API 패턴
 
 ### feature/index.ts
 
-Export public API from feature for clean imports:
+깔끔한 imports를 위해 feature에서 public API 내보내기:
 
 ```typescript
 // features/my-feature/index.ts
 
-// Export main components
+// 메인 컴포넌트 내보내기
 export { MyFeatureMain } from './components/MyFeatureMain';
 export { MyFeatureHeader } from './components/MyFeatureHeader';
 
-// Export hooks
+// Hooks 내보내기
 export { useMyFeature } from './hooks/useMyFeature';
 export { useSuspenseMyFeature } from './hooks/useSuspenseMyFeature';
 
-// Export API
+// API 내보내기
 export { myFeatureApi } from './api/myFeatureApi';
 
-// Export types
+// 타입 내보내기
 export type { MyFeatureData, MyFeatureConfig } from './types';
 ```
 
-**Usage:**
+**사용:**
 ```typescript
-// ✅ Clean import from feature index
+// ✅ feature index에서 깔끔한 import
 import { MyFeatureMain, useMyFeature } from '~features/my-feature';
 
-// ❌ Avoid deep imports (but OK if needed)
+// ❌ 깊은 imports 피하세요 (필요하면 OK)
 import { MyFeatureMain } from '~features/my-feature/components/MyFeatureMain';
 ```
 
 ---
 
-## Directory Structure Visualization
+## 디렉토리 구조 시각화
 
 ```
 src/
-├── features/                    # Domain-specific features
+├── features/                    # 도메인별 기능
 │   ├── posts/
 │   │   ├── api/
 │   │   ├── components/
@@ -450,7 +531,7 @@ src/
 │   ├── blogs/
 │   └── auth/
 │
-├── components/                  # Reusable components
+├── components/                  # 재사용 가능 컴포넌트
 │   ├── SuspenseLoader/
 │   ├── CustomAppBar/
 │   ├── ErrorBoundary/
@@ -464,39 +545,39 @@ src/
 │   │   └── create/
 │   └── blogs/
 │
-├── hooks/                       # Shared hooks
+├── hooks/                       # 공유 hooks
 │   ├── useAuth.ts
 │   ├── useMuiSnackbar.ts
 │   └── useDebounce.ts
 │
-├── lib/                         # Shared utilities
+├── lib/                         # 공유 유틸리티
 │   ├── apiClient.ts
 │   └── utils.ts
 │
-├── types/                       # Shared TypeScript types
+├── types/                       # 공유 TypeScript 타입
 │   ├── user.ts
 │   ├── post.ts
 │   └── common.ts
 │
-├── config/                      # Configuration
+├── config/                      # 설정
 │   └── theme.ts
 │
-└── App.tsx                      # Root component
+└── App.tsx                      # 루트 컴포넌트
 ```
 
 ---
 
-## Summary
+## 요약
 
-**Key Principles:**
-1. **features/** for domain-specific code
-2. **components/** for truly reusable UI
-3. Use subdirectories: api/, components/, hooks/, helpers/, types/
-4. Import aliases for clean imports (@/, ~types, ~components, ~features)
-5. Consistent naming: PascalCase components, camelCase utilities
-6. Export public API from feature index.ts
+**핵심 원칙:**
+1. **features/** 도메인별 코드용
+2. **components/** 진정한 재사용 가능 UI용
+3. 하위 디렉토리 사용: api/, components/, hooks/, helpers/, types/
+4. 깔끔한 imports를 위한 Import 별칭 (@/, ~types, ~components, ~features)
+5. 일관된 네이밍: PascalCase 컴포넌트, camelCase 유틸리티
+6. feature index.ts에서 public API 내보내기
 
-**See Also:**
-- [component-patterns.md](component-patterns.md) - Component structure
-- [data-fetching.md](data-fetching.md) - API service patterns
-- [complete-examples.md](complete-examples.md) - Full feature example
+**참고:**
+- [component-patterns.md](component-patterns.md) - 컴포넌트 구조
+- [data-fetching.md](data-fetching.md) - API 서비스 패턴
+- [complete-examples.md](complete-examples.md) - 전체 feature 예제

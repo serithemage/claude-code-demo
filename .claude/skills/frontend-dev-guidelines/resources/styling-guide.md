@@ -1,14 +1,14 @@
-# Styling Guide
+# 스타일링 가이드
 
-Modern styling patterns for using MUI v7 sx prop, inline styles, and theme integration.
+MUI v7 sx prop, 인라인 스타일, 테마 통합을 사용한 최신 스타일링 패턴입니다.
 
 ---
 
-## Inline vs Separate Styles
+## 인라인 vs 별도 스타일
 
-### Decision Threshold
+### 결정 기준
 
-**<100 lines: Inline styles at top of component**
+**<100줄: 컴포넌트 상단에 인라인 스타일**
 
 ```typescript
 import type { SxProps, Theme } from '@mui/material';
@@ -24,7 +24,7 @@ const componentStyles: Record<string, SxProps<Theme>> = {
         borderBottom: '1px solid',
         borderColor: 'divider',
     },
-    // ... more styles
+    // ... 더 많은 스타일
 };
 
 export const MyComponent: React.FC = () => {
@@ -38,7 +38,7 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-**>100 lines: Separate `.styles.ts` file**
+**>100줄: 별도 `.styles.ts` 파일**
 
 ```typescript
 // MyComponent.styles.ts
@@ -47,7 +47,7 @@ import type { SxProps, Theme } from '@mui/material';
 export const componentStyles: Record<string, SxProps<Theme>> = {
     container: { ... },
     header: { ... },
-    // ... 100+ lines of styles
+    // ... 100줄 이상의 스타일
 };
 
 // MyComponent.tsx
@@ -58,9 +58,9 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-### Real Example: UnifiedForm.tsx
+### 실제 예시: UnifiedForm.tsx
 
-**Lines 48-126**: 78 lines of inline styles (acceptable)
+**48-126번 줄**: 78줄의 인라인 스타일 (허용됨)
 
 ```typescript
 const formStyles: Record<string, SxProps<Theme>> = {
@@ -74,17 +74,17 @@ const formStyles: Record<string, SxProps<Theme>> = {
         overflow: 'auto',
         p: 4,
     },
-    // ... 15 more style objects
+    // ... 15개 이상의 스타일 객체
 };
 ```
 
-**Guideline**: User is comfortable with ~80 lines inline. Use your judgment around 100 lines.
+**가이드라인**: 사용자는 ~80줄 인라인이 편함. 100줄 근처에서 판단해서 결정.
 
 ---
 
-## sx Prop Patterns
+## sx Prop 패턴
 
-### Basic Usage
+### 기본 사용법
 
 ```typescript
 <Box sx={{ p: 2, mb: 3, display: 'flex' }}>
@@ -92,7 +92,7 @@ const formStyles: Record<string, SxProps<Theme>> = {
 </Box>
 ```
 
-### With Theme Access
+### 테마 액세스와 함께
 
 ```typescript
 <Box
@@ -107,7 +107,7 @@ const formStyles: Record<string, SxProps<Theme>> = {
 </Box>
 ```
 
-### Responsive Styles
+### 반응형 스타일
 
 ```typescript
 <Box
@@ -144,14 +144,14 @@ const formStyles: Record<string, SxProps<Theme>> = {
 
 ---
 
-## MUI v7 Patterns
+## MUI v7 패턴
 
-### Grid Component (v7 Syntax)
+### Grid 컴포넌트 (v7 문법)
 
 ```typescript
 import { Grid } from '@mui/material';
 
-// ✅ CORRECT - v7 syntax with size prop
+// ✅ 올바름 - size prop이 있는 v7 문법
 <Grid container spacing={2}>
     <Grid size={{ xs: 12, md: 6 }}>
         Left Column
@@ -161,17 +161,17 @@ import { Grid } from '@mui/material';
     </Grid>
 </Grid>
 
-// ❌ WRONG - Old v6 syntax
+// ❌ 잘못됨 - 구식 v6 문법
 <Grid container spacing={2}>
-    <Grid xs={12} md={6}>  {/* OLD - Don't use */}
+    <Grid xs={12} md={6}>  {/* 구식 - 사용 금지 */}
         Content
     </Grid>
 </Grid>
 ```
 
-**Key Change**: `size={{ xs: 12, md: 6 }}` instead of `xs={12} md={6}`
+**핵심 변경**: `xs={12} md={6}` 대신 `size={{ xs: 12, md: 6 }}`
 
-### Responsive Grid
+### 반응형 Grid
 
 ```typescript
 <Grid container spacing={3}>
@@ -181,7 +181,7 @@ import { Grid } from '@mui/material';
 </Grid>
 ```
 
-### Nested Grids
+### 중첩 Grids
 
 ```typescript
 <Grid container spacing={2}>
@@ -204,29 +204,29 @@ import { Grid } from '@mui/material';
 
 ---
 
-## Type-Safe Styles
+## 타입 안전 스타일
 
-### Style Object Type
+### 스타일 객체 타입
 
 ```typescript
 import type { SxProps, Theme } from '@mui/material';
 
-// Type-safe styles
+// 타입 안전 스타일
 const styles: Record<string, SxProps<Theme>> = {
     container: {
         p: 2,
-        // Autocomplete and type checking work here
+        // 자동완성과 타입 체크가 여기서 작동
     },
 };
 
-// Or individual style
+// 또는 개별 스타일
 const containerStyle: SxProps<Theme> = {
     p: 2,
     display: 'flex',
 };
 ```
 
-### Theme-Aware Styles
+### 테마 인식 스타일
 
 ```typescript
 const styles: Record<string, SxProps<Theme>> = {
@@ -239,19 +239,19 @@ const styles: Record<string, SxProps<Theme>> = {
     },
     customSpacing: {
         padding: (theme) => theme.spacing(2),
-        margin: (theme) => theme.spacing(1, 2), // top/bottom: 1, left/right: 2
+        margin: (theme) => theme.spacing(1, 2), // 위/아래: 1, 좌/우: 2
     },
 };
 ```
 
 ---
 
-## What NOT to Use
+## 사용하지 말아야 할 것
 
-### ❌ makeStyles (MUI v4 pattern)
+### ❌ makeStyles (MUI v4 패턴)
 
 ```typescript
-// ❌ AVOID - Old Material-UI v4 pattern
+// ❌ 피하세요 - 구식 Material-UI v4 패턴
 import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles((theme) => ({
@@ -261,12 +261,12 @@ const useStyles = makeStyles((theme) => ({
 }));
 ```
 
-**Why avoid**: Deprecated, v7 doesn't support it well
+**피해야 하는 이유**: deprecated, v7에서 잘 지원 안 됨
 
-### ❌ styled() Components
+### ❌ styled() 컴포넌트
 
 ```typescript
-// ❌ AVOID - styled-components pattern
+// ❌ 피하세요 - styled-components 패턴
 import { styled } from '@mui/material/styles';
 
 const StyledBox = styled(Box)(({ theme }) => ({
@@ -274,12 +274,12 @@ const StyledBox = styled(Box)(({ theme }) => ({
 }));
 ```
 
-**Why avoid**: sx prop is more flexible and doesn't create new components
+**피해야 하는 이유**: sx prop이 더 유연하고 새 컴포넌트를 생성하지 않음
 
-### ✅ Use sx Prop Instead
+### ✅ 대신 sx Prop 사용
 
 ```typescript
-// ✅ PREFERRED
+// ✅ 권장
 <Box
     sx={{
         p: 2,
@@ -292,11 +292,11 @@ const StyledBox = styled(Box)(({ theme }) => ({
 
 ---
 
-## Code Style Standards
+## 코드 스타일 표준
 
-### Indentation
+### 들여쓰기
 
-**4 spaces** (not 2, not tabs)
+**4 스페이스** (2가 아님, 탭이 아님)
 
 ```typescript
 const styles: Record<string, SxProps<Theme>> = {
@@ -308,48 +308,48 @@ const styles: Record<string, SxProps<Theme>> = {
 };
 ```
 
-### Quotes
+### 따옴표
 
-**Single quotes** for strings (project standard)
+**작은따옴표** 문자열용 (프로젝트 표준)
 
 ```typescript
-// ✅ CORRECT
+// ✅ 올바름
 const color = 'primary.main';
 import { Box } from '@mui/material';
 
-// ❌ WRONG
+// ❌ 잘못됨
 const color = "primary.main";
 import { Box } from "@mui/material";
 ```
 
-### Trailing Commas
+### 후행 쉼표
 
-**Always use trailing commas** in objects and arrays
+객체와 배열에 **항상 후행 쉼표** 사용
 
 ```typescript
-// ✅ CORRECT
+// ✅ 올바름
 const styles = {
     container: { p: 2 },
-    header: { mb: 1 },  // Trailing comma
+    header: { mb: 1 },  // 후행 쉼표
 };
 
 const items = [
     'item1',
-    'item2',  // Trailing comma
+    'item2',  // 후행 쉼표
 ];
 
-// ❌ WRONG - No trailing comma
+// ❌ 잘못됨 - 후행 쉼표 없음
 const styles = {
     container: { p: 2 },
-    header: { mb: 1 }  // Missing comma
+    header: { mb: 1 }  // 쉼표 누락
 };
 ```
 
 ---
 
-## Common Style Patterns
+## 일반적인 스타일 패턴
 
-### Flexbox Layout
+### Flexbox 레이아웃
 
 ```typescript
 const styles = {
@@ -372,24 +372,24 @@ const styles = {
 };
 ```
 
-### Spacing
+### 간격
 
 ```typescript
 // Padding
-p: 2           // All sides
-px: 2          // Horizontal (left + right)
-py: 2          // Vertical (top + bottom)
-pt: 2, pr: 1   // Specific sides
+p: 2           // 모든 면
+px: 2          // 가로 (좌 + 우)
+py: 2          // 세로 (위 + 아래)
+pt: 2, pr: 1   // 특정 면
 
 // Margin
 m: 2, mx: 2, my: 2, mt: 2, mr: 1
 
-// Units: 1 = 8px (theme.spacing(1))
+// 단위: 1 = 8px (theme.spacing(1))
 p: 2  // = 16px
 p: 0.5  // = 4px
 ```
 
-### Positioning
+### 포지셔닝
 
 ```typescript
 const styles = {
@@ -411,18 +411,18 @@ const styles = {
 
 ---
 
-## Summary
+## 요약
 
-**Styling Checklist:**
-- ✅ Use `sx` prop for MUI styling
-- ✅ Type-safe with `SxProps<Theme>`
-- ✅ <100 lines: inline; >100 lines: separate file
+**스타일링 체크리스트:**
+- ✅ MUI 스타일링에 `sx` prop 사용
+- ✅ `SxProps<Theme>`로 타입 안전
+- ✅ <100줄: 인라인; >100줄: 별도 파일
 - ✅ MUI v7 Grid: `size={{ xs: 12 }}`
-- ✅ 4 space indentation
-- ✅ Single quotes
-- ✅ Trailing commas
-- ❌ No makeStyles or styled()
+- ✅ 4 스페이스 들여쓰기
+- ✅ 작은따옴표
+- ✅ 후행 쉼표
+- ❌ makeStyles나 styled() 사용 금지
 
-**See Also:**
-- [component-patterns.md](component-patterns.md) - Component structure
-- [complete-examples.md](complete-examples.md) - Full styling examples
+**참고:**
+- [component-patterns.md](component-patterns.md) - 컴포넌트 구조
+- [complete-examples.md](complete-examples.md) - 전체 스타일링 예제

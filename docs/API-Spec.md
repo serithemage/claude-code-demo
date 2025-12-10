@@ -1,27 +1,27 @@
-# RealWorld (Conduit) - API Specification
+# RealWorld (Conduit) - API 명세
 
-## 1. Overview
+## 1. 개요
 
 ### 1.1 Base URL
 ```
 http://localhost:3000/api
 ```
 
-### 1.2 Authentication Header
+### 1.2 인증 헤더
 ```
 Authorization: Token jwt.token.here
 ```
 
-### 1.3 Common Response Format
+### 1.3 공통 응답 포맷
 
-**Success**
+**성공**
 ```json
 {
-  "user": { ... },      // or "article", "articles", etc.
+  "user": { ... },      // 또는 "article", "articles" 등
 }
 ```
 
-**Error**
+**에러**
 ```json
 {
   "errors": {
@@ -33,18 +33,18 @@ Authorization: Token jwt.token.here
 
 ---
 
-## 2. Authentication API
+## 2. 인증 API
 
-### 2.1 User Registration
+### 2.1 사용자 가입
 
-**Endpoint**
+**엔드포인트**
 ```
 POST /api/users
 ```
 
-**Authentication**: Not required
+**인증**: 불필요
 
-**Request**
+**요청**
 ```json
 {
   "user": {
@@ -55,7 +55,7 @@ POST /api/users
 }
 ```
 
-**Response** (201 Created)
+**응답** (201 Created)
 ```json
 {
   "user": {
@@ -68,7 +68,7 @@ POST /api/users
 }
 ```
 
-**Error** (422 Unprocessable Entity)
+**에러** (422 Unprocessable Entity)
 ```json
 {
   "errors": {
@@ -80,16 +80,16 @@ POST /api/users
 
 ---
 
-### 2.2 Login
+### 2.2 로그인
 
-**Endpoint**
+**엔드포인트**
 ```
 POST /api/users/login
 ```
 
-**Authentication**: Not required
+**인증**: 불필요
 
-**Request**
+**요청**
 ```json
 {
   "user": {
@@ -99,7 +99,7 @@ POST /api/users/login
 }
 ```
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "user": {
@@ -112,7 +112,7 @@ POST /api/users/login
 }
 ```
 
-**Error** (401 Unauthorized)
+**에러** (401 Unauthorized)
 ```json
 {
   "errors": {
@@ -123,16 +123,16 @@ POST /api/users/login
 
 ---
 
-### 2.3 Get Current User
+### 2.3 현재 사용자 조회
 
-**Endpoint**
+**엔드포인트**
 ```
 GET /api/user
 ```
 
-**Authentication**: Required
+**인증**: 필수
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "user": {
@@ -147,16 +147,16 @@ GET /api/user
 
 ---
 
-### 2.4 Update User
+### 2.4 사용자 수정
 
-**Endpoint**
+**엔드포인트**
 ```
 PUT /api/user
 ```
 
-**Authentication**: Required
+**인증**: 필수
 
-**Request**
+**요청**
 ```json
 {
   "user": {
@@ -167,9 +167,9 @@ PUT /api/user
 }
 ```
 
-※ Only specified fields are updated. New password can be set via password field.
+※ 지정된 필드만 업데이트됩니다. password 필드로 새 비밀번호를 설정할 수 있습니다.
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "user": {
@@ -184,18 +184,18 @@ PUT /api/user
 
 ---
 
-## 3. Profile API
+## 3. 프로필 API
 
-### 3.1 Get Profile
+### 3.1 프로필 조회
 
-**Endpoint**
+**엔드포인트**
 ```
 GET /api/profiles/:username
 ```
 
-**Authentication**: Optional (includes following flag when logged in)
+**인증**: 선택 (로그인 시 following 플래그 포함)
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "profile": {
@@ -209,18 +209,18 @@ GET /api/profiles/:username
 
 ---
 
-### 3.2 Follow User
+### 3.2 사용자 팔로우
 
-**Endpoint**
+**엔드포인트**
 ```
 POST /api/profiles/:username/follow
 ```
 
-**Authentication**: Required
+**인증**: 필수
 
-**Request**: No body
+**요청**: 본문 없음
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "profile": {
@@ -234,16 +234,16 @@ POST /api/profiles/:username/follow
 
 ---
 
-### 3.3 Unfollow User
+### 3.3 사용자 언팔로우
 
-**Endpoint**
+**엔드포인트**
 ```
 DELETE /api/profiles/:username/follow
 ```
 
-**Authentication**: Required
+**인증**: 필수
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "profile": {
@@ -257,28 +257,28 @@ DELETE /api/profiles/:username/follow
 
 ---
 
-## 4. Articles API
+## 4. 게시글 API
 
-### 4.1 List Articles
+### 4.1 게시글 목록 조회
 
-**Endpoint**
+**엔드포인트**
 ```
 GET /api/articles
 ```
 
-**Authentication**: Optional
+**인증**: 선택
 
-**Query Parameters**
+**쿼리 파라미터**
 
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| `tag` | Filter by tag | `?tag=AngularJS` |
-| `author` | Filter by author | `?author=jake` |
-| `favorited` | Filter by favorited user | `?favorited=jake` |
-| `limit` | Number of items (default: 20) | `?limit=20` |
-| `offset` | Offset (default: 0) | `?offset=0` |
+| 파라미터 | 설명 | 예시 |
+|----------|------|------|
+| `tag` | 태그로 필터링 | `?tag=AngularJS` |
+| `author` | 작성자로 필터링 | `?author=jake` |
+| `favorited` | 좋아요한 사용자로 필터링 | `?favorited=jake` |
+| `limit` | 항목 수 (기본: 20) | `?limit=20` |
+| `offset` | 오프셋 (기본: 0) | `?offset=0` |
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "articles": [
@@ -306,23 +306,23 @@ GET /api/articles
 
 ---
 
-### 4.2 Get Feed
+### 4.2 피드 조회
 
-**Endpoint**
+**엔드포인트**
 ```
 GET /api/articles/feed
 ```
 
-**Authentication**: Required
+**인증**: 필수
 
-**Query Parameters**
+**쿼리 파라미터**
 
-| Parameter | Description | Example |
-|-----------|-------------|---------|
-| `limit` | Number of items (default: 20) | `?limit=20` |
-| `offset` | Offset (default: 0) | `?offset=0` |
+| 파라미터 | 설명 | 예시 |
+|----------|------|------|
+| `limit` | 항목 수 (기본: 20) | `?limit=20` |
+| `offset` | 오프셋 (기본: 0) | `?offset=0` |
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "articles": [ ... ],
@@ -332,16 +332,16 @@ GET /api/articles/feed
 
 ---
 
-### 4.3 Get Article
+### 4.3 게시글 조회
 
-**Endpoint**
+**엔드포인트**
 ```
 GET /api/articles/:slug
 ```
 
-**Authentication**: Optional
+**인증**: 선택
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "article": {
@@ -366,16 +366,16 @@ GET /api/articles/:slug
 
 ---
 
-### 4.4 Create Article
+### 4.4 게시글 작성
 
-**Endpoint**
+**엔드포인트**
 ```
 POST /api/articles
 ```
 
-**Authentication**: Required
+**인증**: 필수
 
-**Request**
+**요청**
 ```json
 {
   "article": {
@@ -387,7 +387,7 @@ POST /api/articles
 }
 ```
 
-**Response** (201 Created)
+**응답** (201 Created)
 ```json
 {
   "article": {
@@ -412,16 +412,16 @@ POST /api/articles
 
 ---
 
-### 4.5 Update Article
+### 4.5 게시글 수정
 
-**Endpoint**
+**엔드포인트**
 ```
 PUT /api/articles/:slug
 ```
 
-**Authentication**: Required (author only)
+**인증**: 필수 (작성자만)
 
-**Request**
+**요청**
 ```json
 {
   "article": {
@@ -430,9 +430,9 @@ PUT /api/articles/:slug
 }
 ```
 
-※ Only specified fields are updated. Updating title regenerates the slug.
+※ 지정된 필드만 업데이트됩니다. title 업데이트 시 slug가 재생성됩니다.
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "article": { ... }
@@ -441,31 +441,31 @@ PUT /api/articles/:slug
 
 ---
 
-### 4.6 Delete Article
+### 4.6 게시글 삭제
 
-**Endpoint**
+**엔드포인트**
 ```
 DELETE /api/articles/:slug
 ```
 
-**Authentication**: Required (author only)
+**인증**: 필수 (작성자만)
 
-**Response** (204 No Content)
+**응답** (204 No Content)
 
 ---
 
-## 5. Comments API
+## 5. 댓글 API
 
-### 5.1 List Comments
+### 5.1 댓글 목록 조회
 
-**Endpoint**
+**엔드포인트**
 ```
 GET /api/articles/:slug/comments
 ```
 
-**Authentication**: Optional
+**인증**: 선택
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "comments": [
@@ -487,16 +487,16 @@ GET /api/articles/:slug/comments
 
 ---
 
-### 5.2 Create Comment
+### 5.2 댓글 작성
 
-**Endpoint**
+**엔드포인트**
 ```
 POST /api/articles/:slug/comments
 ```
 
-**Authentication**: Required
+**인증**: 필수
 
-**Request**
+**요청**
 ```json
 {
   "comment": {
@@ -505,7 +505,7 @@ POST /api/articles/:slug/comments
 }
 ```
 
-**Response** (201 Created)
+**응답** (201 Created)
 ```json
 {
   "comment": {
@@ -525,33 +525,33 @@ POST /api/articles/:slug/comments
 
 ---
 
-### 5.3 Delete Comment
+### 5.3 댓글 삭제
 
-**Endpoint**
+**엔드포인트**
 ```
 DELETE /api/articles/:slug/comments/:id
 ```
 
-**Authentication**: Required (comment author only)
+**인증**: 필수 (댓글 작성자만)
 
-**Response** (204 No Content)
+**응답** (204 No Content)
 
 ---
 
-## 6. Favorites API
+## 6. 좋아요 API
 
-### 6.1 Add Favorite
+### 6.1 좋아요 추가
 
-**Endpoint**
+**엔드포인트**
 ```
 POST /api/articles/:slug/favorite
 ```
 
-**Authentication**: Required
+**인증**: 필수
 
-**Request**: No body
+**요청**: 본문 없음
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "article": {
@@ -576,16 +576,16 @@ POST /api/articles/:slug/favorite
 
 ---
 
-### 6.2 Remove Favorite
+### 6.2 좋아요 취소
 
-**Endpoint**
+**엔드포인트**
 ```
 DELETE /api/articles/:slug/favorite
 ```
 
-**Authentication**: Required
+**인증**: 필수
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "article": {
@@ -599,18 +599,18 @@ DELETE /api/articles/:slug/favorite
 
 ---
 
-## 7. Tags API
+## 7. 태그 API
 
-### 7.1 List Tags
+### 7.1 태그 목록 조회
 
-**Endpoint**
+**엔드포인트**
 ```
 GET /api/tags
 ```
 
-**Authentication**: Not required
+**인증**: 불필요
 
-**Response** (200 OK)
+**응답** (200 OK)
 ```json
 {
   "tags": [
@@ -624,7 +624,7 @@ GET /api/tags
 
 ---
 
-## 8. Data Type Definitions
+## 8. 데이터 타입 정의
 
 ### 8.1 User
 
@@ -680,40 +680,40 @@ interface Comment {
 
 ---
 
-## 9. Error Codes
+## 9. 에러 코드
 
-| HTTP Status | Error Type | Description |
-|-------------|------------|-------------|
-| 400 | Bad Request | Invalid request format |
-| 401 | Unauthorized | Authentication required |
-| 403 | Forbidden | No permission (e.g., editing another's article) |
-| 404 | Not Found | Resource does not exist |
-| 422 | Unprocessable Entity | Validation error |
-| 500 | Internal Server Error | Server internal error |
+| HTTP 상태 | 에러 유형 | 설명 |
+|-----------|----------|------|
+| 400 | Bad Request | 잘못된 요청 포맷 |
+| 401 | Unauthorized | 인증 필요 |
+| 403 | Forbidden | 권한 없음 (예: 다른 사람의 게시글 수정) |
+| 404 | Not Found | 리소스가 존재하지 않음 |
+| 422 | Unprocessable Entity | 검증 오류 |
+| 500 | Internal Server Error | 서버 내부 오류 |
 
 ---
 
-## 10. Validation Rules
+## 10. 검증 규칙
 
-### 10.1 User Registration
+### 10.1 사용자 가입
 
-| Field | Rules |
-|-------|-------|
-| `username` | Required, unique, 1-20 characters |
-| `email` | Required, unique, valid email format |
-| `password` | Required, 8+ characters |
+| 필드 | 규칙 |
+|------|------|
+| `username` | 필수, 고유, 1-20자 |
+| `email` | 필수, 고유, 유효한 이메일 형식 |
+| `password` | 필수, 8자 이상 |
 
-### 10.2 Article Creation
+### 10.2 게시글 작성
 
-| Field | Rules |
-|-------|-------|
-| `title` | Required, 1-100 characters |
-| `description` | Required, 1-200 characters |
-| `body` | Required |
-| `tagList` | Optional, array |
+| 필드 | 규칙 |
+|------|------|
+| `title` | 필수, 1-100자 |
+| `description` | 필수, 1-200자 |
+| `body` | 필수 |
+| `tagList` | 선택, 배열 |
 
-### 10.3 Comment Creation
+### 10.3 댓글 작성
 
-| Field | Rules |
-|-------|-------|
-| `body` | Required, 1-1000 characters |
+| 필드 | 규칙 |
+|------|------|
+| `body` | 필수, 1-1000자 |

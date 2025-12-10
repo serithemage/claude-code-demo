@@ -1,34 +1,34 @@
-# Sentry Integration and Monitoring
+# Sentry 통합 및 모니터링
 
-Complete guide to error tracking and performance monitoring with Sentry v8.
+Sentry v8을 사용한 에러 추적 및 성능 모니터링에 대한 완전한 가이드입니다.
 
-## Table of Contents
+## 목차
 
-- [Core Principles](#core-principles)
-- [Sentry Initialization](#sentry-initialization)
-- [Error Capture Patterns](#error-capture-patterns)
-- [Performance Monitoring](#performance-monitoring)
-- [Cron Job Monitoring](#cron-job-monitoring)
-- [Error Context Best Practices](#error-context-best-practices)
-- [Common Mistakes](#common-mistakes)
-
----
-
-## Core Principles
-
-**MANDATORY**: All errors MUST be captured to Sentry. No exceptions.
-
-**ALL ERRORS MUST BE CAPTURED** - Use Sentry v8 with comprehensive error tracking across all services.
+- [핵심 원칙](#핵심-원칙)
+- [Sentry 초기화](#sentry-초기화)
+- [에러 캡처 패턴](#에러-캡처-패턴)
+- [성능 모니터링](#성능-모니터링)
+- [Cron Job 모니터링](#cron-job-모니터링)
+- [에러 컨텍스트 모범 사례](#에러-컨텍스트-모범-사례)
+- [일반적인 실수](#일반적인-실수)
 
 ---
 
-## Sentry Initialization
+## 핵심 원칙
 
-### instrument.ts Pattern
+**필수**: 모든 에러는 반드시 Sentry에 캡처되어야 합니다. 예외 없음.
 
-**Location:** `src/instrument.ts` (MUST be first import in server.ts and all cron jobs)
+**모든 에러는 캡처되어야 함** - 모든 서비스에서 포괄적인 에러 추적과 함께 Sentry v8을 사용하세요.
 
-**Template for Microservices:**
+---
+
+## Sentry 초기화
+
+### instrument.ts 패턴
+
+**위치:** `src/instrument.ts` (server.ts와 모든 cron jobs에서 첫 번째 import여야 함)
+
+**마이크로서비스용 템플릿:**
 
 ```typescript
 import * as Sentry from '@sentry/node';
@@ -66,18 +66,18 @@ Sentry.init({
     ],
 
     beforeSend(event, hint) {
-        // Filter health checks
+        // 헬스 체크 필터링
         if (event.request?.url?.includes('/healthcheck')) {
             return null;
         }
 
-        // Scrub sensitive headers
+        // 민감한 헤더 스크럽
         if (event.request?.headers) {
             delete event.request.headers['authorization'];
             delete event.request.headers['cookie'];
         }
 
-        // Mask emails for PII
+        // PII를 위한 이메일 마스킹
         if (event.user?.email) {
             event.user.email = event.user.email.replace(/^(.{2}).*(@.*)$/, '$1***$2');
         }
@@ -92,7 +92,7 @@ Sentry.init({
     ],
 });
 
-// Set service context
+// 서비스 컨텍스트 설정
 Sentry.setTags({
     service: 'form',
     version: '1.0.1',
@@ -104,21 +104,21 @@ Sentry.setContext('runtime', {
 });
 ```
 
-**Critical Points:**
-- PII protection built-in (beforeSend)
-- Filter non-critical errors
-- Comprehensive integrations
-- Prisma instrumentation
-- Service-specific tagging
+**중요 포인트:**
+- PII 보호 내장 (beforeSend)
+- 비중요 에러 필터링
+- 포괄적인 통합
+- Prisma 계측
+- 서비스별 태깅
 
 ---
 
-## Error Capture Patterns
+## 에러 캡처 패턴
 
-### 1. BaseController Pattern
+### 1. BaseController 패턴
 
 ```typescript
-// Use BaseController.handleError
+// BaseController.handleError 사용
 protected handleError(error: unknown, res: Response, context: string, statusCode = 500): void {
     Sentry.withScope((scope) => {
         scope.setTag('controller', this.constructor.name);
@@ -134,7 +134,7 @@ protected handleError(error: unknown, res: Response, context: string, statusCode
 }
 ```
 
-### 2. Workflow Error Handling
+### 2. Workflow 에러 처리
 
 ```typescript
 import { SentryHelper } from '../utils/sentryHelper';
@@ -152,7 +152,7 @@ try {
 }
 ```
 
-### 3. Service Layer Error Handling
+### 3. Service 계층 에러 처리
 
 ```typescript
 try {
@@ -174,9 +174,9 @@ try {
 
 ---
 
-## Performance Monitoring
+## 성능 모니터링
 
-### Database Performance Tracking
+### 데이터베이스 성능 추적
 
 ```typescript
 import { DatabasePerformanceMonitor } from '../utils/databasePerformance';
@@ -190,7 +190,7 @@ const result = await DatabasePerformanceMonitor.withPerformanceTracking(
 );
 ```
 
-### API Endpoint Spans
+### API 엔드포인트 Spans
 
 ```typescript
 router.post('/operation', async (req, res) => {
@@ -210,13 +210,13 @@ router.post('/operation', async (req, res) => {
 
 ---
 
-## Cron Job Monitoring
+## Cron Job 모니터링
 
-### Mandatory Pattern
+### 필수 패턴
 
 ```typescript
 #!/usr/bin/env node
-import '../instrument'; // FIRST LINE after shebang
+import '../instrument'; // shebang 이후 첫 번째 줄
 import * as Sentry from '@sentry/node';
 
 async function main() {
@@ -229,7 +229,7 @@ async function main() {
         }
     }, async () => {
         try {
-            // Cron job logic here
+            // Cron job 로직
         } catch (error) {
             Sentry.captureException(error, {
                 tags: {
@@ -254,32 +254,32 @@ main().then(() => {
 
 ---
 
-## Error Context Best Practices
+## 에러 컨텍스트 모범 사례
 
-### Rich Context Example
+### 풍부한 컨텍스트 예시
 
 ```typescript
 Sentry.withScope((scope) => {
-    // User context
+    // 사용자 컨텍스트
     scope.setUser({
         id: user.id,
         email: user.email,
         username: user.username
     });
 
-    // Tags for filtering
+    // 필터링을 위한 태그
     scope.setTag('service', 'form');
     scope.setTag('endpoint', req.path);
     scope.setTag('method', req.method);
 
-    // Structured context
+    // 구조화된 컨텍스트
     scope.setContext('operation', {
         type: 'workflow.complete',
         workflowId: 123,
         stepId: 456
     });
 
-    // Breadcrumbs for timeline
+    // 타임라인을 위한 breadcrumbs
     scope.addBreadcrumb({
         category: 'workflow',
         message: 'Starting step completion',
@@ -293,30 +293,30 @@ Sentry.withScope((scope) => {
 
 ---
 
-## Common Mistakes
+## 일반적인 실수
 
 ```typescript
-// ❌ Swallowing errors
+// ❌ 에러 삼키기
 try {
     await riskyOperation();
 } catch (error) {
-    // Silent failure
+    // 조용한 실패
 }
 
-// ❌ Generic error messages
+// ❌ 일반적인 에러 메시지
 throw new Error('Error occurred');
 
-// ❌ Exposing sensitive data
+// ❌ 민감한 데이터 노출
 Sentry.captureException(error, {
-    extra: { password: user.password } // NEVER
+    extra: { password: user.password } // 절대 금지
 });
 
-// ❌ Missing async error handling
+// ❌ 누락된 async 에러 처리
 async function bad() {
-    fetchData().then(data => processResult(data)); // Unhandled
+    fetchData().then(data => processResult(data)); // 처리되지 않음
 }
 
-// ✅ Proper async handling
+// ✅ 적절한 async 처리
 async function good() {
     try {
         const data = await fetchData();
@@ -330,7 +330,7 @@ async function good() {
 
 ---
 
-**Related Files:**
+**관련 파일:**
 - [SKILL.md](SKILL.md)
 - [routing-and-controllers.md](routing-and-controllers.md)
 - [async-and-errors.md](async-and-errors.md)

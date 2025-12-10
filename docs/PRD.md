@@ -1,275 +1,275 @@
-# RealWorld (Conduit) - Product Requirements Document
+# RealWorld (Conduit) - 제품 요구사항 문서
 
-## 1. Project Overview
+## 1. 프로젝트 개요
 
-### 1.1 Project Name
-**Conduit** - Social Blogging Platform
+### 1.1 프로젝트명
+**Conduit** - 소셜 블로깅 플랫폼
 
-### 1.2 Project Purpose
-A full-stack web application that provides article posting/viewing and social features between users as a Medium.com clone. Acquire practical application development skills through implementation compliant with the RealWorld specification.
+### 1.2 프로젝트 목적
+Medium.com 클론으로서 기사 게시/조회 및 사용자 간 소셜 기능을 제공하는 풀스택 웹 애플리케이션. RealWorld 사양을 준수하는 구현을 통해 실무 애플리케이션 개발 스킬을 습득합니다.
 
-### 1.3 Reference Specifications
-- RealWorld Official Documentation: https://realworld-docs.netlify.app/
-- RealWorld API Specification: https://github.com/gothinkster/realworld/tree/main/api
-
----
-
-## 2. Functional Requirements
-
-### 2.1 Authentication & User Management
-
-#### 2.1.1 User Registration
-- New registration with email address, username, and password
-- Issue JWT token after registration completion
-- Store token in localStorage
-
-#### 2.1.2 Login
-- Authentication with email address and password
-- Issue JWT token on successful authentication
-- Store token in localStorage
-
-#### 2.1.3 Logout
-- Logout available from settings page
-- Delete token from localStorage
-
-#### 2.1.4 User Information Management
-- **Create**: Automatically created during registration
-- **Read**: Get current user information
-- **Update**: Change profile image, username, bio, email address, password
-- **Delete**: Not required (out of scope)
-
-### 2.2 Article Management
-
-#### 2.2.1 Article Creation
-- Input title, description, body (Markdown), tag list
-- Automatically generate slug on creation
-- Automatically assign author information
-
-#### 2.2.2 Article Viewing
-- Global Feed: Display all articles in chronological order
-- User Feed: Display only articles from followed users
-- Tag Filter: Display only articles with specific tags
-- Pagination support (default: 10 items/page)
-
-#### 2.2.3 Article Update
-- Edit title, description, body
-- Only author can edit
-
-#### 2.2.4 Article Deletion
-- Only author can delete
-- Also delete related comments and favorites
-
-### 2.3 Comment Feature
-
-#### 2.3.1 Comment Creation
-- Post comments on articles
-- Only logged-in users can post
-
-#### 2.3.2 Comment Viewing
-- Display comment list per article
-- Display in chronological order
-
-#### 2.3.3 Comment Deletion
-- Only comment author can delete
-- **Update feature not required** (out of scope)
-
-### 2.4 Social Features
-
-#### 2.4.1 Follow/Unfollow
-- Can follow other users
-- Display followed users' articles in feed
-- Can unfollow
-
-#### 2.4.2 Favorite (Like)
-- Add favorite to articles
-- Can unfavorite
-- Display favorite count per article
-
-### 2.5 Tag Feature
-- Assign tags during article creation
-- Display popular tags list
-- Filter articles by tag
+### 1.3 참조 사양
+- RealWorld 공식 문서: https://realworld-docs.netlify.app/
+- RealWorld API 사양: https://github.com/gothinkster/realworld/tree/main/api
 
 ---
 
-## 3. Screen Structure
+## 2. 기능 요구사항
 
-### 3.1 Common Layout
+### 2.1 인증 및 사용자 관리
 
-#### Header (When Not Logged In)
-- Conduit logo (link to home)
+#### 2.1.1 사용자 가입
+- 이메일 주소, 사용자명, 비밀번호로 신규 가입
+- 가입 완료 후 JWT 토큰 발급
+- 토큰은 localStorage에 저장
+
+#### 2.1.2 로그인
+- 이메일 주소와 비밀번호로 인증
+- 인증 성공 시 JWT 토큰 발급
+- 토큰은 localStorage에 저장
+
+#### 2.1.3 로그아웃
+- 설정 페이지에서 로그아웃 가능
+- localStorage에서 토큰 삭제
+
+#### 2.1.4 사용자 정보 관리
+- **생성**: 가입 시 자동 생성
+- **조회**: 현재 사용자 정보 조회
+- **수정**: 프로필 이미지, 사용자명, 자기소개, 이메일 주소, 비밀번호 변경
+- **삭제**: 요구사항 없음 (범위 외)
+
+### 2.2 게시글 관리
+
+#### 2.2.1 게시글 작성
+- 제목, 설명, 본문(Markdown), 태그 목록 입력
+- 작성 시 slug 자동 생성
+- 작성자 정보 자동 할당
+
+#### 2.2.2 게시글 조회
+- Global Feed: 모든 게시글을 시간순으로 표시
+- User Feed: 팔로우한 사용자의 게시글만 표시
+- Tag Filter: 특정 태그가 있는 게시글만 표시
+- 페이지네이션 지원 (기본: 페이지당 10개)
+
+#### 2.2.3 게시글 수정
+- 제목, 설명, 본문 수정
+- 작성자만 수정 가능
+
+#### 2.2.4 게시글 삭제
+- 작성자만 삭제 가능
+- 관련 댓글 및 좋아요도 함께 삭제
+
+### 2.3 댓글 기능
+
+#### 2.3.1 댓글 작성
+- 게시글에 댓글 작성
+- 로그인한 사용자만 작성 가능
+
+#### 2.3.2 댓글 조회
+- 게시글별 댓글 목록 표시
+- 시간순으로 표시
+
+#### 2.3.3 댓글 삭제
+- 댓글 작성자만 삭제 가능
+- **수정 기능 불필요** (범위 외)
+
+### 2.4 소셜 기능
+
+#### 2.4.1 팔로우/언팔로우
+- 다른 사용자 팔로우 가능
+- 팔로우한 사용자의 게시글을 피드에 표시
+- 언팔로우 가능
+
+#### 2.4.2 좋아요 (Favorite)
+- 게시글에 좋아요 추가
+- 좋아요 취소 가능
+- 게시글별 좋아요 수 표시
+
+### 2.5 태그 기능
+- 게시글 작성 시 태그 지정
+- 인기 태그 목록 표시
+- 태그별 게시글 필터링
+
+---
+
+## 3. 화면 구조
+
+### 3.1 공통 레이아웃
+
+#### 헤더 (비로그인 시)
+- Conduit 로고 (홈 링크)
 - Home
 - Sign in
 - Sign up
 
-#### Header (When Logged In)
-- Conduit logo (link to home)
+#### 헤더 (로그인 시)
+- Conduit 로고 (홈 링크)
 - Home
 - New Article
 - Settings
-- Profile (username + icon)
+- Profile (사용자명 + 아이콘)
 
-#### Footer
-- Conduit brand
-- Copyright notice
+#### 푸터
+- Conduit 브랜드
+- 저작권 표시
 
-### 3.2 Page List
+### 3.2 페이지 목록
 
-| Route | Page Name | Description |
-|-------|-----------|-------------|
-| `/#/` | Home | Article feed, popular tags |
-| `/#/login` | Login | Login form |
-| `/#/register` | Register | Registration form |
-| `/#/settings` | Settings | User settings, logout |
-| `/#/editor` | New Article | Article creation form |
-| `/#/editor/:slug` | Edit Article | Article edit form |
-| `/#/article/:slug` | Article Detail | Article body, comments |
-| `/#/profile/:username` | Profile | User info, posted articles |
-| `/#/profile/:username/favorites` | Favorites | User's favorite articles |
+| 라우트 | 페이지명 | 설명 |
+|-------|----------|------|
+| `/#/` | Home | 게시글 피드, 인기 태그 |
+| `/#/login` | Login | 로그인 폼 |
+| `/#/register` | Register | 가입 폼 |
+| `/#/settings` | Settings | 사용자 설정, 로그아웃 |
+| `/#/editor` | New Article | 게시글 작성 폼 |
+| `/#/editor/:slug` | Edit Article | 게시글 수정 폼 |
+| `/#/article/:slug` | Article Detail | 게시글 본문, 댓글 |
+| `/#/profile/:username` | Profile | 사용자 정보, 작성 게시글 |
+| `/#/profile/:username/favorites` | Favorites | 사용자가 좋아요한 게시글 |
 
-### 3.3 Page Details
+### 3.3 페이지 상세
 
-#### 3.3.1 Home Page (`/#/`)
-- Banner (Conduit logo and description)
-- Feed Tabs
-  - Your Feed (logged in only, articles from followed users)
-  - Global Feed (all articles)
-  - #TagName (when tag selected)
-- Article Preview List
-  - Author icon, name, post date
-  - Favorite button and count
-  - Title, description
-  - Tag list
-- Pagination
-- Sidebar: Popular tags list
+#### 3.3.1 홈 페이지 (`/#/`)
+- 배너 (Conduit 로고 및 설명)
+- 피드 탭
+  - Your Feed (로그인 시만, 팔로우한 사용자의 게시글)
+  - Global Feed (모든 게시글)
+  - #TagName (태그 선택 시)
+- 게시글 미리보기 목록
+  - 작성자 아이콘, 이름, 작성일
+  - 좋아요 버튼 및 수
+  - 제목, 설명
+  - 태그 목록
+- 페이지네이션
+- 사이드바: 인기 태그 목록
 
-#### 3.3.2 Authentication Pages (`/#/login`, `/#/register`)
-- Page title
-- Link to other page (Sign in ↔ Sign up)
-- Error message list
-- Form
-  - Registration: username, email, password
-  - Login: email, password
-- Submit button
+#### 3.3.2 인증 페이지 (`/#/login`, `/#/register`)
+- 페이지 제목
+- 다른 페이지 링크 (Sign in ↔ Sign up)
+- 에러 메시지 목록
+- 폼
+  - 가입: 사용자명, 이메일, 비밀번호
+  - 로그인: 이메일, 비밀번호
+- 제출 버튼
 
-#### 3.3.3 Settings Page (`/#/settings`)
-- Profile image URL
-- Username
-- Bio (textarea)
-- Email address
-- New password
-- Update Settings button
-- Logout button
+#### 3.3.3 설정 페이지 (`/#/settings`)
+- 프로필 이미지 URL
+- 사용자명
+- 자기소개 (textarea)
+- 이메일 주소
+- 새 비밀번호
+- Update Settings 버튼
+- 로그아웃 버튼
 
-#### 3.3.4 Editor Page (`/#/editor`, `/#/editor/:slug`)
-- Article title
-- Article description (What's this article about?)
-- Body (Markdown)
-- Tag input (add with Enter)
-- Publish Article button
+#### 3.3.4 에디터 페이지 (`/#/editor`, `/#/editor/:slug`)
+- 게시글 제목
+- 게시글 설명 (What's this article about?)
+- 본문 (Markdown)
+- 태그 입력 (Enter로 추가)
+- Publish Article 버튼
 
-#### 3.3.5 Article Detail Page (`/#/article/:slug`)
-- Article Banner
-  - Title
-  - Author info and follow/favorite buttons
-  - Edit/delete buttons (author only)
-- Article body (Markdown rendering)
-- Tag list
-- Author info section (bottom)
-- Comment Section
-  - Comment input form
-  - Comment list (with delete button)
+#### 3.3.5 게시글 상세 페이지 (`/#/article/:slug`)
+- 게시글 배너
+  - 제목
+  - 작성자 정보 및 팔로우/좋아요 버튼
+  - 수정/삭제 버튼 (작성자만)
+- 게시글 본문 (Markdown 렌더링)
+- 태그 목록
+- 작성자 정보 섹션 (하단)
+- 댓글 섹션
+  - 댓글 입력 폼
+  - 댓글 목록 (삭제 버튼 포함)
 
-#### 3.3.6 Profile Page (`/#/profile/:username`)
-- User Info
-  - Profile image
-  - Username
-  - Bio
-  - Follow button / Edit settings button
-- Article Tabs
-  - My Articles (posted articles)
-  - Favorited Articles (favorite articles)
-- Article list
-
----
-
-## 4. API Endpoint Overview
-
-### 4.1 Authentication
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/api/users/login` | Login | Not required |
-| POST | `/api/users` | User registration | Not required |
-| GET | `/api/user` | Get current user | Required |
-| PUT | `/api/user` | Update user info | Required |
-
-### 4.2 Profile
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/api/profiles/:username` | Get profile | Optional |
-| POST | `/api/profiles/:username/follow` | Follow | Required |
-| DELETE | `/api/profiles/:username/follow` | Unfollow | Required |
-
-### 4.3 Articles
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/api/articles` | Get article list | Optional |
-| GET | `/api/articles/feed` | Get feed | Required |
-| GET | `/api/articles/:slug` | Get article detail | Optional |
-| POST | `/api/articles` | Create article | Required |
-| PUT | `/api/articles/:slug` | Update article | Required |
-| DELETE | `/api/articles/:slug` | Delete article | Required |
-
-### 4.4 Comments
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/api/articles/:slug/comments` | Get comment list | Optional |
-| POST | `/api/articles/:slug/comments` | Create comment | Required |
-| DELETE | `/api/articles/:slug/comments/:id` | Delete comment | Required |
-
-### 4.5 Favorites
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| POST | `/api/articles/:slug/favorite` | Add favorite | Required |
-| DELETE | `/api/articles/:slug/favorite` | Remove favorite | Required |
-
-### 4.6 Tags
-| Method | Endpoint | Description | Auth |
-|--------|----------|-------------|------|
-| GET | `/api/tags` | Get tag list | Not required |
+#### 3.3.6 프로필 페이지 (`/#/profile/:username`)
+- 사용자 정보
+  - 프로필 이미지
+  - 사용자명
+  - 자기소개
+  - 팔로우 버튼 / 설정 편집 버튼
+- 게시글 탭
+  - My Articles (작성한 게시글)
+  - Favorited Articles (좋아요한 게시글)
+- 게시글 목록
 
 ---
 
-## 5. Non-Functional Requirements
+## 4. API 엔드포인트 개요
 
-### 5.1 Performance
-- Page load time: Within 3 seconds
-- API response time: Within 500ms
+### 4.1 인증
+| 메서드 | 엔드포인트 | 설명 | 인증 |
+|--------|----------|------|------|
+| POST | `/api/users/login` | 로그인 | 불필요 |
+| POST | `/api/users` | 사용자 가입 | 불필요 |
+| GET | `/api/user` | 현재 사용자 조회 | 필수 |
+| PUT | `/api/user` | 사용자 정보 수정 | 필수 |
 
-### 5.2 Security
-- Authentication with JWT tokens
-- Password hashing (bcrypt)
-- CORS configuration
-- XSS protection
-- SQL injection protection (Prisma ORM)
+### 4.2 프로필
+| 메서드 | 엔드포인트 | 설명 | 인증 |
+|--------|----------|------|------|
+| GET | `/api/profiles/:username` | 프로필 조회 | 선택 |
+| POST | `/api/profiles/:username/follow` | 팔로우 | 필수 |
+| DELETE | `/api/profiles/:username/follow` | 언팔로우 | 필수 |
 
-### 5.3 Usability
-- Responsive design support
-- Clear error message display
-- Loading state display
+### 4.3 게시글
+| 메서드 | 엔드포인트 | 설명 | 인증 |
+|--------|----------|------|------|
+| GET | `/api/articles` | 게시글 목록 조회 | 선택 |
+| GET | `/api/articles/feed` | 피드 조회 | 필수 |
+| GET | `/api/articles/:slug` | 게시글 상세 조회 | 선택 |
+| POST | `/api/articles` | 게시글 작성 | 필수 |
+| PUT | `/api/articles/:slug` | 게시글 수정 | 필수 |
+| DELETE | `/api/articles/:slug` | 게시글 삭제 | 필수 |
 
-### 5.4 Compatibility
-- Modern browser support (Chrome, Firefox, Safari, Edge)
-- Full compatibility with RealWorld API specification
+### 4.4 댓글
+| 메서드 | 엔드포인트 | 설명 | 인증 |
+|--------|----------|------|------|
+| GET | `/api/articles/:slug/comments` | 댓글 목록 조회 | 선택 |
+| POST | `/api/articles/:slug/comments` | 댓글 작성 | 필수 |
+| DELETE | `/api/articles/:slug/comments/:id` | 댓글 삭제 | 필수 |
+
+### 4.5 좋아요
+| 메서드 | 엔드포인트 | 설명 | 인증 |
+|--------|----------|------|------|
+| POST | `/api/articles/:slug/favorite` | 좋아요 추가 | 필수 |
+| DELETE | `/api/articles/:slug/favorite` | 좋아요 취소 | 필수 |
+
+### 4.6 태그
+| 메서드 | 엔드포인트 | 설명 | 인증 |
+|--------|----------|------|------|
+| GET | `/api/tags` | 태그 목록 조회 | 불필요 |
 
 ---
 
-## 6. Glossary
+## 5. 비기능 요구사항
 
-| Term | Description |
-|------|-------------|
-| Conduit | Application name for the RealWorld project |
-| Slug | Article identifier used in URLs (e.g., how-to-train-your-dragon) |
-| Feed | List of articles from authors the user follows |
-| Global Feed | List of articles from all users |
-| Favorite | Article like/favorite feature |
+### 5.1 성능
+- 페이지 로드 시간: 3초 이내
+- API 응답 시간: 500ms 이내
+
+### 5.2 보안
+- JWT 토큰을 사용한 인증
+- 비밀번호 해싱 (bcrypt)
+- CORS 설정
+- XSS 보호
+- SQL 인젝션 보호 (Prisma ORM)
+
+### 5.3 사용성
+- 반응형 디자인 지원
+- 명확한 에러 메시지 표시
+- 로딩 상태 표시
+
+### 5.4 호환성
+- 최신 브라우저 지원 (Chrome, Firefox, Safari, Edge)
+- RealWorld API 사양과의 완전한 호환성
+
+---
+
+## 6. 용어집
+
+| 용어 | 설명 |
+|------|------|
+| Conduit | RealWorld 프로젝트의 애플리케이션 이름 |
+| Slug | URL에서 사용되는 게시글 식별자 (예: how-to-train-your-dragon) |
+| Feed | 사용자가 팔로우한 작성자의 게시글 목록 |
+| Global Feed | 모든 사용자의 게시글 목록 |
+| Favorite | 게시글 좋아요/즐겨찾기 기능 |

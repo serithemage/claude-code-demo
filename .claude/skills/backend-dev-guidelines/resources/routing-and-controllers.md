@@ -1,36 +1,86 @@
-# Routing and Controllers - Best Practices
+# Routing과 Controllers - 모범 사례
 
-Complete guide to clean route definitions and controller patterns.
-
-## Table of Contents
-
-- [Routes: Routing Only](#routes-routing-only)
-- [BaseController Pattern](#basecontroller-pattern)
-- [Good Examples](#good-examples)
-- [Anti-Patterns](#anti-patterns)
-- [Refactoring Guide](#refactoring-guide)
-- [Error Handling](#error-handling)
-- [HTTP Status Codes](#http-status-codes)
+깔끔한 라우트 정의와 controller 패턴에 대한 완전한 가이드입니다.
 
 ---
 
-## Routes: Routing Only
+## RealWorld API 엔드포인트
 
-### The Golden Rule
+### 인증 API
 
-**Routes should ONLY:**
-- ✅ Define route paths
-- ✅ Register middleware
-- ✅ Delegate to controllers
+| 메서드 | 엔드포인트 | 인증 | 설명 |
+|--------|-----------|------|------|
+| POST | `/api/users` | 불필요 | 사용자 가입 |
+| POST | `/api/users/login` | 불필요 | 로그인 |
+| GET | `/api/user` | 필수 | 현재 사용자 조회 |
+| PUT | `/api/user` | 필수 | 사용자 정보 수정 |
 
-**Routes should NEVER:**
-- ❌ Contain business logic
-- ❌ Access database directly
-- ❌ Implement validation logic (use Zod + controller)
-- ❌ Format complex responses
-- ❌ Handle complex error scenarios
+### 프로필 API
 
-### Clean Route Pattern
+| 메서드 | 엔드포인트 | 인증 | 설명 |
+|--------|-----------|------|------|
+| GET | `/api/profiles/:username` | 선택 | 프로필 조회 |
+| POST | `/api/profiles/:username/follow` | 필수 | 팔로우 |
+| DELETE | `/api/profiles/:username/follow` | 필수 | 언팔로우 |
+
+### 게시글 API
+
+| 메서드 | 엔드포인트 | 인증 | 설명 |
+|--------|-----------|------|------|
+| GET | `/api/articles` | 선택 | 게시글 목록 (필터링 지원) |
+| GET | `/api/articles/feed` | 필수 | 피드 (팔로우한 사용자) |
+| GET | `/api/articles/:slug` | 선택 | 게시글 상세 |
+| POST | `/api/articles` | 필수 | 게시글 작성 |
+| PUT | `/api/articles/:slug` | 필수 | 게시글 수정 (작성자만) |
+| DELETE | `/api/articles/:slug` | 필수 | 게시글 삭제 (작성자만) |
+
+### 댓글 API
+
+| 메서드 | 엔드포인트 | 인증 | 설명 |
+|--------|-----------|------|------|
+| GET | `/api/articles/:slug/comments` | 선택 | 댓글 목록 |
+| POST | `/api/articles/:slug/comments` | 필수 | 댓글 작성 |
+| DELETE | `/api/articles/:slug/comments/:id` | 필수 | 댓글 삭제 (작성자만) |
+
+### 좋아요 & 태그 API
+
+| 메서드 | 엔드포인트 | 인증 | 설명 |
+|--------|-----------|------|------|
+| POST | `/api/articles/:slug/favorite` | 필수 | 좋아요 추가 |
+| DELETE | `/api/articles/:slug/favorite` | 필수 | 좋아요 취소 |
+| GET | `/api/tags` | 불필요 | 태그 목록 |
+
+---
+
+## 목차
+
+- [Routes: 라우팅만](#routes-라우팅만)
+- [BaseController 패턴](#basecontroller-패턴)
+- [좋은 예시](#좋은-예시)
+- [안티패턴](#안티패턴)
+- [리팩토링 가이드](#리팩토링-가이드)
+- [에러 처리](#에러-처리)
+- [HTTP 상태 코드](#http-상태-코드)
+
+---
+
+## Routes: 라우팅만
+
+### 황금 규칙
+
+**Routes는 다음만 해야 합니다:**
+- ✅ 라우트 경로 정의
+- ✅ Middleware 등록
+- ✅ Controllers로 위임
+
+**Routes는 절대 해서는 안 됩니다:**
+- ❌ 비즈니스 로직 포함
+- ❌ 데이터베이스 직접 액세스
+- ❌ 유효성 검사 로직 구현 (Zod + controller 사용)
+- ❌ 복잡한 응답 포맷팅
+- ❌ 복잡한 에러 시나리오 처리
+
+### 깔끔한 Route 패턴
 
 ```typescript
 // routes/userRoutes.ts
@@ -42,7 +92,7 @@ import { auditMiddleware } from '../middleware/auditMiddleware';
 const router = Router();
 const controller = new UserController();
 
-// ✅ CLEAN: Route definition only
+// ✅ 깔끔함: 라우트 정의만
 router.get('/:id',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
@@ -64,29 +114,29 @@ router.put('/:id',
 export default router;
 ```
 
-**Key Points:**
-- Each route: method, path, middleware chain, controller delegation
-- No try-catch needed (controller handles errors)
-- Clean, readable, maintainable
-- Easy to see all endpoints at a glance
+**핵심 포인트:**
+- 각 route: method, path, middleware chain, controller 위임
+- try-catch 불필요 (controller가 에러 처리)
+- 깔끔하고, 읽기 쉽고, 유지보수 용이
+- 한눈에 모든 엔드포인트 파악 가능
 
 ---
 
-## BaseController Pattern
+## BaseController 패턴
 
-### Why BaseController?
+### BaseController를 사용하는 이유
 
-**Benefits:**
-- Consistent error handling across all controllers
-- Automatic Sentry integration
-- Standardized response formats
-- Reusable helper methods
-- Performance tracking utilities
-- Logging and breadcrumb helpers
+**장점:**
+- 모든 controllers에서 일관된 에러 처리
+- 자동 Sentry 통합
+- 표준화된 응답 포맷
+- 재사용 가능한 헬퍼 메서드
+- 성능 추적 유틸리티
+- 로깅과 breadcrumb 헬퍼
 
-### BaseController Pattern (Template)
+### BaseController 패턴 (템플릿)
 
-**File:** `/email/src/controllers/BaseController.ts`
+**파일:** `/email/src/controllers/BaseController.ts`
 
 ```typescript
 import * as Sentry from '@sentry/node';
@@ -94,7 +144,7 @@ import { Response } from 'express';
 
 export abstract class BaseController {
     /**
-     * Handle errors with Sentry integration
+     * Sentry 통합으로 에러 처리
      */
     protected handleError(
         error: unknown,
@@ -127,7 +177,7 @@ export abstract class BaseController {
     }
 
     /**
-     * Handle success responses
+     * 성공 응답 처리
      */
     protected handleSuccess<T>(
         res: Response,
@@ -143,7 +193,7 @@ export abstract class BaseController {
     }
 
     /**
-     * Performance tracking wrapper
+     * 성능 추적 wrapper
      */
     protected async withTransaction<T>(
         name: string,
@@ -157,7 +207,7 @@ export abstract class BaseController {
     }
 
     /**
-     * Validate required fields
+     * 필수 필드 유효성 검사
      */
     protected validateRequest(
         required: string[],
@@ -186,7 +236,7 @@ export abstract class BaseController {
     }
 
     /**
-     * Logging helpers
+     * 로깅 헬퍼
      */
     protected logInfo(message: string, context?: Record<string, any>): void {
         Sentry.addBreadcrumb({
@@ -206,7 +256,7 @@ export abstract class BaseController {
     }
 
     /**
-     * Add Sentry breadcrumb
+     * Sentry breadcrumb 추가
      */
     protected addBreadcrumb(
         message: string,
@@ -217,7 +267,7 @@ export abstract class BaseController {
     }
 
     /**
-     * Capture custom metric
+     * 커스텀 메트릭 캡처
      */
     protected captureMetric(name: string, value: number, unit: string): void {
         Sentry.metrics.gauge(name, value, { unit });
@@ -225,7 +275,7 @@ export abstract class BaseController {
 }
 ```
 
-### Using BaseController
+### BaseController 사용하기
 
 ```typescript
 // controllers/UserController.ts
@@ -265,10 +315,10 @@ export class UserController extends BaseController {
 
     async createUser(req: Request, res: Response): Promise<void> {
         try {
-            // Validate input
+            // 입력 유효성 검사
             const validated = createUserSchema.parse(req.body);
 
-            // Track performance
+            // 성능 추적
             const user = await this.withTransaction(
                 'user.create',
                 'db.query',
@@ -293,20 +343,20 @@ export class UserController extends BaseController {
 }
 ```
 
-**Benefits:**
-- Consistent error handling
-- Automatic Sentry integration
-- Performance tracking
-- Clean, readable code
-- Easy to test
+**장점:**
+- 일관된 에러 처리
+- 자동 Sentry 통합
+- 성능 추적
+- 깔끔하고 읽기 쉬운 코드
+- 테스트하기 쉬움
 
 ---
 
-## Good Examples
+## 좋은 예시
 
-### Example 1: Email Notification Routes (Excellent ✅)
+### 예시 1: Email Notification Routes (훌륭함 ✅)
 
-**File:** `/email/src/routes/notificationRoutes.ts`
+**파일:** `/email/src/routes/notificationRoutes.ts`
 
 ```typescript
 import { Router } from 'express';
@@ -316,7 +366,7 @@ import { SSOMiddlewareClient } from '../middleware/SSOMiddleware';
 const router = Router();
 const controller = new NotificationController();
 
-// ✅ EXCELLENT: Clean delegation
+// ✅ 훌륭함: 깔끔한 위임
 router.get('/',
     SSOMiddlewareClient.verifyLoginStatus,
     async (req, res) => controller.getNotifications(req, res)
@@ -335,15 +385,15 @@ router.put('/:id/read',
 export default router;
 ```
 
-**What Makes This Excellent:**
-- Zero business logic in routes
-- Clear middleware chain
-- Consistent pattern
-- Easy to understand
+**훌륭한 이유:**
+- Routes에 비즈니스 로직 없음
+- 명확한 middleware 체인
+- 일관된 패턴
+- 이해하기 쉬움
 
-### Example 2: Proxy Routes with Validation (Good ✅)
+### 예시 2: 유효성 검사가 있는 Proxy Routes (좋음 ✅)
 
-**File:** `/form/src/routes/proxyRoutes.ts`
+**파일:** `/form/src/routes/proxyRoutes.ts`
 
 ```typescript
 import { z } from 'zod';
@@ -369,40 +419,40 @@ router.post('/',
 );
 ```
 
-**What Makes This Good:**
-- Zod validation
-- Delegates to service
-- Proper HTTP status codes
-- Error handling
+**좋은 이유:**
+- Zod 유효성 검사
+- Service로 위임
+- 적절한 HTTP 상태 코드
+- 에러 처리
 
-**Could Be Better:**
-- Move validation to controller
-- Use BaseController
+**개선할 수 있는 점:**
+- 유효성 검사를 controller로 이동
+- BaseController 사용
 
 ---
 
-## Anti-Patterns
+## 안티패턴
 
-### Anti-Pattern 1: Business Logic in Routes (Bad ❌)
+### 안티패턴 1: Routes에 비즈니스 로직 (나쁨 ❌)
 
-**File:** `/form/src/routes/responseRoutes.ts` (actual production code)
+**파일:** `/form/src/routes/responseRoutes.ts` (실제 프로덕션 코드)
 
 ```typescript
-// ❌ ANTI-PATTERN: 200+ lines of business logic in route
+// ❌ 안티패턴: route에 200줄 이상의 비즈니스 로직
 router.post('/:formID/submit', async (req: Request, res: Response) => {
     try {
         const username = res.locals.claims.preferred_username;
         const responses = req.body.responses;
         const stepInstanceId = req.body.stepInstanceId;
 
-        // ❌ Permission checking in route
+        // ❌ Route에서 권한 확인
         const userId = await userProfileService.getProfileByEmail(username).then(p => p.id);
         const canComplete = await permissionService.canCompleteStep(userId, stepInstanceId);
         if (!canComplete) {
             return res.status(403).json({ error: 'No permission' });
         }
 
-        // ❌ Workflow logic in route
+        // ❌ Route에서 Workflow 로직
         const { createWorkflowEngine, CompleteStepCommand } = require('../workflow/core/WorkflowEngineV3');
         const engine = await createWorkflowEngine();
         const command = new CompleteStepCommand(
@@ -413,7 +463,7 @@ router.post('/:formID/submit', async (req: Request, res: Response) => {
         );
         const events = await engine.executeCommand(command);
 
-        // ❌ Impersonation handling in route
+        // ❌ Route에서 Impersonation 처리
         if (res.locals.isImpersonating) {
             impersonationContextStore.storeContext(stepInstanceId, {
                 originalUserId: res.locals.originalUserId,
@@ -421,16 +471,16 @@ router.post('/:formID/submit', async (req: Request, res: Response) => {
             });
         }
 
-        // ❌ Response processing in route
+        // ❌ Route에서 응답 처리
         const post = await PrismaService.main.post.findUnique({
             where: { id: postData.id },
             include: { comments: true },
         });
 
-        // ❌ Permission check in route
+        // ❌ Route에서 권한 확인
         await checkPostPermissions(post, userId);
 
-        // ... 100+ more lines of business logic
+        // ... 100줄 이상의 비즈니스 로직
 
         res.json({ success: true, data: result });
     } catch (e) {
@@ -439,17 +489,17 @@ router.post('/:formID/submit', async (req: Request, res: Response) => {
 });
 ```
 
-**Why This Is Terrible:**
-- 200+ lines of business logic
-- Hard to test (requires HTTP mocking)
-- Hard to reuse (tied to route)
-- Mixed responsibilities
-- Difficult to debug
-- Performance tracking difficult
+**왜 끔찍한가:**
+- 200줄 이상의 비즈니스 로직
+- 테스트하기 어려움 (HTTP 모킹 필요)
+- 재사용하기 어려움 (route에 종속)
+- 혼합된 책임
+- 디버깅하기 어려움
+- 성능 추적하기 어려움
 
-### How to Refactor (Step-by-Step)
+### 리팩토링 방법 (단계별)
 
-**Step 1: Create Controller**
+**단계 1: Controller 생성**
 
 ```typescript
 // controllers/PostController.ts
@@ -480,7 +530,7 @@ export class PostController extends BaseController {
 }
 ```
 
-**Step 2: Create Service**
+**단계 2: Service 생성**
 
 ```typescript
 // services/postService.ts
@@ -489,23 +539,23 @@ export class PostService {
         data: CreatePostDTO,
         userId: string
     ): Promise<PostResult> {
-        // Permission check
+        // 권한 확인
         const canCreate = await permissionService.canCreatePost(userId);
         if (!canCreate) {
             throw new ForbiddenError('No permission to create post');
         }
 
-        // Execute workflow
+        // Workflow 실행
         const engine = await createWorkflowEngine();
         const command = new CompleteStepCommand(/* ... */);
         const events = await engine.executeCommand(command);
 
-        // Handle impersonation if needed
+        // 필요한 경우 impersonation 처리
         if (context.isImpersonating) {
             await this.handleImpersonation(data.stepInstanceId, context);
         }
 
-        // Synchronize roles
+        // 역할 동기화
         await this.synchronizeRoles(events, userId);
 
         return { events, success: true };
@@ -519,12 +569,12 @@ export class PostService {
     }
 
     private async synchronizeRoles(events: WorkflowEvent[], userId: string) {
-        // Role synchronization logic
+        // 역할 동기화 로직
     }
 }
 ```
 
-**Step 3: Update Route**
+**단계 3: Route 업데이트**
 
 ```typescript
 // routes/postRoutes.ts
@@ -533,7 +583,7 @@ import { PostController } from '../controllers/PostController';
 const router = Router();
 const controller = new PostController();
 
-// ✅ CLEAN: Just routing
+// ✅ 깔끔함: 라우팅만
 router.post('/',
     SSOMiddlewareClient.verifyLoginStatus,
     auditMiddleware,
@@ -541,17 +591,17 @@ router.post('/',
 );
 ```
 
-**Result:**
-- Route: 8 lines (was 200+)
-- Controller: 25 lines (request handling)
-- Service: 50 lines (business logic)
-- Testable, reusable, maintainable!
+**결과:**
+- Route: 8줄 (200줄 이상이었음)
+- Controller: 25줄 (요청 처리)
+- Service: 50줄 (비즈니스 로직)
+- 테스트 가능, 재사용 가능, 유지보수 가능!
 
 ---
 
-## Error Handling
+## 에러 처리
 
-### Controller Error Handling
+### Controller 에러 처리
 
 ```typescript
 async createUser(req: Request, res: Response): Promise<void> {
@@ -559,16 +609,16 @@ async createUser(req: Request, res: Response): Promise<void> {
         const result = await this.userService.create(req.body);
         this.handleSuccess(res, result, 'User created', 201);
     } catch (error) {
-        // BaseController.handleError automatically:
-        // - Captures to Sentry with context
-        // - Sets appropriate status code
-        // - Returns formatted error response
+        // BaseController.handleError가 자동으로:
+        // - 컨텍스트와 함께 Sentry에 캡처
+        // - 적절한 상태 코드 설정
+        // - 포맷된 에러 응답 반환
         this.handleError(error, res, 'createUser');
     }
 }
 ```
 
-### Custom Error Status Codes
+### 커스텀 에러 상태 코드
 
 ```typescript
 async getUser(req: Request, res: Response): Promise<void> {
@@ -576,12 +626,12 @@ async getUser(req: Request, res: Response): Promise<void> {
         const user = await this.userService.findById(req.params.id);
 
         if (!user) {
-            // Custom 404 status
+            // 커스텀 404 상태
             return this.handleError(
                 new Error('User not found'),
                 res,
                 'getUser',
-                404  // Custom status code
+                404  // 커스텀 상태 코드
             );
         }
 
@@ -592,7 +642,7 @@ async getUser(req: Request, res: Response): Promise<void> {
 }
 ```
 
-### Validation Errors
+### 유효성 검사 에러
 
 ```typescript
 async createUser(req: Request, res: Response): Promise<void> {
@@ -601,7 +651,7 @@ async createUser(req: Request, res: Response): Promise<void> {
         const user = await this.userService.create(validated);
         this.handleSuccess(res, user, 'User created', 201);
     } catch (error) {
-        // Zod errors get 400 status
+        // Zod 에러는 400 상태
         if (error instanceof z.ZodError) {
             return this.handleError(error, res, 'createUser', 400);
         }
@@ -612,81 +662,81 @@ async createUser(req: Request, res: Response): Promise<void> {
 
 ---
 
-## HTTP Status Codes
+## HTTP 상태 코드
 
-### Standard Codes
+### 표준 코드
 
-| Code | Use Case | Example |
+| 코드 | 사용 케이스 | 예시 |
 |------|----------|---------|
-| 200 | Success (GET, PUT) | User retrieved, Updated |
-| 201 | Created (POST) | User created |
-| 204 | No Content (DELETE) | User deleted |
-| 400 | Bad Request | Invalid input data |
-| 401 | Unauthorized | Not authenticated |
-| 403 | Forbidden | No permission |
-| 404 | Not Found | Resource doesn't exist |
-| 409 | Conflict | Duplicate resource |
-| 422 | Unprocessable Entity | Validation failed |
-| 500 | Internal Server Error | Unexpected error |
+| 200 | 성공 (GET, PUT) | 사용자 조회, 업데이트 |
+| 201 | 생성됨 (POST) | 사용자 생성 |
+| 204 | 내용 없음 (DELETE) | 사용자 삭제 |
+| 400 | 잘못된 요청 | 유효하지 않은 입력 데이터 |
+| 401 | 인증 안 됨 | 인증되지 않음 |
+| 403 | 금지됨 | 권한 없음 |
+| 404 | 찾을 수 없음 | 리소스가 존재하지 않음 |
+| 409 | 충돌 | 중복 리소스 |
+| 422 | 처리할 수 없는 엔티티 | 유효성 검사 실패 |
+| 500 | 내부 서버 에러 | 예상치 못한 에러 |
 
-### Usage Examples
+### 사용 예시
 
 ```typescript
-// 200 - Success (default)
+// 200 - 성공 (기본값)
 this.handleSuccess(res, user);
 
-// 201 - Created
+// 201 - 생성됨
 this.handleSuccess(res, user, 'Created', 201);
 
-// 400 - Bad Request
+// 400 - 잘못된 요청
 this.handleError(error, res, 'operation', 400);
 
-// 404 - Not Found
+// 404 - 찾을 수 없음
 this.handleError(new Error('Not found'), res, 'operation', 404);
 
-// 403 - Forbidden
+// 403 - 금지됨
 this.handleError(new ForbiddenError('No permission'), res, 'operation', 403);
 ```
 
 ---
 
-## Refactoring Guide
+## 리팩토링 가이드
 
-### Identify Routes Needing Refactoring
+### 리팩토링이 필요한 Routes 식별
 
-**Red Flags:**
-- Route file > 100 lines
-- Multiple try-catch blocks in one route
-- Direct database access (Prisma calls)
-- Complex business logic (if statements, loops)
-- Permission checks in routes
+**위험 신호:**
+- Route 파일 > 100줄
+- 하나의 route에 여러 try-catch 블록
+- 직접 데이터베이스 액세스 (Prisma 호출)
+- 복잡한 비즈니스 로직 (if 문, 루프)
+- Routes에서 권한 확인
 
-**Check your routes:**
+**routes 확인:**
 ```bash
-# Find large route files
+# 큰 route 파일 찾기
 wc -l form/src/routes/*.ts | sort -n
 
-# Find routes with Prisma usage
+# Prisma 사용이 있는 routes 찾기
 grep -r "PrismaService" form/src/routes/
 ```
 
-### Refactoring Process
+### 리팩토링 프로세스
 
-**1. Extract to Controller:**
+**1. Controller로 추출:**
 ```typescript
-// Before: Route with logic
+// 이전: 로직이 있는 Route
 router.post('/action', async (req, res) => {
     try {
-        // 50 lines of logic
+        // 50줄의 로직
     } catch (e) {
         handler.handleException(res, e);
     }
 });
 
-// After: Clean route
+// 이후: 깔끔한 route
 router.post('/action', (req, res) => controller.performAction(req, res));
 
-// New controller method
+// 새 controller 메서드
 async performAction(req: Request, res: Response): Promise<void> {
     try {
         const result = await this.service.performAction(req.body);
@@ -697,9 +747,9 @@ async performAction(req: Request, res: Response): Promise<void> {
 }
 ```
 
-**2. Extract to Service:**
+**2. Service로 추출:**
 ```typescript
-// Controller stays thin
+// Controller는 얇게 유지
 async performAction(req: Request, res: Response): Promise<void> {
     try {
         const validated = actionSchema.parse(req.body);
@@ -710,33 +760,33 @@ async performAction(req: Request, res: Response): Promise<void> {
     }
 }
 
-// Service contains business logic
+// Service가 비즈니스 로직 포함
 export class ActionService {
     async execute(data: ActionDTO): Promise<Result> {
-        // All business logic here
-        // Permission checks
-        // Database operations
-        // Complex transformations
+        // 모든 비즈니스 로직은 여기
+        // 권한 확인
+        // 데이터베이스 작업
+        // 복잡한 변환
         return result;
     }
 }
 ```
 
-**3. Add Repository (if needed):**
+**3. Repository 추가 (필요한 경우):**
 ```typescript
-// Service calls repository
+// Service가 repository 호출
 export class ActionService {
     constructor(private actionRepository: ActionRepository) {}
 
     async execute(data: ActionDTO): Promise<Result> {
-        // Business logic
+        // 비즈니스 로직
         const entity = await this.actionRepository.findById(data.id);
-        // More logic
+        // 더 많은 로직
         return await this.actionRepository.update(data.id, changes);
     }
 }
 
-// Repository handles data access
+// Repository가 데이터 액세스 처리
 export class ActionRepository {
     async findById(id: number): Promise<Entity | null> {
         return PrismaService.main.entity.findUnique({ where: { id } });
@@ -750,7 +800,7 @@ export class ActionRepository {
 
 ---
 
-**Related Files:**
-- [SKILL.md](SKILL.md) - Main guide
-- [services-and-repositories.md](services-and-repositories.md) - Service layer details
-- [complete-examples.md](complete-examples.md) - Full refactoring examples
+**관련 파일:**
+- [SKILL.md](SKILL.md) - 메인 가이드
+- [services-and-repositories.md](services-and-repositories.md) - Service 계층 세부사항
+- [complete-examples.md](complete-examples.md) - 전체 리팩토링 예제

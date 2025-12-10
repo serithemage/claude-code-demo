@@ -1,40 +1,181 @@
-# Data Fetching Patterns
+# 데이터 페칭 패턴
 
-Modern data fetching using TanStack Query with Suspense boundaries, cache-first strategies, and centralized API services.
+Suspense boundaries, cache-first 전략, 중앙화된 API 서비스를 사용한 TanStack Query 기반의 최신 데이터 페칭 패턴입니다.
 
 ---
 
-## PRIMARY PATTERN: useSuspenseQuery
+## RealWorld API 타입 정의
 
-### Why useSuspenseQuery?
+### 핵심 타입
 
-For **all new components**, use `useSuspenseQuery` instead of regular `useQuery`:
+```typescript
+// types/user.ts
+export interface User {
+  email: string;
+  token: string;
+  username: string;
+  bio: string | null;
+  image: string | null;
+}
 
-**Benefits:**
-- No `isLoading` checks needed
-- Integrates with Suspense boundaries
-- Cleaner component code
-- Consistent loading UX
-- Better error handling with error boundaries
+export interface Profile {
+  username: string;
+  bio: string | null;
+  image: string | null;
+  following: boolean;
+}
 
-### Basic Pattern
+// types/article.ts
+export interface Article {
+  slug: string;
+  title: string;
+  description: string;
+  body: string;
+  tagList: string[];
+  createdAt: string;      // ISO 8601
+  updatedAt: string;      // ISO 8601
+  favorited: boolean;
+  favoritesCount: number;
+  author: Profile;
+}
+
+export interface Comment {
+  id: number;
+  createdAt: string;      // ISO 8601
+  updatedAt: string;      // ISO 8601
+  body: string;
+  author: Profile;
+}
+```
+
+### API 응답 타입
+
+```typescript
+// 사용자 응답
+interface UserResponse {
+  user: User;
+}
+
+// 게시글 응답
+interface ArticleResponse {
+  article: Article;
+}
+
+interface ArticlesResponse {
+  articles: Article[];
+  articlesCount: number;
+}
+
+// 댓글 응답
+interface CommentsResponse {
+  comments: Comment[];
+}
+
+// 태그 응답
+interface TagsResponse {
+  tags: string[];
+}
+
+// 에러 응답
+interface ErrorResponse {
+  errors: {
+    [field: string]: string[];
+  };
+}
+```
+
+### API 서비스 예시
+
+```typescript
+// features/articles/api/articleApi.ts
+import apiClient from '@/lib/api/client';
+import type { Article, ArticlesResponse } from '../types';
+
+export const articleApi = {
+  // 게시글 목록 조회
+  getArticles: async (params?: {
+    tag?: string;
+    author?: string;
+    favorited?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<ArticlesResponse> => {
+    const { data } = await apiClient.get('/articles', { params });
+    return data;
+  },
+
+  // 피드 조회 (팔로우한 사용자)
+  getFeed: async (limit = 20, offset = 0): Promise<ArticlesResponse> => {
+    const { data } = await apiClient.get('/articles/feed', {
+      params: { limit, offset }
+    });
+    return data;
+  },
+
+  // 게시글 상세 조회
+  getArticle: async (slug: string): Promise<Article> => {
+    const { data } = await apiClient.get(`/articles/${slug}`);
+    return data.article;
+  },
+
+  // 게시글 작성
+  createArticle: async (article: {
+    title: string;
+    description: string;
+    body: string;
+    tagList?: string[];
+  }): Promise<Article> => {
+    const { data } = await apiClient.post('/articles', { article });
+    return data.article;
+  },
+
+  // 좋아요
+  favoriteArticle: async (slug: string): Promise<Article> => {
+    const { data } = await apiClient.post(`/articles/${slug}/favorite`);
+    return data.article;
+  },
+
+  // 좋아요 취소
+  unfavoriteArticle: async (slug: string): Promise<Article> => {
+    const { data } = await apiClient.delete(`/articles/${slug}/favorite`);
+    return data.article;
+  },
+};
+```
+
+---
+
+## 주요 패턴: useSuspenseQuery
+
+### useSuspenseQuery를 사용하는 이유
+
+**모든 새 컴포넌트**에서는 일반 `useQuery` 대신 `useSuspenseQuery`를 사용하세요:
+
+**장점:**
+- `isLoading` 체크가 필요 없음
+- Suspense boundaries와 통합
+- 더 깔끔한 컴포넌트 코드
+- 일관된 로딩 UX
+- Error boundaries를 통한 더 나은 에러 처리
+
+### 기본 패턴
 
 ```typescript
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { myFeatureApi } from '../api/myFeatureApi';
 
 export const MyComponent: React.FC<Props> = ({ id }) => {
-    // No isLoading - Suspense handles it!
+    // isLoading 불필요 - Suspense가 처리!
     const { data } = useSuspenseQuery({
         queryKey: ['myEntity', id],
         queryFn: () => myFeatureApi.getEntity(id),
     });
 
-    // data is ALWAYS defined here (not undefined | Data)
+    // data는 항상 정의됨 (undefined | Data가 아님)
     return <div>{data.name}</div>;
 };
 
-// Wrap in Suspense boundary
+// Suspense boundary로 감싸기
 <SuspenseLoader>
     <MyComponent id={123} />
 </SuspenseLoader>
@@ -42,28 +183,28 @@ export const MyComponent: React.FC<Props> = ({ id }) => {
 
 ### useSuspenseQuery vs useQuery
 
-| Feature | useSuspenseQuery | useQuery |
-|---------|------------------|----------|
-| Loading state | Handled by Suspense | Manual `isLoading` check |
-| Data type | Always defined | `Data \| undefined` |
-| Use with | Suspense boundaries | Traditional components |
-| Recommended for | **NEW components** | Legacy code only |
-| Error handling | Error boundaries | Manual error state |
+| 특징 | useSuspenseQuery | useQuery |
+|------|------------------|----------|
+| 로딩 상태 | Suspense가 처리 | 수동 `isLoading` 체크 |
+| 데이터 타입 | 항상 정의됨 | `Data \| undefined` |
+| 사용 대상 | Suspense boundaries | 전통적인 컴포넌트 |
+| 권장 대상 | **새 컴포넌트** | 레거시 코드만 |
+| 에러 처리 | Error boundaries | 수동 에러 상태 |
 
-**When to use regular useQuery:**
-- Maintaining legacy code
-- Very simple cases without Suspense
-- Polling with background updates
+**일반 useQuery를 사용해야 할 때:**
+- 레거시 코드 유지보수
+- Suspense 없는 매우 단순한 케이스
+- 백그라운드 업데이트가 있는 폴링
 
-**For new components: Always prefer useSuspenseQuery**
+**새 컴포넌트: 항상 useSuspenseQuery 선호**
 
 ---
 
-## Cache-First Strategy
+## Cache-First 전략
 
-### Cache-First Pattern Example
+### Cache-First 패턴 예시
 
-**Smart caching** reduces API calls by checking React Query cache first:
+**스마트 캐싱**으로 React Query 캐시를 먼저 확인하여 API 호출을 줄입니다:
 
 ```typescript
 import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
@@ -75,7 +216,7 @@ export function useSuspensePost(postId: number) {
     return useSuspenseQuery({
         queryKey: ['post', postId],
         queryFn: async () => {
-            // Strategy 1: Try to get from list cache first
+            // 전략 1: 리스트 캐시에서 먼저 가져오기 시도
             const cachedListData = queryClient.getQueryData<{ posts: Post[] }>([
                 'posts',
                 'list'
@@ -87,34 +228,34 @@ export function useSuspensePost(postId: number) {
                 );
 
                 if (cachedPost) {
-                    return cachedPost;  // Return from cache!
+                    return cachedPost;  // 캐시에서 반환!
                 }
             }
 
-            // Strategy 2: Not in cache, fetch from API
+            // 전략 2: 캐시에 없음, API에서 fetch
             return postApi.getPost(postId);
         },
-        staleTime: 5 * 60 * 1000,      // Consider fresh for 5 minutes
-        gcTime: 10 * 60 * 1000,         // Keep in cache for 10 minutes
-        refetchOnWindowFocus: false,    // Don't refetch on focus
+        staleTime: 5 * 60 * 1000,      // 5분 동안 fresh로 간주
+        gcTime: 10 * 60 * 1000,         // 10분 동안 캐시에 유지
+        refetchOnWindowFocus: false,    // 포커스 시 refetch 안 함
     });
 }
 ```
 
-**Key Points:**
-- Check grid/list cache before API call
-- Avoids redundant requests
-- `staleTime`: How long data is considered fresh
-- `gcTime`: How long unused data stays in cache
-- `refetchOnWindowFocus: false`: User preference
+**핵심 포인트:**
+- API 호출 전 그리드/리스트 캐시 확인
+- 중복 요청 방지
+- `staleTime`: 데이터가 fresh로 간주되는 기간
+- `gcTime`: 사용되지 않는 데이터가 캐시에 남아있는 기간
+- `refetchOnWindowFocus: false`: 사용자 선호
 
 ---
 
-## Parallel Data Fetching
+## 병렬 데이터 페칭
 
 ### useSuspenseQueries
 
-When fetching multiple independent resources:
+여러 독립적인 리소스를 fetch할 때:
 
 ```typescript
 import { useSuspenseQueries } from '@tanstack/react-query';
@@ -137,7 +278,7 @@ export const MyComponent: React.FC = () => {
         ],
     });
 
-    // All data available, Suspense handles loading
+    // 모든 데이터 사용 가능, Suspense가 로딩 처리
     const user = userQuery.data;
     const settings = settingsQuery.data;
     const preferences = preferencesQuery.data;
@@ -146,81 +287,81 @@ export const MyComponent: React.FC = () => {
 };
 ```
 
-**Benefits:**
-- All queries in parallel
-- Single Suspense boundary
-- Type-safe results
+**장점:**
+- 모든 쿼리가 병렬로 실행
+- 단일 Suspense boundary
+- 타입 안전한 결과
 
 ---
 
-## Query Keys Organization
+## Query Keys 구성
 
-### Naming Convention
+### 네이밍 규칙
 
 ```typescript
-// Entity list
+// Entity 리스트
 ['entities', blogId]
-['entities', blogId, 'summary']    // With view mode
+['entities', blogId, 'summary']    // 뷰 모드와 함께
 ['entities', blogId, 'flat']
 
-// Single entity
+// 단일 entity
 ['entity', blogId, entityId]
 
-// Related data
+// 관련 데이터
 ['entity', entityId, 'history']
 ['entity', entityId, 'comments']
 
-// User-specific
+// 사용자별
 ['user', userId, 'profile']
 ['user', userId, 'permissions']
 ```
 
-**Rules:**
-- Start with entity name (plural for lists, singular for one)
-- Include IDs for specificity
-- Add view mode / relationship at end
-- Consistent across app
+**규칙:**
+- entity 이름으로 시작 (리스트는 복수, 단일은 단수)
+- 특정성을 위해 ID 포함
+- 뷰 모드 / 관계는 끝에 추가
+- 앱 전체에서 일관성 유지
 
-### Query Key Examples
+### Query Key 예시
 
 ```typescript
-// From useSuspensePost.ts
+// useSuspensePost.ts에서
 queryKey: ['post', blogId, postId]
 queryKey: ['posts-v2', blogId, 'summary']
 
-// Invalidation patterns
-queryClient.invalidateQueries({ queryKey: ['post', blogId] });  // All posts for form
-queryClient.invalidateQueries({ queryKey: ['post'] });          // All posts
+// Invalidation 패턴
+queryClient.invalidateQueries({ queryKey: ['post', blogId] });  // form의 모든 posts
+queryClient.invalidateQueries({ queryKey: ['post'] });          // 모든 posts
 ```
 
 ---
 
-## API Service Layer Pattern
+## API 서비스 레이어 패턴
 
-### File Structure
+### 파일 구조
 
-Create centralized API service per feature:
+feature별로 중앙화된 API 서비스 생성:
 
 ```
 features/
   my-feature/
     api/
-      myFeatureApi.ts    # Service layer
+      myFeatureApi.ts    # 서비스 레이어
 ```
 
-### Service Pattern (from postApi.ts)
+### 서비스 패턴 (postApi.ts 기반)
 
 ```typescript
 /**
- * Centralized API service for my-feature operations
- * Uses apiClient for consistent error handling
+ * my-feature 작업을 위한 중앙화된 API 서비스
+ * 일관된 에러 처리를 위해 apiClient 사용
  */
 import apiClient from '@/lib/apiClient';
 import type { MyEntity, UpdatePayload } from '../types';
 
 export const myFeatureApi = {
     /**
-     * Fetch a single entity
+     * 단일 entity fetch
      */
     getEntity: async (blogId: number, entityId: number): Promise<MyEntity> => {
         const { data } = await apiClient.get(
@@ -230,7 +371,7 @@ export const myFeatureApi = {
     },
 
     /**
-     * Fetch all entities for a form
+     * form의 모든 entities fetch
      */
     getEntities: async (blogId: number, view: 'summary' | 'flat'): Promise<MyEntity[]> => {
         const { data } = await apiClient.get(
@@ -241,7 +382,7 @@ export const myFeatureApi = {
     },
 
     /**
-     * Update entity
+     * Entity 업데이트
      */
     updateEntity: async (
         blogId: number,
@@ -256,7 +397,7 @@ export const myFeatureApi = {
     },
 
     /**
-     * Delete entity
+     * Entity 삭제
      */
     deleteEntity: async (blogId: number, entityId: number): Promise<void> => {
         await apiClient.delete(`/blog/entities/${blogId}/${entityId}`);
@@ -264,44 +405,44 @@ export const myFeatureApi = {
 };
 ```
 
-**Key Points:**
-- Export single object with methods
-- Use `apiClient` (axios instance from `@/lib/apiClient`)
-- Type-safe parameters and returns
-- JSDoc comments for each method
-- Centralized error handling (apiClient handles it)
+**핵심 포인트:**
+- 메서드가 있는 단일 객체 export
+- `apiClient` 사용 (`@/lib/apiClient`의 axios 인스턴스)
+- 타입 안전한 파라미터와 반환값
+- 각 메서드에 JSDoc 주석
+- 중앙화된 에러 처리 (apiClient가 처리)
 
 ---
 
-## Route Format Rules (IMPORTANT)
+## Route 형식 규칙 (중요)
 
-### Correct Format
+### 올바른 형식
 
 ```typescript
-// ✅ CORRECT - Direct service path
+// ✅ 올바름 - 직접 서비스 경로
 await apiClient.get('/blog/posts/123');
 await apiClient.post('/projects/create', data);
 await apiClient.put('/users/update/456', updates);
 await apiClient.get('/email/templates');
 
-// ❌ WRONG - Do NOT add /api/ prefix
-await apiClient.get('/api/blog/posts/123');  // WRONG!
-await apiClient.post('/api/projects/create', data); // WRONG!
+// ❌ 잘못됨 - /api/ 접두사 추가하지 마세요
+await apiClient.get('/api/blog/posts/123');  // 잘못됨!
+await apiClient.post('/api/projects/create', data); // 잘못됨!
 ```
 
-**Microservice Routing:**
-- Form service: `/blog/*`
-- Projects service: `/projects/*`
-- Email service: `/email/*`
-- Users service: `/users/*`
+**마이크로서비스 라우팅:**
+- Form 서비스: `/blog/*`
+- Projects 서비스: `/projects/*`
+- Email 서비스: `/email/*`
+- Users 서비스: `/users/*`
 
-**Why:** API routing is handled by proxy configuration, no `/api/` prefix needed.
+**이유:** API 라우팅은 프록시 설정에서 처리됨, `/api/` 접두사 불필요.
 
 ---
 
 ## Mutations
 
-### Basic Mutation Pattern
+### 기본 Mutation 패턴
 
 ```typescript
 import { useMutation, useQueryClient } from '@tanstack/react-query';
@@ -317,7 +458,7 @@ export const MyComponent: React.FC = () => {
             myFeatureApi.updateEntity(blogId, entityId, payload),
 
         onSuccess: () => {
-            // Invalidate and refetch
+            // Invalidate하고 refetch
             queryClient.invalidateQueries({
                 queryKey: ['entity', blogId, entityId]
             });
@@ -353,29 +494,29 @@ const updateMutation = useMutation({
 
     // Optimistic update
     onMutate: async (newData) => {
-        // Cancel outgoing refetches
+        // 진행 중인 refetch 취소
         await queryClient.cancelQueries({ queryKey: ['entity', id] });
 
-        // Snapshot current value
+        // 현재 값 스냅샷
         const previousData = queryClient.getQueryData(['entity', id]);
 
-        // Optimistically update
+        // Optimistically 업데이트
         queryClient.setQueryData(['entity', id], (old) => ({
             ...old,
             ...newData,
         }));
 
-        // Return rollback function
+        // 롤백 함수 반환
         return { previousData };
     },
 
-    // Rollback on error
+    // 에러 시 롤백
     onError: (err, newData, context) => {
         queryClient.setQueryData(['entity', id], context.previousData);
         showError('Update failed');
     },
 
-    // Refetch after success or error
+    // 성공 또는 에러 후 refetch
     onSettled: () => {
         queryClient.invalidateQueries({ queryKey: ['entity', id] });
     },
@@ -384,7 +525,7 @@ const updateMutation = useMutation({
 
 ---
 
-## Advanced Query Patterns
+## 고급 쿼리 패턴
 
 ### Prefetching
 
@@ -401,34 +542,34 @@ export function usePrefetchEntity() {
     };
 }
 
-// Usage: Prefetch on hover
+// 사용: hover 시 prefetch
 <div onMouseEnter={() => prefetch(blogId, id)}>
     <Link to={`/entity/${id}`}>View</Link>
 </div>
 ```
 
-### Cache Access Without Fetching
+### Fetch 없이 캐시 접근
 
 ```typescript
 export function useEntityFromCache(blogId: number, entityId: number) {
     const queryClient = useQueryClient();
 
-    // Get from cache, don't fetch if missing
+    // 캐시에서 가져오기, 없으면 fetch하지 않음
     const directCache = queryClient.getQueryData<MyEntity>(['entity', blogId, entityId]);
 
     if (directCache) return directCache;
 
-    // Try grid cache
+    // 그리드 캐시 시도
     const gridCache = queryClient.getQueryData<{ rows: MyEntity[] }>(['entities-v2', blogId]);
 
     return gridCache?.rows.find(row => row.id === entityId);
 }
 ```
 
-### Dependent Queries
+### 의존적 쿼리
 
 ```typescript
-// Fetch user first, then user's settings
+// 사용자 먼저 fetch, 그 다음 사용자 설정
 const { data: user } = useSuspenseQuery({
     queryKey: ['user', userId],
     queryFn: () => userApi.getUser(userId),
@@ -437,34 +578,34 @@ const { data: user } = useSuspenseQuery({
 const { data: settings } = useSuspenseQuery({
     queryKey: ['user', userId, 'settings'],
     queryFn: () => settingsApi.getUserSettings(user.id),
-    // Automatically waits for user to load due to Suspense
+    // Suspense로 인해 자동으로 user 로드 대기
 });
 ```
 
 ---
 
-## API Client Configuration
+## API 클라이언트 설정
 
-### Using apiClient
+### apiClient 사용
 
 ```typescript
 import apiClient from '@/lib/apiClient';
 
-// apiClient is a configured axios instance
-// Automatically includes:
-// - Base URL configuration
-// - Cookie-based authentication
-// - Error interceptors
-// - Response transformers
+// apiClient는 설정된 axios 인스턴스
+// 자동으로 포함:
+// - Base URL 설정
+// - 쿠키 기반 인증
+// - 에러 인터셉터
+// - 응답 변환기
 ```
 
-**Do NOT create new axios instances** - use apiClient for consistency.
+**새 axios 인스턴스 생성 금지** - 일관성을 위해 apiClient 사용.
 
 ---
 
-## Error Handling in Queries
+## 쿼리 에러 처리
 
-### onError Callback
+### onError 콜백
 
 ```typescript
 import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
@@ -475,7 +616,7 @@ const { data } = useSuspenseQuery({
     queryKey: ['entity', id],
     queryFn: () => myFeatureApi.getEntity(id),
 
-    // Handle errors
+    // 에러 처리
     onError: (error) => {
         showError('Failed to load entity');
         console.error('Load error:', error);
@@ -485,7 +626,7 @@ const { data } = useSuspenseQuery({
 
 ### Error Boundaries
 
-Combine with Error Boundaries for comprehensive error handling:
+종합적인 에러 처리를 위해 Error Boundaries와 결합:
 
 ```typescript
 import { ErrorBoundary } from 'react-error-boundary';
@@ -502,9 +643,9 @@ import { ErrorBoundary } from 'react-error-boundary';
 
 ---
 
-## Complete Examples
+## 완전한 예제
 
-### Example 1: Simple Entity Fetch
+### 예제 1: 간단한 Entity Fetch
 
 ```typescript
 import React from 'react';
@@ -531,13 +672,13 @@ export const UserProfile: React.FC<UserProfileProps> = ({ userId }) => {
     );
 };
 
-// Usage with Suspense
+// Suspense와 함께 사용
 <SuspenseLoader>
     <UserProfile userId='123' />
 </SuspenseLoader>
 ```
 
-### Example 2: Cache-First Strategy
+### 예제 2: Cache-First 전략
 
 ```typescript
 import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
@@ -545,8 +686,8 @@ import { postApi } from '../api/postApi';
 import type { Post } from '../types';
 
 /**
- * Hook with cache-first strategy
- * Checks grid cache before API call
+ * Cache-first 전략이 있는 hook
+ * API 호출 전 그리드 캐시 확인
  */
 export function useSuspensePost(blogId: number, postId: number) {
     const queryClient = useQueryClient();
@@ -554,7 +695,7 @@ export function useSuspensePost(blogId: number, postId: number) {
     return useSuspenseQuery<Post, Error>({
         queryKey: ['post', blogId, postId],
         queryFn: async () => {
-            // 1. Check grid cache first
+            // 1. 그리드 캐시 먼저 확인
             const gridCache = queryClient.getQueryData<{ rows: Post[] }>([
                 'posts-v2',
                 blogId,
@@ -568,11 +709,11 @@ export function useSuspensePost(blogId: number, postId: number) {
             if (gridCache?.rows) {
                 const cached = gridCache.rows.find(row => row.S_ID === postId);
                 if (cached) {
-                    return cached;  // Reuse grid data
+                    return cached;  // 그리드 데이터 재사용
                 }
             }
 
-            // 2. Not in cache, fetch directly
+            // 2. 캐시에 없음, 직접 fetch
             return postApi.getPost(blogId, postId);
         },
         staleTime: 5 * 60 * 1000,
@@ -582,12 +723,12 @@ export function useSuspensePost(blogId: number, postId: number) {
 }
 ```
 
-**Benefits:**
-- Avoids duplicate API calls
-- Instant data if already loaded
-- Falls back to API if not cached
+**장점:**
+- 중복 API 호출 방지
+- 이미 로드된 경우 즉시 데이터
+- 캐시에 없으면 API로 fallback
 
-### Example 3: Parallel Fetching
+### 예제 3: 병렬 Fetching
 
 ```typescript
 import { useSuspenseQueries } from '@tanstack/react-query';
@@ -622,7 +763,7 @@ export const Dashboard: React.FC = () => {
 
 ---
 
-## Mutations with Cache Invalidation
+## 캐시 Invalidation이 있는 Mutations
 
 ### Update Mutation
 
@@ -640,12 +781,12 @@ export const useUpdatePost = () => {
             postApi.updatePost(blogId, postId, data),
 
         onSuccess: (data, variables) => {
-            // Invalidate specific post
+            // 특정 post invalidate
             queryClient.invalidateQueries({
                 queryKey: ['post', variables.blogId, variables.postId]
             });
 
-            // Invalidate list to refresh grid
+            // 그리드 새로고침을 위해 리스트 invalidate
             queryClient.invalidateQueries({
                 queryKey: ['posts-v2', variables.blogId]
             });
@@ -660,7 +801,7 @@ export const useUpdatePost = () => {
     });
 };
 
-// Usage
+// 사용
 const updatePost = useUpdatePost();
 
 const handleSave = () => {
@@ -684,7 +825,7 @@ export const useDeletePost = () => {
             postApi.deletePost(blogId, postId),
 
         onSuccess: (data, variables) => {
-            // Remove from cache manually (optimistic)
+            // 캐시에서 수동으로 제거 (optimistic)
             queryClient.setQueryData<{ rows: Post[] }>(
                 ['posts-v2', variables.blogId],
                 (old) => ({
@@ -697,7 +838,7 @@ export const useDeletePost = () => {
         },
 
         onError: (error, variables) => {
-            // Rollback - refetch to get accurate state
+            // 롤백 - 정확한 상태를 위해 refetch
             queryClient.invalidateQueries({
                 queryKey: ['posts-v2', variables.blogId]
             });
@@ -709,59 +850,59 @@ export const useDeletePost = () => {
 
 ---
 
-## Query Configuration Best Practices
+## 쿼리 설정 모범 사례
 
-### Default Configuration
+### 기본 설정
 
 ```typescript
-// In QueryClientProvider setup
+// QueryClientProvider 설정에서
 const queryClient = new QueryClient({
     defaultOptions: {
         queries: {
-            staleTime: 1000 * 60 * 5,        // 5 minutes
-            gcTime: 1000 * 60 * 10,           // 10 minutes (was cacheTime)
-            refetchOnWindowFocus: false,       // Don't refetch on focus
-            refetchOnMount: false,             // Don't refetch on mount if fresh
-            retry: 1,                          // Retry failed queries once
+            staleTime: 1000 * 60 * 5,        // 5분
+            gcTime: 1000 * 60 * 10,           // 10분 (이전 cacheTime)
+            refetchOnWindowFocus: false,       // 포커스 시 refetch 안 함
+            refetchOnMount: false,             // fresh면 마운트 시 refetch 안 함
+            retry: 1,                          // 실패한 쿼리 한 번 재시도
         },
     },
 });
 ```
 
-### Per-Query Overrides
+### 쿼리별 오버라이드
 
 ```typescript
-// Frequently changing data - shorter staleTime
+// 자주 변경되는 데이터 - 짧은 staleTime
 useSuspenseQuery({
     queryKey: ['notifications', 'unread'],
     queryFn: () => notificationApi.getUnread(),
-    staleTime: 30 * 1000,  // 30 seconds
+    staleTime: 30 * 1000,  // 30초
 });
 
-// Rarely changing data - longer staleTime
+// 거의 변경되지 않는 데이터 - 긴 staleTime
 useSuspenseQuery({
     queryKey: ['form', blogId, 'structure'],
     queryFn: () => formApi.getStructure(blogId),
-    staleTime: 30 * 60 * 1000,  // 30 minutes
+    staleTime: 30 * 60 * 1000,  // 30분
 });
 ```
 
 ---
 
-## Summary
+## 요약
 
-**Modern Data Fetching Recipe:**
+**최신 데이터 페칭 레시피:**
 
-1. **Create API Service**: `features/X/api/XApi.ts` using apiClient
-2. **Use useSuspenseQuery**: In components wrapped by SuspenseLoader
-3. **Cache-First**: Check grid cache before API call
-4. **Query Keys**: Consistent naming ['entity', id]
-5. **Route Format**: `/blog/route` NOT `/api/blog/route`
-6. **Mutations**: invalidateQueries after success
-7. **Error Handling**: onError + useMuiSnackbar
-8. **Type Safety**: Type all parameters and returns
+1. **API 서비스 생성**: apiClient를 사용하는 `features/X/api/XApi.ts`
+2. **useSuspenseQuery 사용**: SuspenseLoader로 감싼 컴포넌트에서
+3. **Cache-First**: API 호출 전 그리드 캐시 확인
+4. **Query Keys**: 일관된 네이밍 ['entity', id]
+5. **Route 형식**: `/api/blog/route`가 아닌 `/blog/route`
+6. **Mutations**: 성공 후 invalidateQueries
+7. **에러 처리**: onError + useMuiSnackbar
+8. **타입 안전**: 모든 파라미터와 반환값 타입 지정
 
-**See Also:**
-- [component-patterns.md](component-patterns.md) - Suspense integration
-- [loading-and-error-states.md](loading-and-error-states.md) - SuspenseLoader usage
-- [complete-examples.md](complete-examples.md) - Full working examples
+**참고:**
+- [component-patterns.md](component-patterns.md) - Suspense 통합
+- [loading-and-error-states.md](loading-and-error-states.md) - SuspenseLoader 사용
+- [complete-examples.md](complete-examples.md) - 전체 작동 예제

@@ -1,33 +1,33 @@
-# RealWorld (Conduit) - Architecture Design Document
+# RealWorld (Conduit) - 아키텍처 설계 문서
 
-## 1. System Overview
+## 1. 시스템 개요
 
-### 1.1 Architecture Diagram
+### 1.1 아키텍처 다이어그램
 
 ```mermaid
 flowchart TB
-    subgraph Client["Client Browser"]
-        Browser[Browser]
+    subgraph Client["클라이언트 브라우저"]
+        Browser[브라우저]
     end
 
-    subgraph Frontend["Frontend (React + Vite)"]
+    subgraph Frontend["프론트엔드 (React + Vite)"]
         Routes[Routes<br/>TanStack Router]
         Components[Components<br/>MUI]
-        Query[TanStack Query<br/>Server State]
+        Query[TanStack Query<br/>서버 상태]
         Routes --> Components --> Query
     end
 
-    subgraph Backend["Backend (Express + TypeScript)"]
+    subgraph Backend["백엔드 (Express + TypeScript)"]
         BRoutes[Routes]
         Controllers[Controllers]
-        Services[Services<br/>Business Logic]
+        Services[Services<br/>비즈니스 로직]
         Middleware[Middleware<br/>Auth, CORS]
-        Repositories[Repositories<br/>Data Access]
+        Repositories[Repositories<br/>데이터 액세스]
         BRoutes --> Controllers --> Services --> Repositories
         Middleware -.-> BRoutes
     end
 
-    subgraph Database["Database"]
+    subgraph Database["데이터베이스"]
         SQLite[(SQLite)]
     end
 
@@ -36,106 +36,106 @@ flowchart TB
     Repositories -->|Prisma ORM| SQLite
 ```
 
-### 1.2 Communication Between Components
+### 1.2 컴포넌트 간 통신
 
-| Communication Path | Protocol | Format |
-|-------------------|----------|--------|
-| Browser ↔ Frontend | HTTP/HTTPS | HTML/JS/CSS |
-| Frontend ↔ Backend | REST API | JSON |
-| Backend ↔ Database | Prisma Client | SQL |
+| 통신 경로 | 프로토콜 | 포맷 |
+|----------|---------|------|
+| 브라우저 ↔ 프론트엔드 | HTTP/HTTPS | HTML/JS/CSS |
+| 프론트엔드 ↔ 백엔드 | REST API | JSON |
+| 백엔드 ↔ 데이터베이스 | Prisma Client | SQL |
 
 ---
 
-## 2. Backend Architecture
+## 2. 백엔드 아키텍처
 
-### 2.1 Layered Architecture
+### 2.1 레이어드 아키텍처
 
 ```mermaid
 flowchart TB
-    Request[HTTP Request]
+    Request[HTTP 요청]
 
-    subgraph Routes["Routes Layer"]
-        R1["Endpoint Definition"]
-        R2["Middleware Application (Auth, Validation)"]
-        R3["Routing"]
+    subgraph Routes["Routes 레이어"]
+        R1["엔드포인트 정의"]
+        R2["미들웨어 적용 (Auth, Validation)"]
+        R3["라우팅"]
     end
 
-    subgraph Controllers["Controllers Layer"]
-        C1["Request Parameter Extraction"]
-        C2["Validation Execution"]
-        C3["Response Formatting"]
-        C4["Error Handling"]
+    subgraph Controllers["Controllers 레이어"]
+        C1["요청 파라미터 추출"]
+        C2["검증 실행"]
+        C3["응답 포맷팅"]
+        C4["에러 처리"]
     end
 
-    subgraph Services["Services Layer"]
-        S1["Business Logic Implementation"]
-        S2["Transaction Management"]
-        S3["Multiple Repository Coordination"]
+    subgraph Services["Services 레이어"]
+        S1["비즈니스 로직 구현"]
+        S2["트랜잭션 관리"]
+        S3["다중 Repository 조정"]
     end
 
-    subgraph Repositories["Repositories Layer"]
-        Repo1["Prisma Query Execution"]
-        Repo2["Data Transformation"]
-        Repo3["Caching (Future)"]
+    subgraph Repositories["Repositories 레이어"]
+        Repo1["Prisma 쿼리 실행"]
+        Repo2["데이터 변환"]
+        Repo3["캐싱 (향후)"]
     end
 
-    DB[(Database)]
+    DB[(데이터베이스)]
 
     Request --> Routes --> Controllers --> Services --> Repositories --> DB
 ```
 
-### 2.2 Layer Responsibilities
+### 2.2 레이어 책임
 
-| Layer | Responsibility | Dependencies |
-|-------|---------------|--------------|
-| **Routes** | Endpoint definition, Middleware application | Controllers |
-| **Controllers** | HTTP processing, Validation, Response | Services |
-| **Services** | Business logic | Repositories |
-| **Repositories** | Data access | Prisma |
+| 레이어 | 책임 | 의존성 |
+|--------|------|--------|
+| **Routes** | 엔드포인트 정의, 미들웨어 적용 | Controllers |
+| **Controllers** | HTTP 처리, 검증, 응답 | Services |
+| **Services** | 비즈니스 로직 | Repositories |
+| **Repositories** | 데이터 액세스 | Prisma |
 
-### 2.3 Middleware Stack
+### 2.3 미들웨어 스택
 
 ```mermaid
 flowchart TB
-    Request[Request]
-    Helmet["Helmet<br/>Security Headers"]
-    CORS["CORS<br/>Cross-Origin Settings"]
-    JSONParser["JSON Parser<br/>Request Body Parsing"]
-    Auth["Auth<br/>JWT Verification (if required)"]
-    Validation["Validation<br/>Request Validation"]
-    Controller["Controller<br/>Business Logic Execution"]
-    ErrorHandler["Error Handler<br/>Error Processing & Response"]
-    Response[Response]
+    Request[요청]
+    Helmet["Helmet<br/>보안 헤더"]
+    CORS["CORS<br/>교차 출처 설정"]
+    JSONParser["JSON Parser<br/>요청 본문 파싱"]
+    Auth["Auth<br/>JWT 검증 (필요 시)"]
+    Validation["Validation<br/>요청 검증"]
+    Controller["Controller<br/>비즈니스 로직 실행"]
+    ErrorHandler["Error Handler<br/>에러 처리 및 응답"]
+    Response[응답]
 
     Request --> Helmet --> CORS --> JSONParser --> Auth --> Validation --> Controller --> ErrorHandler --> Response
 ```
 
 ---
 
-## 3. Frontend Architecture
+## 3. 프론트엔드 아키텍처
 
-### 3.1 Feature-Based Module Structure
+### 3.1 기능 기반 모듈 구조
 
 ```
 src/
-├── features/                    # Feature Modules
-│   ├── auth/                    # Authentication Feature
-│   │   ├── components/          # Auth-related Components
-│   │   ├── hooks/               # Auth Hooks
-│   │   ├── api/                 # Auth API Calls
-│   │   └── types.ts             # Type Definitions
+├── features/                    # 기능 모듈
+│   ├── auth/                    # 인증 기능
+│   │   ├── components/          # 인증 관련 컴포넌트
+│   │   ├── hooks/               # 인증 Hooks
+│   │   ├── api/                 # 인증 API 호출
+│   │   └── types.ts             # 타입 정의
 │   │
-│   ├── articles/                # Articles Feature
+│   ├── articles/                # 게시글 기능
 │   │   ├── components/
 │   │   ├── hooks/
 │   │   ├── api/
 │   │   └── types.ts
 │   │
-│   ├── comments/                # Comments Feature
-│   ├── profiles/                # Profiles Feature
-│   └── tags/                    # Tags Feature
+│   ├── comments/                # 댓글 기능
+│   ├── profiles/                # 프로필 기능
+│   └── tags/                    # 태그 기능
 │
-├── components/                  # Shared Components
+├── components/                  # 공유 컴포넌트
 │   ├── layout/
 │   │   ├── Header.tsx
 │   │   ├── Footer.tsx
@@ -145,13 +145,13 @@ src/
 │       ├── ErrorMessage.tsx
 │       └── Pagination.tsx
 │
-├── hooks/                       # Shared Hooks
+├── hooks/                       # 공유 Hooks
 │   ├── useAuth.ts
 │   └── useLocalStorage.ts
 │
-├── lib/                         # Utilities
+├── lib/                         # 유틸리티
 │   ├── api/
-│   │   └── client.ts            # API Client
+│   │   └── client.ts            # API 클라이언트
 │   └── utils/
 │       └── formatDate.ts
 │
@@ -163,19 +163,19 @@ src/
     └── ...
 ```
 
-### 3.2 State Management Strategy
+### 3.2 상태 관리 전략
 
-| State Type | Management Method | Examples |
-|------------|-------------------|----------|
-| **Server State** | TanStack Query | Article list, User info |
-| **Auth State** | Context + localStorage | Login status, JWT |
-| **UI State** | React State | Modal, Form |
-| **URL State** | TanStack Router | Filters, Page number |
+| 상태 유형 | 관리 방법 | 예시 |
+|----------|----------|------|
+| **서버 상태** | TanStack Query | 게시글 목록, 사용자 정보 |
+| **인증 상태** | Context + localStorage | 로그인 상태, JWT |
+| **UI 상태** | React State | 모달, 폼 |
+| **URL 상태** | TanStack Router | 필터, 페이지 번호 |
 
-### 3.3 Data Fetching Pattern
+### 3.3 데이터 페칭 패턴
 
 ```typescript
-// useSuspenseQuery Pattern
+// useSuspenseQuery 패턴
 function ArticleList() {
   const { data: articles } = useSuspenseQuery({
     queryKey: ['articles'],
@@ -197,9 +197,9 @@ function ArticlesPage() {
 
 ---
 
-## 4. Data Model (ERD)
+## 4. 데이터 모델 (ERD)
 
-### 4.1 Entity Relationship Diagram
+### 4.1 엔티티 관계 다이어그램
 
 ```mermaid
 erDiagram
@@ -254,18 +254,18 @@ erDiagram
         string articleId FK
     }
 
-    User ||--o{ Article : "writes"
-    User ||--o{ Comment : "writes"
-    User ||--o{ Favorite : "favorites"
-    User ||--o{ Follow : "follower"
-    User ||--o{ Follow : "following"
-    Article ||--o{ Comment : "has"
-    Article ||--o{ ArticleTag : "has"
-    Article ||--o{ Favorite : "favorited by"
-    Tag ||--o{ ArticleTag : "tagged"
+    User ||--o{ Article : "작성"
+    User ||--o{ Comment : "작성"
+    User ||--o{ Favorite : "좋아요"
+    User ||--o{ Follow : "팔로워"
+    User ||--o{ Follow : "팔로잉"
+    Article ||--o{ Comment : "포함"
+    Article ||--o{ ArticleTag : "포함"
+    Article ||--o{ Favorite : "좋아요됨"
+    Tag ||--o{ ArticleTag : "태그됨"
 ```
 
-### 4.2 Prisma Schema
+### 4.2 Prisma 스키마
 
 ```prisma
 // prisma/schema.prisma
@@ -289,7 +289,7 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
+  // 관계
   articles   Article[]
   comments   Comment[]
   favorites  Favorite[]
@@ -306,7 +306,7 @@ model Article {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  // Relations
+  // 관계
   author    User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId  String
   tags      ArticleTag[]
@@ -338,7 +338,7 @@ model Comment {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
+  // 관계
   article   Article @relation(fields: [articleId], references: [id], onDelete: Cascade)
   articleId String
   author    User    @relation(fields: [authorId], references: [id], onDelete: Cascade)
@@ -368,9 +368,9 @@ model Follow {
 
 ---
 
-## 5. Authentication Flow
+## 5. 인증 플로우
 
-### 5.1 JWT Authentication Sequence
+### 5.1 JWT 인증 시퀀스
 
 ```mermaid
 sequenceDiagram
@@ -379,15 +379,15 @@ sequenceDiagram
     participant DB
 
     Client->>Server: POST /api/users/login<br/>{email, password}
-    Server->>DB: Find user by email
-    DB-->>Server: User data
-    Server->>Server: Verify password<br/>(bcrypt.compare)
-    Server->>Server: Generate JWT
+    Server->>DB: 이메일로 사용자 조회
+    DB-->>Server: 사용자 데이터
+    Server->>Server: 비밀번호 검증<br/>(bcrypt.compare)
+    Server->>Server: JWT 생성
     Server-->>Client: {user: {..., token}}
-    Client->>Client: Store token in localStorage
+    Client->>Client: localStorage에 토큰 저장
 ```
 
-### 5.2 Authenticated Request
+### 5.2 인증된 요청
 
 ```mermaid
 sequenceDiagram
@@ -396,16 +396,16 @@ sequenceDiagram
     participant DB
 
     Client->>Server: GET /api/user<br/>Authorization: Token {jwt}
-    Server->>Server: Verify JWT<br/>Extract userId
-    Server->>DB: Find user by id
-    DB-->>Server: User data
+    Server->>Server: JWT 검증<br/>userId 추출
+    Server->>DB: id로 사용자 조회
+    DB-->>Server: 사용자 데이터
     Server-->>Client: {user: {...}}
 ```
 
-### 5.3 Token Structure
+### 5.3 토큰 구조
 
 ```json
-// JWT Payload
+// JWT 페이로드
 {
   "userId": "uuid-string",
   "iat": 1234567890,
@@ -415,9 +415,9 @@ sequenceDiagram
 
 ---
 
-## 6. Error Handling
+## 6. 에러 처리
 
-### 6.1 Error Response Format
+### 6.1 에러 응답 포맷
 
 ```json
 {
@@ -427,21 +427,21 @@ sequenceDiagram
 }
 ```
 
-### 6.2 HTTP Status Codes
+### 6.2 HTTP 상태 코드
 
-| Code | Meaning | Usage |
-|------|---------|-------|
-| 200 | OK | Success (GET, PUT) |
-| 201 | Created | Success (POST) |
-| 204 | No Content | Success (DELETE) |
-| 400 | Bad Request | Validation error |
-| 401 | Unauthorized | Authentication required |
-| 403 | Forbidden | Insufficient permissions |
-| 404 | Not Found | Resource not found |
-| 422 | Unprocessable Entity | Validation error |
-| 500 | Internal Server Error | Server error |
+| 코드 | 의미 | 용도 |
+|------|------|------|
+| 200 | OK | 성공 (GET, PUT) |
+| 201 | Created | 성공 (POST) |
+| 204 | No Content | 성공 (DELETE) |
+| 400 | Bad Request | 검증 오류 |
+| 401 | Unauthorized | 인증 필요 |
+| 403 | Forbidden | 권한 부족 |
+| 404 | Not Found | 리소스 없음 |
+| 422 | Unprocessable Entity | 검증 오류 |
+| 500 | Internal Server Error | 서버 오류 |
 
-### 6.3 Backend Error Handling
+### 6.3 백엔드 에러 처리
 
 ```typescript
 // middleware/errorHandler.ts
@@ -463,7 +463,7 @@ export function errorHandler(
     });
   }
 
-  // Send error to Sentry
+  // Sentry로 에러 전송
   Sentry.captureException(err);
 
   return res.status(500).json({
@@ -474,40 +474,40 @@ export function errorHandler(
 
 ---
 
-## 7. Performance Optimization
+## 7. 성능 최적화
 
-### 7.1 Backend
+### 7.1 백엔드
 
-| Optimization | Implementation |
-|--------------|----------------|
-| **Database Indexes** | Index frequently queried fields |
-| **N+1 Problem Prevention** | Batch fetch related data with Prisma include |
-| **Pagination** | Limit data retrieval with offset/limit |
+| 최적화 | 구현 |
+|--------|------|
+| **데이터베이스 인덱스** | 자주 쿼리되는 필드에 인덱스 |
+| **N+1 문제 방지** | Prisma include로 관련 데이터 일괄 조회 |
+| **페이지네이션** | offset/limit으로 데이터 조회 제한 |
 
-### 7.2 Frontend
+### 7.2 프론트엔드
 
-| Optimization | Implementation |
-|--------------|----------------|
-| **Code Splitting** | React.lazy + Suspense |
-| **Caching** | TanStack Query staleTime configuration |
-| **Memoization** | React.memo, useMemo, useCallback |
-| **Bundle Optimization** | Vite chunk splitting |
+| 최적화 | 구현 |
+|--------|------|
+| **코드 분할** | React.lazy + Suspense |
+| **캐싱** | TanStack Query staleTime 설정 |
+| **메모이제이션** | React.memo, useMemo, useCallback |
+| **번들 최적화** | Vite 청크 분할 |
 
 ---
 
-## 8. Security Measures
+## 8. 보안 조치
 
-### 8.1 Security Implementations
+### 8.1 보안 구현
 
-| Threat | Countermeasure |
-|--------|----------------|
-| **XSS** | React escaping, CSP headers |
-| **CSRF** | SameSite Cookie (future) |
-| **SQL Injection** | Prisma ORM (parameterized queries) |
-| **Brute Force** | Rate Limiting (future) |
-| **Credential Leakage** | bcrypt hashing, HTTPS |
+| 위협 | 대응책 |
+|------|--------|
+| **XSS** | React 이스케이핑, CSP 헤더 |
+| **CSRF** | SameSite Cookie (향후) |
+| **SQL 인젝션** | Prisma ORM (파라미터화된 쿼리) |
+| **무차별 대입** | Rate Limiting (향후) |
+| **자격 증명 유출** | bcrypt 해싱, HTTPS |
 
-### 8.2 Security Headers (Helmet)
+### 8.2 보안 헤더 (Helmet)
 
 ```typescript
 app.use(helmet({
