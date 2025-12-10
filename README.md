@@ -4,7 +4,7 @@
 
 ## このプロジェクトの目的
 
-**RealWorld (Conduit)** アプリ - Medium.com クローンのブログプラットフォーム - を実装しながら Claude Code の様々な機能を実習します：
+**[RealWorld (Conduit)](https://realworld-docs.netlify.app/)** アプリ - Medium.com クローンのブログプラットフォーム - を実装しながら Claude Code の様々な機能を実習します：
 
 - **Skills**: コンテキスト基盤の自動活性化指針
 - **Hooks**: ツール使用前/後の自動実行スクリプト
