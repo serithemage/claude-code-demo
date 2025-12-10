@@ -1,0 +1,11 @@
+{
+  "name": "backend",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "echo 'Backend not yet configured'",
+    "build": "echo 'Backend not yet configured'",
+    "test": "echo 'Backend not yet configured'"
+  }
+}
