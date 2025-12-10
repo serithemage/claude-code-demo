@@ -238,11 +238,11 @@ pnpm format
 
 This project is available in multiple languages:
 
-| Branch | Language |
-|--------|----------|
-| `main` | English |
-| `korean` | Korean (한국어) |
-| `japanese` | Japanese (日本語) |
+| Branch | Language | Link |
+|--------|----------|------|
+| `main` | English (Current) | [View](https://github.com/serithemage/claude-code-demo/tree/main) |
+| `korean` | Korean (한국어) | [View](https://github.com/serithemage/claude-code-demo/tree/korean) |
+| `japanese` | Japanese (日本語) | [View](https://github.com/serithemage/claude-code-demo/tree/japanese) |
 
 ---
 

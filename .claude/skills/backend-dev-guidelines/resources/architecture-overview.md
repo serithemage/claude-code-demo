@@ -17,47 +17,50 @@ Complete guide to the layered architecture pattern used in backend microservices
 
 ### The Four Layers
 
-```
-┌─────────────────────────────────────┐
-│         HTTP Request                │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│  Layer 1: ROUTES                    │
-│  - Route definitions only           │
-│  - Middleware registration          │
-│  - Delegate to controllers          │
-│  - NO business logic                │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│  Layer 2: CONTROLLERS               │
-│  - Request/response handling        │
-│  - Input validation                 │
-│  - Call services                    │
-│  - Format responses                 │
-│  - Error handling                   │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│  Layer 3: SERVICES                  │
-│  - Business logic                   │
-│  - Orchestration                    │
-│  - Call repositories                │
-│  - No HTTP knowledge                │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│  Layer 4: REPOSITORIES              │
-│  - Data access abstraction          │
-│  - Prisma operations                │
-│  - Query optimization               │
-│  - Caching                          │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│         Database (MySQL)            │
-└─────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Request["HTTP Request"]
+        R[Client Request]
+    end
+
+    subgraph Routes["Layer 1: ROUTES"]
+        R1[Route definitions only]
+        R2[Middleware registration]
+        R3[Delegate to controllers]
+        R4[NO business logic]
+    end
+
+    subgraph Controllers["Layer 2: CONTROLLERS"]
+        C1[Request/response handling]
+        C2[Input validation]
+        C3[Call services]
+        C4[Format responses]
+        C5[Error handling]
+    end
+
+    subgraph Services["Layer 3: SERVICES"]
+        S1[Business logic]
+        S2[Orchestration]
+        S3[Call repositories]
+        S4[No HTTP knowledge]
+    end
+
+    subgraph Repositories["Layer 4: REPOSITORIES"]
+        Repo1[Data access abstraction]
+        Repo2[Prisma operations]
+        Repo3[Query optimization]
+        Repo4[Caching]
+    end
+
+    subgraph Database["Database"]
+        DB[(SQLite)]
+    end
+
+    Request --> Routes
+    Routes --> Controllers
+    Controllers --> Services
+    Services --> Repositories
+    Repositories --> Database
 ```
 
 ### Why This Architecture?
