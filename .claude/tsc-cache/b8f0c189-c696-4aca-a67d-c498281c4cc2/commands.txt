@@ -1,0 +1,1 @@
+backend:build:cd /Users/dohyunjung/Workspace/serithemage/claude-code-demo/backend && npm run build

@@ -3,11 +3,13 @@
 ## 1. 개요
 
 ### 1.1 Base URL
+
 ```
 http://localhost:3000/api
 ```
 
 ### 1.2 인증 헤더
+
 ```
 Authorization: Token jwt.token.here
 ```
@@ -15,6 +17,7 @@ Authorization: Token jwt.token.here
 ### 1.3 공통 응답 포맷
 
 **성공**
+
 ```json
 {
   "user": { ... },      // 또는 "article", "articles" 등
@@ -22,6 +25,7 @@ Authorization: Token jwt.token.here
 ```
 
 **에러**
+
 ```json
 {
   "errors": {
@@ -38,6 +42,7 @@ Authorization: Token jwt.token.here
 ### 2.1 사용자 가입
 
 **엔드포인트**
+
 ```
 POST /api/users
 ```
@@ -45,6 +50,7 @@ POST /api/users
 **인증**: 불필요
 
 **요청**
+
 ```json
 {
   "user": {
@@ -56,6 +62,7 @@ POST /api/users
 ```
 
 **응답** (201 Created)
+
 ```json
 {
   "user": {
@@ -69,6 +76,7 @@ POST /api/users
 ```
 
 **에러** (422 Unprocessable Entity)
+
 ```json
 {
   "errors": {
@@ -83,6 +91,7 @@ POST /api/users
 ### 2.2 로그인
 
 **엔드포인트**
+
 ```
 POST /api/users/login
 ```
@@ -90,6 +99,7 @@ POST /api/users/login
 **인증**: 불필요
 
 **요청**
+
 ```json
 {
   "user": {
@@ -100,6 +110,7 @@ POST /api/users/login
 ```
 
 **응답** (200 OK)
+
 ```json
 {
   "user": {
@@ -113,6 +124,7 @@ POST /api/users/login
 ```
 
 **에러** (401 Unauthorized)
+
 ```json
 {
   "errors": {
@@ -126,6 +138,7 @@ POST /api/users/login
 ### 2.3 현재 사용자 조회
 
 **엔드포인트**
+
 ```
 GET /api/user
 ```
@@ -133,6 +146,7 @@ GET /api/user
 **인증**: 필수
 
 **응답** (200 OK)
+
 ```json
 {
   "user": {
@@ -150,6 +164,7 @@ GET /api/user
 ### 2.4 사용자 수정
 
 **엔드포인트**
+
 ```
 PUT /api/user
 ```
@@ -157,6 +172,7 @@ PUT /api/user
 **인증**: 필수
 
 **요청**
+
 ```json
 {
   "user": {
@@ -170,6 +186,7 @@ PUT /api/user
 ※ 지정된 필드만 업데이트됩니다. password 필드로 새 비밀번호를 설정할 수 있습니다.
 
 **응답** (200 OK)
+
 ```json
 {
   "user": {
@@ -189,6 +206,7 @@ PUT /api/user
 ### 3.1 프로필 조회
 
 **엔드포인트**
+
 ```
 GET /api/profiles/:username
 ```
@@ -196,6 +214,7 @@ GET /api/profiles/:username
 **인증**: 선택 (로그인 시 following 플래그 포함)
 
 **응답** (200 OK)
+
 ```json
 {
   "profile": {
@@ -212,6 +231,7 @@ GET /api/profiles/:username
 ### 3.2 사용자 팔로우
 
 **엔드포인트**
+
 ```
 POST /api/profiles/:username/follow
 ```
@@ -221,6 +241,7 @@ POST /api/profiles/:username/follow
 **요청**: 본문 없음
 
 **응답** (200 OK)
+
 ```json
 {
   "profile": {
@@ -237,6 +258,7 @@ POST /api/profiles/:username/follow
 ### 3.3 사용자 언팔로우
 
 **엔드포인트**
+
 ```
 DELETE /api/profiles/:username/follow
 ```
@@ -244,6 +266,7 @@ DELETE /api/profiles/:username/follow
 **인증**: 필수
 
 **응답** (200 OK)
+
 ```json
 {
   "profile": {
@@ -262,6 +285,7 @@ DELETE /api/profiles/:username/follow
 ### 4.1 게시글 목록 조회
 
 **엔드포인트**
+
 ```
 GET /api/articles
 ```
@@ -270,15 +294,16 @@ GET /api/articles
 
 **쿼리 파라미터**
 
-| 파라미터 | 설명 | 예시 |
-|----------|------|------|
-| `tag` | 태그로 필터링 | `?tag=AngularJS` |
-| `author` | 작성자로 필터링 | `?author=jake` |
+| 파라미터    | 설명                     | 예시              |
+| ----------- | ------------------------ | ----------------- |
+| `tag`       | 태그로 필터링            | `?tag=AngularJS`  |
+| `author`    | 작성자로 필터링          | `?author=jake`    |
 | `favorited` | 좋아요한 사용자로 필터링 | `?favorited=jake` |
-| `limit` | 항목 수 (기본: 20) | `?limit=20` |
-| `offset` | 오프셋 (기본: 0) | `?offset=0` |
+| `limit`     | 항목 수 (기본: 20)       | `?limit=20`       |
+| `offset`    | 오프셋 (기본: 0)         | `?offset=0`       |
 
 **응답** (200 OK)
+
 ```json
 {
   "articles": [
@@ -309,6 +334,7 @@ GET /api/articles
 ### 4.2 피드 조회
 
 **엔드포인트**
+
 ```
 GET /api/articles/feed
 ```
@@ -317,12 +343,13 @@ GET /api/articles/feed
 
 **쿼리 파라미터**
 
-| 파라미터 | 설명 | 예시 |
-|----------|------|------|
-| `limit` | 항목 수 (기본: 20) | `?limit=20` |
-| `offset` | 오프셋 (기본: 0) | `?offset=0` |
+| 파라미터 | 설명               | 예시        |
+| -------- | ------------------ | ----------- |
+| `limit`  | 항목 수 (기본: 20) | `?limit=20` |
+| `offset` | 오프셋 (기본: 0)   | `?offset=0` |
 
 **응답** (200 OK)
+
 ```json
 {
   "articles": [ ... ],
@@ -335,6 +362,7 @@ GET /api/articles/feed
 ### 4.3 게시글 조회
 
 **엔드포인트**
+
 ```
 GET /api/articles/:slug
 ```
@@ -342,6 +370,7 @@ GET /api/articles/:slug
 **인증**: 선택
 
 **응답** (200 OK)
+
 ```json
 {
   "article": {
@@ -369,6 +398,7 @@ GET /api/articles/:slug
 ### 4.4 게시글 작성
 
 **엔드포인트**
+
 ```
 POST /api/articles
 ```
@@ -376,6 +406,7 @@ POST /api/articles
 **인증**: 필수
 
 **요청**
+
 ```json
 {
   "article": {
@@ -388,6 +419,7 @@ POST /api/articles
 ```
 
 **응답** (201 Created)
+
 ```json
 {
   "article": {
@@ -415,6 +447,7 @@ POST /api/articles
 ### 4.5 게시글 수정
 
 **엔드포인트**
+
 ```
 PUT /api/articles/:slug
 ```
@@ -422,6 +455,7 @@ PUT /api/articles/:slug
 **인증**: 필수 (작성자만)
 
 **요청**
+
 ```json
 {
   "article": {
@@ -433,6 +467,7 @@ PUT /api/articles/:slug
 ※ 지정된 필드만 업데이트됩니다. title 업데이트 시 slug가 재생성됩니다.
 
 **응답** (200 OK)
+
 ```json
 {
   "article": { ... }
@@ -444,6 +479,7 @@ PUT /api/articles/:slug
 ### 4.6 게시글 삭제
 
 **엔드포인트**
+
 ```
 DELETE /api/articles/:slug
 ```
@@ -459,6 +495,7 @@ DELETE /api/articles/:slug
 ### 5.1 댓글 목록 조회
 
 **엔드포인트**
+
 ```
 GET /api/articles/:slug/comments
 ```
@@ -466,6 +503,7 @@ GET /api/articles/:slug/comments
 **인증**: 선택
 
 **응답** (200 OK)
+
 ```json
 {
   "comments": [
@@ -490,6 +528,7 @@ GET /api/articles/:slug/comments
 ### 5.2 댓글 작성
 
 **엔드포인트**
+
 ```
 POST /api/articles/:slug/comments
 ```
@@ -497,6 +536,7 @@ POST /api/articles/:slug/comments
 **인증**: 필수
 
 **요청**
+
 ```json
 {
   "comment": {
@@ -506,6 +546,7 @@ POST /api/articles/:slug/comments
 ```
 
 **응답** (201 Created)
+
 ```json
 {
   "comment": {
@@ -528,6 +569,7 @@ POST /api/articles/:slug/comments
 ### 5.3 댓글 삭제
 
 **엔드포인트**
+
 ```
 DELETE /api/articles/:slug/comments/:id
 ```
@@ -543,6 +585,7 @@ DELETE /api/articles/:slug/comments/:id
 ### 6.1 좋아요 추가
 
 **엔드포인트**
+
 ```
 POST /api/articles/:slug/favorite
 ```
@@ -552,6 +595,7 @@ POST /api/articles/:slug/favorite
 **요청**: 본문 없음
 
 **응답** (200 OK)
+
 ```json
 {
   "article": {
@@ -579,6 +623,7 @@ POST /api/articles/:slug/favorite
 ### 6.2 좋아요 취소
 
 **엔드포인트**
+
 ```
 DELETE /api/articles/:slug/favorite
 ```
@@ -586,6 +631,7 @@ DELETE /api/articles/:slug/favorite
 **인증**: 필수
 
 **응답** (200 OK)
+
 ```json
 {
   "article": {
@@ -604,6 +650,7 @@ DELETE /api/articles/:slug/favorite
 ### 7.1 태그 목록 조회
 
 **엔드포인트**
+
 ```
 GET /api/tags
 ```
@@ -611,14 +658,10 @@ GET /api/tags
 **인증**: 불필요
 
 **응답** (200 OK)
+
 ```json
 {
-  "tags": [
-    "reactjs",
-    "angularjs",
-    "dragons",
-    "training"
-  ]
+  "tags": ["reactjs", "angularjs", "dragons", "training"]
 }
 ```
 
@@ -658,8 +701,8 @@ interface Article {
   description: string;
   body: string;
   tagList: string[];
-  createdAt: string;      // ISO 8601
-  updatedAt: string;      // ISO 8601
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
   favorited: boolean;
   favoritesCount: number;
   author: Profile;
@@ -671,8 +714,8 @@ interface Article {
 ```typescript
 interface Comment {
   id: number;
-  createdAt: string;      // ISO 8601
-  updatedAt: string;      // ISO 8601
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
   body: string;
   author: Profile;
 }
@@ -682,14 +725,14 @@ interface Comment {
 
 ## 9. 에러 코드
 
-| HTTP 상태 | 에러 유형 | 설명 |
-|-----------|----------|------|
-| 400 | Bad Request | 잘못된 요청 포맷 |
-| 401 | Unauthorized | 인증 필요 |
-| 403 | Forbidden | 권한 없음 (예: 다른 사람의 게시글 수정) |
-| 404 | Not Found | 리소스가 존재하지 않음 |
-| 422 | Unprocessable Entity | 검증 오류 |
-| 500 | Internal Server Error | 서버 내부 오류 |
+| HTTP 상태 | 에러 유형             | 설명                                    |
+| --------- | --------------------- | --------------------------------------- |
+| 400       | Bad Request           | 잘못된 요청 포맷                        |
+| 401       | Unauthorized          | 인증 필요                               |
+| 403       | Forbidden             | 권한 없음 (예: 다른 사람의 게시글 수정) |
+| 404       | Not Found             | 리소스가 존재하지 않음                  |
+| 422       | Unprocessable Entity  | 검증 오류                               |
+| 500       | Internal Server Error | 서버 내부 오류                          |
 
 ---
 
@@ -697,23 +740,23 @@ interface Comment {
 
 ### 10.1 사용자 가입
 
-| 필드 | 규칙 |
-|------|------|
-| `username` | 필수, 고유, 1-20자 |
-| `email` | 필수, 고유, 유효한 이메일 형식 |
-| `password` | 필수, 8자 이상 |
+| 필드       | 규칙                           |
+| ---------- | ------------------------------ |
+| `username` | 필수, 고유, 1-20자             |
+| `email`    | 필수, 고유, 유효한 이메일 형식 |
+| `password` | 필수, 8자 이상                 |
 
 ### 10.2 게시글 작성
 
-| 필드 | 규칙 |
-|------|------|
-| `title` | 필수, 1-100자 |
+| 필드          | 규칙          |
+| ------------- | ------------- |
+| `title`       | 필수, 1-100자 |
 | `description` | 필수, 1-200자 |
-| `body` | 필수 |
-| `tagList` | 선택, 배열 |
+| `body`        | 필수          |
+| `tagList`     | 선택, 배열    |
 
 ### 10.3 댓글 작성
 
-| 필드 | 규칙 |
-|------|------|
+| 필드   | 규칙           |
+| ------ | -------------- |
 | `body` | 필수, 1-1000자 |

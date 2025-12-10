@@ -171,12 +171,12 @@ Claude가 이 메시지를 받고 편집을 재시도하기 전에 skill을 사�
 
 ### 종료 코드 참조 표
 
-| 종료 코드 | stdout | stderr | 도구 실행 | Claude가 보는 것 |
-|-----------|--------|--------|----------|-----------------|
-| 0 (UserPromptSubmit) | → Context | → 사용자만 | N/A | stdout 내용 |
-| 0 (PreToolUse) | → 사용자만 | → 사용자만 | **진행됨** | 없음 |
-| 2 (PreToolUse) | → 사용자만 | → **CLAUDE** | **차단됨** | stderr 내용 |
-| 기타 | → 사용자만 | → 사용자만 | 차단됨 | 없음 |
+| 종료 코드            | stdout     | stderr       | 도구 실행  | Claude가 보는 것 |
+| -------------------- | ---------- | ------------ | ---------- | ---------------- |
+| 0 (UserPromptSubmit) | → Context  | → 사용자만   | N/A        | stdout 내용      |
+| 0 (PreToolUse)       | → 사용자만 | → 사용자만   | **진행됨** | 없음             |
+| 2 (PreToolUse)       | → 사용자만 | → **CLAUDE** | **차단됨** | stderr 내용      |
+| 기타                 | → 사용자만 | → 사용자만   | 차단됨     | 없음             |
 
 ### 종료 코드 2가 중요한 이유
 
@@ -222,10 +222,7 @@ Claude가 오류를 확인하고 응답:
 
 ```json
 {
-  "skills_used": [
-    "database-verification",
-    "error-tracking"
-  ],
+  "skills_used": ["database-verification", "error-tracking"],
   "files_verified": []
 }
 ```
@@ -249,7 +246,7 @@ Claude가 오류를 확인하고 응답:
 
 ### 제한 사항
 
-Hook은 skill이 *실제로* 호출되었는지 감지할 수 없음 - 세션당 skill당 한 번만 차단합니다. 이는 다음을 의미합니다:
+Hook은 skill이 _실제로_ 호출되었는지 감지할 수 없음 - 세션당 skill당 한 번만 차단합니다. 이는 다음을 의미합니다:
 
 - Claude가 skill을 사용하지 않고 다른 편집을 하면 다시 차단하지 않음
 - Claude가 지시를 따른다고 신뢰
@@ -287,20 +284,24 @@ Hook은 skill이 *실제로* 호출되었는지 감지할 수 없음 - 세션당
 ### 최적화 전략
 
 **패턴 줄이기:**
+
 - 더 구체적인 패턴 사용 (확인할 항목 감소)
 - 가능한 경우 유사한 패턴 결합
 
 **파일 경로 패턴:**
+
 - 더 구체적 = 확인할 파일 감소
 - 예: `form/**`보다 `form/src/services/**`가 더 좋음
 
 **콘텐츠 패턴:**
+
 - 정말 필요할 때만 추가
 - 더 간단한 regex = 더 빠른 매칭
 
 ---
 
 **관련 파일:**
+
 - [SKILL.md](SKILL.md) - 메인 skill 가이드
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - Hook 문제 디버깅
 - [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - 설정 참조

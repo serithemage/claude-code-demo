@@ -12,6 +12,7 @@ Anthropic의 공식 모범 사례(500-line rule, Progressive disclosure 패턴 �
 ## 이 Skill 사용 시점
 
 다음을 언급할 때 자동 활성화됩니다:
+
 - Skills 생성 또는 추가
 - Skill triggers 또는 rules 수정
 - Skill 활성화 작동 방식 이해
@@ -30,6 +31,7 @@ Anthropic의 공식 모범 사례(500-line rule, Progressive disclosure 패턴 �
 ### 2-Hook 아키텍처
 
 **1. UserPromptSubmit Hook** (사전 제안)
+
 - **파일**: `.claude/hooks/skill-activation-prompt.ts`
 - **트리거**: Claude가 사용자 프롬프트를 보기 전에
 - **목적**: 키워드 + intent 패턴 기반으로 관련 skills 제안
@@ -37,6 +39,7 @@ Anthropic의 공식 모범 사례(500-line rule, Progressive disclosure 패턴 �
 - **사용 사례**: 주제 기반 skills, 암시적 작업 감지
 
 **2. Stop Hook - 오류 처리 리마인더** (부드러운 알림)
+
 - **파일**: `.claude/hooks/error-handling-reminder.ts`
 - **트리거**: Claude가 응답을 완료한 후에
 - **목적**: 작성한 코드의 오류 처리에 대한 자가 평가를 위한 부드러운 리마인더
@@ -50,6 +53,7 @@ Anthropic의 공식 모범 사례(500-line rule, Progressive disclosure 패턴 �
 **위치**: `.claude/skills/skill-rules.json`
 
 정의 내용:
+
 - 모든 skills와 트리거 조건
 - 적용 수준 (block, suggest, warn)
 - 파일 경로 패턴 (glob)
@@ -65,6 +69,7 @@ Anthropic의 공식 모범 사례(500-line rule, Progressive disclosure 패턴 �
 **목적:** 오류를 방지하는 핵심 모범 사례 강제
 
 **특성:**
+
 - Type: `"guardrail"`
 - Enforcement: `"block"`
 - Priority: `"critical"` 또는 `"high"`
@@ -73,10 +78,12 @@ Anthropic의 공식 모범 사례(500-line rule, Progressive disclosure 패턴 �
 - 세션 인식 (같은 세션에서 반복 알림 안 함)
 
 **예시:**
+
 - `database-verification` - Prisma 쿼리 전 테이블/컬럼 이름 검증
 - `frontend-dev-guidelines` - React/TypeScript 패턴 강제
 
 **사용 시점:**
+
 - 런타임 오류를 유발하는 실수
 - 데이터 무결성 관련 문제
 - 치명적 호환성 문제
@@ -86,6 +93,7 @@ Anthropic의 공식 모범 사례(500-line rule, Progressive disclosure 패턴 �
 **목적:** 특정 영역에 대한 종합 가이드 제공
 
 **특성:**
+
 - Type: `"domain"`
 - Enforcement: `"suggest"`
 - Priority: `"high"` 또는 `"medium"`
@@ -94,11 +102,13 @@ Anthropic의 공식 모범 사례(500-line rule, Progressive disclosure 패턴 �
 - 종합적인 문서화
 
 **예시:**
+
 - `backend-dev-guidelines` - Node.js/Express/TypeScript 패턴
 - `frontend-dev-guidelines` - React/TypeScript 모범 사례
 - `error-tracking` - Sentry 통합 가이드
 
 **사용 시점:**
+
 - 깊은 지식이 필요한 복잡한 시스템
 - 모범 사례 문서화
 - 아키텍처 패턴
@@ -113,6 +123,7 @@ Anthropic의 공식 모범 사례(500-line rule, Progressive disclosure 패턴 �
 **위치:** `.claude/skills/{skill-name}/SKILL.md`
 
 **템플릿:**
+
 ```markdown
 ---
 name: my-new-skill
@@ -122,16 +133,20 @@ description: 이 skill을 트리거하는 키워드를 포함한 간단한 설�
 # 내 새 Skill
 
 ## 목적
+
 이 skill이 도움이 되는 부분
 
 ## 사용 시점
+
 특정 시나리오와 조건
 
 ## 핵심 정보
+
 실제 가이드, 문서, 패턴, 예시
 ```
 
 **모범 사례:**
+
 - ✅ **이름**: 소문자, 하이픈, 동명사 형태 선호
 - ✅ **설명**: 모든 트리거 키워드/구문 포함 (최대 1024자)
 - ✅ **내용**: 500줄 미만 - 상세 정보는 참조 파일 사용
@@ -143,6 +158,7 @@ description: 이 skill을 트리거하는 키워드를 포함한 간단한 설�
 전체 스키마는 [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md)를 참조하세요.
 
 **기본 템플릿:**
+
 ```json
 {
   "my-new-skill": {
@@ -160,12 +176,14 @@ description: 이 skill을 트리거하는 키워드를 포함한 간단한 설�
 ### 3단계: 트리거 테스트
 
 **UserPromptSubmit 테스트:**
+
 ```bash
 echo '{"session_id":"test","prompt":"테스트 프롬프트"}' | \
   npx tsx .claude/hooks/skill-activation-prompt.ts
 ```
 
 **PreToolUse 테스트:**
+
 ```bash
 cat <<'EOF' | npx tsx .claude/hooks/skill-verification-guard.ts
 {"session_id":"test","tool_name":"Edit","tool_input":{"file_path":"test.ts"}}
@@ -175,6 +193,7 @@ EOF
 ### 4단계: 패턴 개선
 
 테스트 결과에 따라:
+
 - 누락된 키워드 추가
 - 오탐을 줄이기 위해 intent 패턴 개선
 - 파일 경로 패턴 조정
@@ -228,6 +247,7 @@ EOF
 **목적:** 같은 세션에서 반복 알림 방지
 
 **작동 방식:**
+
 - 첫 번째 편집 → Hook이 차단하고 세션 상태 업데이트
 - 두 번째 편집 (같은 세션) → Hook이 허용
 - 다른 세션 → 다시 차단
@@ -241,6 +261,7 @@ EOF
 **마커:** `// @skip-validation`
 
 **사용법:**
+
 ```typescript
 // @skip-validation
 import { PrismaService } from './prisma';
@@ -254,11 +275,13 @@ import { PrismaService } from './prisma';
 **목적:** 긴급 비활성화, 임시 재정의
 
 **전역 비활성화:**
+
 ```bash
 export SKIP_SKILL_GUARDRAILS=true  # 모든 PreToolUse 차단 비활성화
 ```
 
 **Skill별:**
+
 ```bash
 export SKIP_DB_VERIFICATION=true
 export SKIP_ERROR_REMINDER=true
@@ -295,7 +318,9 @@ export SKIP_ERROR_REMINDER=true
 특정 주제에 대한 상세 정보는 다음을 참조하세요:
 
 ### [TRIGGER_TYPES.md](TRIGGER_TYPES.md)
+
 모든 트리거 유형 종합 가이드:
+
 - 키워드 트리거 (명시적 주제 매칭)
 - Intent 패턴 (암시적 동작 감지)
 - 파일 경로 트리거 (glob 패턴)
@@ -304,7 +329,9 @@ export SKIP_ERROR_REMINDER=true
 - 일반적인 함정과 테스트 전략
 
 ### [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md)
+
 skill-rules.json 전체 스키마:
+
 - 전체 TypeScript 인터페이스 정의
 - 필드별 설명
 - 전체 guardrail skill 예시
@@ -312,7 +339,9 @@ skill-rules.json 전체 스키마:
 - 검증 가이드 및 일반적인 오류
 
 ### [HOOK_MECHANISMS.md](HOOK_MECHANISMS.md)
+
 Hook 내부 심층 분석:
+
 - UserPromptSubmit 흐름 (상세)
 - PreToolUse 흐름 (상세)
 - 종료 코드 동작 표 (핵심)
@@ -320,7 +349,9 @@ Hook 내부 심층 분석:
 - 성능 고려사항
 
 ### [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
+
 종합 디버깅 가이드:
+
 - Skill이 트리거되지 않음 (UserPromptSubmit)
 - PreToolUse가 차단하지 않음
 - 오탐 (너무 많은 트리거)
@@ -328,7 +359,9 @@ Hook 내부 심층 분석:
 - 성능 문제
 
 ### [PATTERNS_LIBRARY.md](PATTERNS_LIBRARY.md)
+
 바로 사용 가능한 패턴 모음:
+
 - Intent 패턴 라이브러리 (regex)
 - 파일 경로 패턴 라이브러리 (glob)
 - 콘텐츠 패턴 라이브러리 (regex)
@@ -336,7 +369,9 @@ Hook 내부 심층 분석:
 - 복사-붙여넣기 가능
 
 ### [ADVANCED.md](ADVANCED.md)
+
 향후 개선 사항 및 아이디어:
+
 - 동적 규칙 업데이트
 - Skill 종속성
 - 조건부 적용
@@ -389,6 +424,7 @@ Hook 내부 심층 분석:
 ### 문제 해결
 
 수동으로 hooks 테스트:
+
 ```bash
 # UserPromptSubmit
 echo '{"prompt":"test"}' | npx tsx .claude/hooks/skill-activation-prompt.ts
@@ -406,15 +442,18 @@ EOF
 ## 관련 파일
 
 **설정:**
+
 - `.claude/skills/skill-rules.json` - 마스터 설정
 - `.claude/hooks/state/` - 세션 추적
 - `.claude/settings.json` - Hook 등록
 
 **Hooks:**
+
 - `.claude/hooks/skill-activation-prompt.ts` - UserPromptSubmit
 - `.claude/hooks/error-handling-reminder.ts` - Stop 이벤트 (부드러운 리마인더)
 
 **모든 Skills:**
+
 - `.claude/skills/*/SKILL.md` - Skill 콘텐츠 파일
 
 ---

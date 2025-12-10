@@ -146,6 +146,7 @@ export default UserProfile;
 ```
 
 **사용:**
+
 ```typescript
 <SuspenseLoader>
     <UserProfile userId='123' onUpdate={() => console.log('Updated')} />
@@ -188,29 +189,29 @@ import apiClient from '@/lib/apiClient';
 import type { User, CreateUserPayload, UpdateUserPayload } from '../types';
 
 export const userApi = {
-    getUser: async (userId: string): Promise<User> => {
-        const { data } = await apiClient.get(`/users/${userId}`);
-        return data;
-    },
+  getUser: async (userId: string): Promise<User> => {
+    const { data } = await apiClient.get(`/users/${userId}`);
+    return data;
+  },
 
-    getUsers: async (): Promise<User[]> => {
-        const { data } = await apiClient.get('/users');
-        return data;
-    },
+  getUsers: async (): Promise<User[]> => {
+    const { data } = await apiClient.get('/users');
+    return data;
+  },
 
-    createUser: async (payload: CreateUserPayload): Promise<User> => {
-        const { data } = await apiClient.post('/users', payload);
-        return data;
-    },
+  createUser: async (payload: CreateUserPayload): Promise<User> => {
+    const { data } = await apiClient.post('/users', payload);
+    return data;
+  },
 
-    updateUser: async (userId: string, payload: UpdateUserPayload): Promise<User> => {
-        const { data } = await apiClient.put(`/users/${userId}`, payload);
-        return data;
-    },
+  updateUser: async (userId: string, payload: UpdateUserPayload): Promise<User> => {
+    const { data } = await apiClient.put(`/users/${userId}`, payload);
+    return data;
+  },
 
-    deleteUser: async (userId: string): Promise<void> => {
-        await apiClient.delete(`/users/${userId}`);
-    },
+  deleteUser: async (userId: string): Promise<void> => {
+    await apiClient.delete(`/users/${userId}`);
+  },
 };
 ```
 
@@ -222,20 +223,20 @@ import { userApi } from '../api/userApi';
 import type { User } from '../types';
 
 export function useSuspenseUser(userId: string) {
-    return useSuspenseQuery<User, Error>({
-        queryKey: ['user', userId],
-        queryFn: () => userApi.getUser(userId),
-        staleTime: 5 * 60 * 1000,
-        gcTime: 10 * 60 * 1000,
-    });
+  return useSuspenseQuery<User, Error>({
+    queryKey: ['user', userId],
+    queryFn: () => userApi.getUser(userId),
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
 }
 
 export function useSuspenseUsers() {
-    return useSuspenseQuery<User[], Error>({
-        queryKey: ['users'],
-        queryFn: () => userApi.getUsers(),
-        staleTime: 1 * 60 * 1000,  // 리스트에는 더 짧게
-    });
+  return useSuspenseQuery<User[], Error>({
+    queryKey: ['users'],
+    queryFn: () => userApi.getUsers(),
+    staleTime: 1 * 60 * 1000, // 리스트에는 더 짧게
+  });
 }
 ```
 
@@ -243,22 +244,22 @@ export function useSuspenseUsers() {
 
 ```typescript
 export interface User {
-    id: string;
-    username: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    roles: string[];
-    createdAt: string;
-    updatedAt: string;
+  id: string;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  roles: string[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface CreateUserPayload {
-    username: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    password: string;
+  username: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  password: string;
 }
 
 export type UpdateUserPayload = Partial<Omit<User, 'id' | 'createdAt' | 'updatedAt'>>;
@@ -533,6 +534,7 @@ export default UserDashboard;
 ```
 
 **장점:**
+
 - 각 섹션이 독립적으로 로드
 - 사용자가 부분 콘텐츠를 더 빨리 볼 수 있음
 - 더 나은 체감 성능
@@ -553,43 +555,36 @@ import type { Post } from '../types';
  * 가능할 때 그리드 캐시의 데이터 재사용
  */
 export function useSuspensePost(blogId: number, postId: number) {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useSuspenseQuery<Post, Error>({
-        queryKey: ['post', blogId, postId],
-        queryFn: async () => {
-            // 전략 1: 그리드 캐시 먼저 확인 (API 호출 방지)
-            const gridCache = queryClient.getQueryData<{ rows: Post[] }>([
-                'posts-v2',
-                blogId,
-                'summary'
-            ]) || queryClient.getQueryData<{ rows: Post[] }>([
-                'posts-v2',
-                blogId,
-                'flat'
-            ]);
+  return useSuspenseQuery<Post, Error>({
+    queryKey: ['post', blogId, postId],
+    queryFn: async () => {
+      // 전략 1: 그리드 캐시 먼저 확인 (API 호출 방지)
+      const gridCache =
+        queryClient.getQueryData<{ rows: Post[] }>(['posts-v2', blogId, 'summary']) ||
+        queryClient.getQueryData<{ rows: Post[] }>(['posts-v2', blogId, 'flat']);
 
-            if (gridCache?.rows) {
-                const cached = gridCache.rows.find(
-                    (row) => row.S_ID === postId
-                );
+      if (gridCache?.rows) {
+        const cached = gridCache.rows.find((row) => row.S_ID === postId);
 
-                if (cached) {
-                    return cached;  // 캐시에서 반환 - API 호출 없음!
-                }
-            }
+        if (cached) {
+          return cached; // 캐시에서 반환 - API 호출 없음!
+        }
+      }
 
-            // 전략 2: 캐시에 없음, API에서 fetch
-            return postApi.getPost(blogId, postId);
-        },
-        staleTime: 5 * 60 * 1000,       // 5분 동안 fresh
-        gcTime: 10 * 60 * 1000,          // 10분 동안 캐시
-        refetchOnWindowFocus: false,     // 포커스 시 refetch 안 함
-    });
+      // 전략 2: 캐시에 없음, API에서 fetch
+      return postApi.getPost(blogId, postId);
+    },
+    staleTime: 5 * 60 * 1000, // 5분 동안 fresh
+    gcTime: 10 * 60 * 1000, // 10분 동안 캐시
+    refetchOnWindowFocus: false, // 포커스 시 refetch 안 함
+  });
 }
 ```
 
 **이 패턴을 사용하는 이유:**
+
 - API 전에 그리드 캐시 확인
 - 사용자가 그리드에서 왔으면 즉시 데이터
 - 캐시에 없으면 API로 fallback
@@ -816,41 +811,39 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { User } from '../types';
 
 export const useToggleUserStatus = () => {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useMutation({
-        mutationFn: (userId: string) => userApi.toggleStatus(userId),
+  return useMutation({
+    mutationFn: (userId: string) => userApi.toggleStatus(userId),
 
-        // Optimistic update
-        onMutate: async (userId) => {
-            // 진행 중인 refetch 취소
-            await queryClient.cancelQueries({ queryKey: ['users'] });
+    // Optimistic update
+    onMutate: async (userId) => {
+      // 진행 중인 refetch 취소
+      await queryClient.cancelQueries({ queryKey: ['users'] });
 
-            // 이전 값 스냅샷
-            const previousUsers = queryClient.getQueryData<User[]>(['users']);
+      // 이전 값 스냅샷
+      const previousUsers = queryClient.getQueryData<User[]>(['users']);
 
-            // Optimistically UI 업데이트
-            queryClient.setQueryData<User[]>(['users'], (old) => {
-                return old?.map(user =>
-                    user.id === userId
-                        ? { ...user, active: !user.active }
-                        : user
-                ) || [];
-            });
+      // Optimistically UI 업데이트
+      queryClient.setQueryData<User[]>(['users'], (old) => {
+        return (
+          old?.map((user) => (user.id === userId ? { ...user, active: !user.active } : user)) || []
+        );
+      });
 
-            return { previousUsers };
-        },
+      return { previousUsers };
+    },
 
-        // 에러 시 롤백
-        onError: (err, userId, context) => {
-            queryClient.setQueryData(['users'], context?.previousUsers);
-        },
+    // 에러 시 롤백
+    onError: (err, userId, context) => {
+      queryClient.setQueryData(['users'], context?.previousUsers);
+    },
 
-        // mutation 후 refetch
-        onSettled: () => {
-            queryClient.invalidateQueries({ queryKey: ['users'] });
-        },
-    });
+    // mutation 후 refetch
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+    },
+  });
 };
 ```
 

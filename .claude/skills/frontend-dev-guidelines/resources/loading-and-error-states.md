@@ -23,6 +23,7 @@ const Component = () => {
 ```
 
 **왜 나쁜가:**
+
 1. **레이아웃 이동**: 로딩 완료 시 콘텐츠 위치가 점프
 2. **CLS (Cumulative Layout Shift)**: 나쁜 Core Web Vital 점수
 3. **불쾌한 UX**: 페이지 구조가 갑자기 변경
@@ -140,6 +141,7 @@ export const Dashboard: React.FC = () => {
 ```
 
 **장점:**
+
 - 각 섹션이 독립적으로 로드
 - 사용자가 부분 콘텐츠를 더 빨리 볼 수 있음
 - 더 나은 체감 성능
@@ -194,6 +196,7 @@ export const MyComponent: React.FC = () => {
 ```
 
 **기능:**
+
 - 스피너가 있는 반투명 오버레이 표시
 - 콘텐츠 영역 예약 (레이아웃 이동 없음)
 - 로딩 중 상호작용 방지
@@ -226,6 +229,7 @@ export const MyComponent: React.FC = () => {
 ```
 
 **사용 가능한 메서드:**
+
 - `showSuccess(message)` - 녹색 성공 메시지
 - `showError(message)` - 빨간색 에러 메시지
 - `showWarning(message)` - 주황색 경고 메시지
@@ -485,17 +489,20 @@ export const MyComponent: React.FC = () => {
 ## 요약
 
 **Loading States:**
+
 - ✅ **권장**: SuspenseLoader + useSuspenseQuery (최신 패턴)
 - ✅ **수용 가능**: LoadingOverlay (레거시 패턴)
 - ✅ **OK**: 같은 레이아웃의 Skeleton
 - ❌ **절대 금지**: Early return 또는 조건부 레이아웃
 
 **에러 처리:**
+
 - ✅ **항상**: 사용자 피드백에 useMuiSnackbar
 - ❌ **절대 금지**: react-toastify
 - ✅ queries/mutations에서 onError 콜백 사용
 - ✅ 컴포넌트 레벨 에러에 Error boundaries
 
 **참고:**
+
 - [component-patterns.md](component-patterns.md) - Suspense 통합
 - [data-fetching.md](data-fetching.md) - useSuspenseQuery 세부사항

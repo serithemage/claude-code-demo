@@ -12,6 +12,7 @@ description: Node.js/Express/TypeScript 마이크로서비스를 위한 종합 �
 ## 이 Skill 사용 시점
 
 다음 작업 시 자동 활성화됩니다:
+
 - Routes, endpoints, APIs 생성 또는 수정
 - Controllers, services, repositories 구축
 - Middleware 구현 (auth, validation, error handling)
@@ -92,6 +93,7 @@ service/src/
 ```
 
 **명명 규칙:**
+
 - Controllers: `PascalCase` - `UserController.ts`
 - Services: `camelCase` - `userService.ts`
 - Routes: `camelCase + Routes` - `userRoutes.ts`
@@ -106,7 +108,7 @@ service/src/
 ```typescript
 // ❌ 절대 안 됨: routes에 비즈니스 로직
 router.post('/submit', async (req, res) => {
-    // 200줄의 로직
+  // 200줄의 로직
 });
 
 // ✅ 항상: controller에 위임
@@ -117,14 +119,14 @@ router.post('/submit', (req, res) => controller.submit(req, res));
 
 ```typescript
 export class UserController extends BaseController {
-    async getUser(req: Request, res: Response): Promise<void> {
-        try {
-            const user = await this.userService.findById(req.params.id);
-            this.handleSuccess(res, user);
-        } catch (error) {
-            this.handleError(error, res, 'getUser');
-        }
+  async getUser(req: Request, res: Response): Promise<void> {
+    try {
+      const user = await this.userService.findById(req.params.id);
+      this.handleSuccess(res, user);
+    } catch (error) {
+      this.handleError(error, res, 'getUser');
     }
+  }
 }
 ```
 
@@ -132,10 +134,10 @@ export class UserController extends BaseController {
 
 ```typescript
 try {
-    await operation();
+  await operation();
 } catch (error) {
-    Sentry.captureException(error);
-    throw error;
+  Sentry.captureException(error);
+  throw error;
 }
 ```
 
@@ -168,9 +170,9 @@ const users = await userRepository.findActive();
 
 ```typescript
 describe('UserService', () => {
-    it('should create user', async () => {
-        expect(user).toBeDefined();
-    });
+  it('should create user', async () => {
+    expect(user).toBeDefined();
+  });
 });
 ```
 
@@ -206,15 +208,15 @@ import { asyncErrorWrapper } from './middleware/errorBoundary';
 
 ### HTTP 상태 코드
 
-| 코드 | 사용 사례 |
-|------|----------|
-| 200 | 성공 |
-| 201 | 생성됨 |
-| 400 | 잘못된 요청 |
-| 401 | 인증 안 됨 |
-| 403 | 금지됨 |
-| 404 | 찾을 수 없음 |
-| 500 | 서버 오류 |
+| 코드 | 사용 사례    |
+| ---- | ------------ |
+| 200  | 성공         |
+| 201  | 생성됨       |
+| 400  | 잘못된 요청  |
+| 401  | 인증 안 됨   |
+| 403  | 금지됨       |
+| 404  | 찾을 수 없음 |
+| 500  | 서버 오류    |
 
 ### 서비스 템플릿
 
@@ -236,55 +238,66 @@ import { asyncErrorWrapper } from './middleware/errorBoundary';
 
 ## 네비게이션 가이드
 
-| 필요한 작업... | 읽어야 할 문서 |
-|------------|-----------|
-| 아키텍처 이해 | [architecture-overview.md](architecture-overview.md) |
-| Routes/controllers 생성 | [routing-and-controllers.md](routing-and-controllers.md) |
-| 비즈니스 로직 구성 | [services-and-repositories.md](services-and-repositories.md) |
-| 입력 검증 | [validation-patterns.md](validation-patterns.md) |
-| Error tracking 추가 | [sentry-and-monitoring.md](sentry-and-monitoring.md) |
-| Middleware 생성 | [middleware-guide.md](middleware-guide.md) |
-| 데이터베이스 액세스 | [database-patterns.md](database-patterns.md) |
-| 설정 관리 | [configuration.md](configuration.md) |
-| Async/errors 처리 | [async-and-errors.md](async-and-errors.md) |
-| 테스트 작성 | [testing-guide.md](testing-guide.md) |
-| 예시 보기 | [complete-examples.md](complete-examples.md) |
+| 필요한 작업...          | 읽어야 할 문서                                               |
+| ----------------------- | ------------------------------------------------------------ |
+| 아키텍처 이해           | [architecture-overview.md](architecture-overview.md)         |
+| Routes/controllers 생성 | [routing-and-controllers.md](routing-and-controllers.md)     |
+| 비즈니스 로직 구성      | [services-and-repositories.md](services-and-repositories.md) |
+| 입력 검증               | [validation-patterns.md](validation-patterns.md)             |
+| Error tracking 추가     | [sentry-and-monitoring.md](sentry-and-monitoring.md)         |
+| Middleware 생성         | [middleware-guide.md](middleware-guide.md)                   |
+| 데이터베이스 액세스     | [database-patterns.md](database-patterns.md)                 |
+| 설정 관리               | [configuration.md](configuration.md)                         |
+| Async/errors 처리       | [async-and-errors.md](async-and-errors.md)                   |
+| 테스트 작성             | [testing-guide.md](testing-guide.md)                         |
+| 예시 보기               | [complete-examples.md](complete-examples.md)                 |
 
 ---
 
 ## 리소스 파일
 
 ### [architecture-overview.md](architecture-overview.md)
+
 Layered architecture, 요청 수명 주기, 관심사 분리
 
 ### [routing-and-controllers.md](routing-and-controllers.md)
+
 Route 정의, BaseController, error handling, 예시
 
 ### [services-and-repositories.md](services-and-repositories.md)
+
 Service 패턴, DI, repository 패턴, 캐싱
 
 ### [validation-patterns.md](validation-patterns.md)
+
 Zod 스키마, 검증, DTO 패턴
 
 ### [sentry-and-monitoring.md](sentry-and-monitoring.md)
+
 Sentry 초기화, 오류 캡처, performance monitoring
 
 ### [middleware-guide.md](middleware-guide.md)
+
 Auth, audit, error boundaries, AsyncLocalStorage
 
 ### [database-patterns.md](database-patterns.md)
+
 PrismaService, repositories, 트랜잭션, 최적화
 
 ### [configuration.md](configuration.md)
+
 UnifiedConfig, 환경 설정, 시크릿
 
 ### [async-and-errors.md](async-and-errors.md)
+
 Async 패턴, 커스텀 에러, asyncErrorWrapper
 
 ### [testing-guide.md](testing-guide.md)
+
 Unit/integration 테스트, mocking, 커버리지
 
 ### [complete-examples.md](complete-examples.md)
+
 전체 예시, 리팩토링 가이드
 
 ---

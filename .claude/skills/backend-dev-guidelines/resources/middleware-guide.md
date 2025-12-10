@@ -21,22 +21,22 @@
 
 ```typescript
 export class SSOMiddlewareClient {
-    static verifyLoginStatus(req: Request, res: Response, next: NextFunction): void {
-        const token = req.cookies.refresh_token;
+  static verifyLoginStatus(req: Request, res: Response, next: NextFunction): void {
+    const token = req.cookies.refresh_token;
 
-        if (!token) {
-            return res.status(401).json({ error: 'Not authenticated' });
-        }
-
-        try {
-            const decoded = jwt.verify(token, config.tokens.jwt);
-            res.locals.claims = decoded;
-            res.locals.effectiveUserId = decoded.sub;
-            next();
-        } catch (error) {
-            res.status(401).json({ error: 'Invalid token' });
-        }
+    if (!token) {
+      return res.status(401).json({ error: 'Not authenticated' });
     }
+
+    try {
+      const decoded = jwt.verify(token, config.tokens.jwt);
+      res.locals.claims = decoded;
+      res.locals.effectiveUserId = decoded.sub;
+      next();
+    } catch (error) {
+      res.status(401).json({ error: 'Invalid token' });
+    }
+  }
 }
 ```
 
@@ -52,49 +52,51 @@ export class SSOMiddlewareClient {
 import { AsyncLocalStorage } from 'async_hooks';
 
 export interface AuditContext {
-    userId: string;
-    userName?: string;
-    impersonatedBy?: string;
-    sessionId?: string;
-    timestamp: Date;
-    requestId: string;
+  userId: string;
+  userName?: string;
+  impersonatedBy?: string;
+  sessionId?: string;
+  timestamp: Date;
+  requestId: string;
 }
 
 export const auditContextStorage = new AsyncLocalStorage<AuditContext>();
 
 export function auditMiddleware(req: Request, res: Response, next: NextFunction): void {
-    const context: AuditContext = {
-        userId: res.locals.effectiveUserId || 'anonymous',
-        userName: res.locals.claims?.preferred_username,
-        impersonatedBy: res.locals.isImpersonating ? res.locals.originalUserId : undefined,
-        timestamp: new Date(),
-        requestId: req.id || uuidv4(),
-    };
+  const context: AuditContext = {
+    userId: res.locals.effectiveUserId || 'anonymous',
+    userName: res.locals.claims?.preferred_username,
+    impersonatedBy: res.locals.isImpersonating ? res.locals.originalUserId : undefined,
+    timestamp: new Date(),
+    requestId: req.id || uuidv4(),
+  };
 
-    auditContextStorage.run(context, () => {
-        next();
-    });
+  auditContextStorage.run(context, () => {
+    next();
+  });
 }
 
 // 현재 컨텍스트 getter
 export function getAuditContext(): AuditContext | null {
-    return auditContextStorage.getStore() || null;
+  return auditContextStorage.getStore() || null;
 }
 ```
 
 **장점:**
+
 - 전체 요청에 걸쳐 컨텍스트 전파
 - 모든 함수에 컨텍스트를 전달할 필요 없음
 - services, repositories에서 자동으로 사용 가능
 - 타입 안전 컨텍스트 액세스
 
 **Services에서 사용:**
+
 ```typescript
 import { getAuditContext } from '../middleware/auditMiddleware';
 
 async function someOperation() {
-    const context = getAuditContext();
-    console.log('Operation by:', context?.userId);
+  const context = getAuditContext();
+  console.log('Operation by:', context?.userId);
 }
 ```
 
@@ -107,48 +109,43 @@ async function someOperation() {
 **파일:** `/form/src/middleware/errorBoundary.ts`
 
 ```typescript
-export function errorBoundary(
-    error: Error,
-    req: Request,
-    res: Response,
-    next: NextFunction
-): void {
-    // 상태 코드 결정
-    const statusCode = getStatusCodeForError(error);
+export function errorBoundary(error: Error, req: Request, res: Response, next: NextFunction): void {
+  // 상태 코드 결정
+  const statusCode = getStatusCodeForError(error);
 
-    // Sentry에 캡처
-    Sentry.withScope((scope) => {
-        scope.setLevel(statusCode >= 500 ? 'error' : 'warning');
-        scope.setTag('error_type', error.name);
-        scope.setContext('error_details', {
-            message: error.message,
-            stack: error.stack,
-        });
-        Sentry.captureException(error);
+  // Sentry에 캡처
+  Sentry.withScope((scope) => {
+    scope.setLevel(statusCode >= 500 ? 'error' : 'warning');
+    scope.setTag('error_type', error.name);
+    scope.setContext('error_details', {
+      message: error.message,
+      stack: error.stack,
     });
+    Sentry.captureException(error);
+  });
 
-    // 사용자 친화적 응답
-    res.status(statusCode).json({
-        success: false,
-        error: {
-            message: getUserFriendlyMessage(error),
-            code: error.name,
-        },
-        requestId: Sentry.getCurrentScope().getPropagationContext().traceId,
-    });
+  // 사용자 친화적 응답
+  res.status(statusCode).json({
+    success: false,
+    error: {
+      message: getUserFriendlyMessage(error),
+      code: error.name,
+    },
+    requestId: Sentry.getCurrentScope().getPropagationContext().traceId,
+  });
 }
 
 // Async wrapper
 export function asyncErrorWrapper(
-    handler: (req: Request, res: Response, next: NextFunction) => Promise<any>
+  handler: (req: Request, res: Response, next: NextFunction) => Promise<any>
 ) {
-    return async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            await handler(req, res, next);
-        } catch (error) {
-            next(error);
-        }
-    };
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await handler(req, res, next);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 ```
 
@@ -160,16 +157,14 @@ export function asyncErrorWrapper(
 
 ```typescript
 export function withAuthAndAudit(...authMiddleware: any[]) {
-    return [
-        ...authMiddleware,
-        auditMiddleware,
-    ];
+  return [...authMiddleware, auditMiddleware];
 }
 
 // 사용법
-router.post('/:formID/submit',
-    ...withAuthAndAudit(SSOMiddlewareClient.verifyLoginStatus),
-    async (req, res) => controller.submit(req, res)
+router.post(
+  '/:formID/submit',
+  ...withAuthAndAudit(SSOMiddlewareClient.verifyLoginStatus),
+  async (req, res) => controller.submit(req, res)
 );
 ```
 
@@ -208,6 +203,7 @@ app.use(Sentry.Handlers.errorHandler());
 ---
 
 **관련 파일:**
+
 - [SKILL.md](SKILL.md)
 - [routing-and-controllers.md](routing-and-controllers.md)
 - [async-and-errors.md](async-and-errors.md)

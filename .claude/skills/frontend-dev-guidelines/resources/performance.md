@@ -32,12 +32,14 @@ export const DataDisplay: React.FC<{ items: Item[], searchTerm: string }> = ({
 ```
 
 **useMemo를 사용해야 할 때:**
+
 - 대규모 배열 필터링/정렬
 - 복잡한 계산
 - 데이터 구조 변환
 - 비싼 연산 (루프, 재귀)
 
 **useMemo를 사용하지 않아야 할 때:**
+
 - 간단한 문자열 연결
 - 기본 산술
 - 조기 최적화 (먼저 프로파일링하세요!)
@@ -78,12 +80,14 @@ export const Parent: React.FC = () => {
 ```
 
 **useCallback을 사용해야 할 때:**
+
 - 자식에게 props로 전달되는 함수
 - useEffect의 의존성으로 사용되는 함수
 - memoized 컴포넌트에 전달되는 함수
 - 리스트의 이벤트 핸들러
 
 **useCallback을 사용하지 않아야 할 때:**
+
 - 자식에게 전달되지 않는 이벤트 핸들러
 - 간단한 인라인 핸들러: `onClick={() => doSomething()}`
 
@@ -111,6 +115,7 @@ export const ExpensiveComponent = React.memo<ExpensiveComponentProps>(
 ```
 
 **React.memo를 사용해야 할 때:**
+
 - 자주 렌더되는 컴포넌트
 - 비싼 렌더링이 있는 컴포넌트
 - props가 자주 변경되지 않을 때
@@ -118,6 +123,7 @@ export const ExpensiveComponent = React.memo<ExpensiveComponentProps>(
 - DataGrid 셀/렌더러
 
 **React.memo를 사용하지 않아야 할 때:**
+
 - props가 어차피 자주 변경될 때
 - 렌더링이 이미 빠를 때
 - 조기 최적화
@@ -157,6 +163,7 @@ export const SearchComponent: React.FC = () => {
 ```
 
 **최적 Debounce 타이밍:**
+
 - **300-500ms**: 검색/필터링
 - **1000ms**: 자동 저장
 - **100-200ms**: 실시간 유효성 검사
@@ -203,15 +210,15 @@ export const MyComponent: React.FC = () => {
 
 ```typescript
 useEffect(() => {
-    const handleResize = () => {
-        console.log('Resized');
-    };
+  const handleResize = () => {
+    console.log('Resized');
+  };
 
-    window.addEventListener('resize', handleResize);
+  window.addEventListener('resize', handleResize);
 
-    return () => {
-        window.removeEventListener('resize', handleResize);  // 정리!
-    };
+  return () => {
+    window.removeEventListener('resize', handleResize); // 정리!
+  };
 }, []);
 ```
 
@@ -219,20 +226,20 @@ useEffect(() => {
 
 ```typescript
 useEffect(() => {
-    const abortController = new AbortController();
+  const abortController = new AbortController();
 
-    fetch('/api/data', { signal: abortController.signal })
-        .then(response => response.json())
-        .then(data => setState(data))
-        .catch(error => {
-            if (error.name === 'AbortError') {
-                console.log('Fetch aborted');
-            }
-        });
+  fetch('/api/data', { signal: abortController.signal })
+    .then((response) => response.json())
+    .then((data) => setState(data))
+    .catch((error) => {
+      if (error.name === 'AbortError') {
+        console.log('Fetch aborted');
+      }
+    });
 
-    return () => {
-        abortController.abort();  // 정리!
-    };
+  return () => {
+    abortController.abort(); // 정리!
+  };
 }, []);
 ```
 
@@ -369,19 +376,19 @@ export const Parent: React.FC<{ config: Config }> = ({ config }) => {
 
 ```typescript
 // ❌ 피하세요 - 최상위에서 무거운 라이브러리 import
-import jsPDF from 'jspdf';  // 큰 라이브러리가 즉시 로드됨
-import * as XLSX from 'xlsx';  // 큰 라이브러리가 즉시 로드됨
+import jsPDF from 'jspdf'; // 큰 라이브러리가 즉시 로드됨
+import * as XLSX from 'xlsx'; // 큰 라이브러리가 즉시 로드됨
 
 // ✅ 올바름 - 필요할 때 동적 import
 const handleExportPDF = async () => {
-    const { jsPDF } = await import('jspdf');
-    const doc = new jsPDF();
-    // 사용
+  const { jsPDF } = await import('jspdf');
+  const doc = new jsPDF();
+  // 사용
 };
 
 const handleExportExcel = async () => {
-    const XLSX = await import('xlsx');
-    // 사용
+  const XLSX = await import('xlsx');
+  // 사용
 };
 ```
 
@@ -390,6 +397,7 @@ const handleExportExcel = async () => {
 ## 요약
 
 **성능 체크리스트:**
+
 - ✅ 비싼 계산에 `useMemo` (filter, sort, map)
 - ✅ 자식에게 전달되는 함수에 `useCallback`
 - ✅ 비싼 컴포넌트에 `React.memo`
@@ -401,6 +409,7 @@ const handleExportExcel = async () => {
 - ✅ React.lazy로 코드 스플리팅
 
 **참고:**
+
 - [component-patterns.md](component-patterns.md) - Lazy loading
 - [data-fetching.md](data-fetching.md) - TanStack Query 최적화
 - [complete-examples.md](complete-examples.md) - 컨텍스트 내 성능 패턴

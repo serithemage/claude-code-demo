@@ -8,17 +8,17 @@ TanStack Router 구현과 폴더 기반 라우팅 및 lazy loading 패턴입니�
 
 ### 페이지 구조
 
-| 경로 | 페이지 | 인증 | 설명 |
-|------|--------|------|------|
-| `/` | Home | 불필요 | 글로벌 피드, 인기 태그 |
-| `/login` | Login | 불필요 | 로그인 폼 |
-| `/register` | Register | 불필요 | 가입 폼 |
-| `/settings` | Settings | 필수 | 사용자 설정 |
-| `/editor` | Editor | 필수 | 새 글 작성 |
-| `/editor/:slug` | Editor | 필수 | 글 수정 |
-| `/article/:slug` | Article | 불필요 | 글 상세, 댓글 |
-| `/profile/:username` | Profile | 불필요 | 사용자 프로필, 글 목록 |
-| `/profile/:username/favorites` | Profile | 불필요 | 좋아요한 글 목록 |
+| 경로                           | 페이지   | 인증   | 설명                   |
+| ------------------------------ | -------- | ------ | ---------------------- |
+| `/`                            | Home     | 불필요 | 글로벌 피드, 인기 태그 |
+| `/login`                       | Login    | 불필요 | 로그인 폼              |
+| `/register`                    | Register | 불필요 | 가입 폼                |
+| `/settings`                    | Settings | 필수   | 사용자 설정            |
+| `/editor`                      | Editor   | 필수   | 새 글 작성             |
+| `/editor/:slug`                | Editor   | 필수   | 글 수정                |
+| `/article/:slug`               | Article  | 불필요 | 글 상세, 댓글          |
+| `/profile/:username`           | Profile  | 불필요 | 사용자 프로필, 글 목록 |
+| `/profile/:username/favorites` | Profile  | 불필요 | 좋아요한 글 목록       |
 
 ### 라우트 파일 구조
 
@@ -47,12 +47,12 @@ routes/
 import { createFileRoute, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/settings')({
-    beforeLoad: ({ context }) => {
-        if (!context.auth.isAuthenticated) {
-            throw redirect({ to: '/login' });
-        }
-    },
-    component: SettingsPage,
+  beforeLoad: ({ context }) => {
+    if (!context.auth.isAuthenticated) {
+      throw redirect({ to: '/login' });
+    }
+  },
+  component: SettingsPage,
 });
 ```
 
@@ -61,6 +61,7 @@ export const Route = createFileRoute('/settings')({
 ## TanStack Router 개요
 
 파일 기반 라우팅이 있는 **TanStack Router**:
+
 - 폴더 구조가 routes를 정의
 - 코드 스플리팅을 위한 Lazy loading
 - 타입 안전 라우팅
@@ -86,6 +87,7 @@ routes/
 ```
 
 **패턴**:
+
 - `index.tsx` = 해당 경로의 Route
 - `$param.tsx` = 동적 파라미터
 - 중첩 폴더 = 중첩 routes
@@ -133,6 +135,7 @@ export default PostsPage;
 ```
 
 **핵심 포인트:**
+
 - 무거운 컴포넌트 lazy load
 - route 경로와 함께 `createFileRoute`
 - breadcrumb 데이터용 `loader`
@@ -150,9 +153,7 @@ import { lazy } from 'react';
 
 // named exports의 경우 .then()으로 default에 매핑
 const MyPage = lazy(() =>
-    import('@/features/my-feature/components/MyPage').then(
-        (module) => ({ default: module.MyPage })
-    )
+  import('@/features/my-feature/components/MyPage').then((module) => ({ default: module.MyPage }))
 );
 ```
 
@@ -293,10 +294,10 @@ export const MyComponent: React.FC = () => {
 
 ```typescript
 const handleNavigate = () => {
-    navigate({
-        to: '/users/$userId',
-        params: { userId: '123' },
-    });
+  navigate({
+    to: '/users/$userId',
+    params: { userId: '123' },
+  });
 };
 ```
 
@@ -304,10 +305,10 @@ const handleNavigate = () => {
 
 ```typescript
 const handleSearch = () => {
-    navigate({
-        to: '/search',
-        search: { query: 'test', page: 1 },
-    });
+  navigate({
+    to: '/search',
+    search: { query: 'test', page: 1 },
+  });
 };
 ```
 
@@ -315,7 +316,7 @@ const handleSearch = () => {
 
 ## Route 레이아웃 패턴
 
-### 루트 레이아웃 (__root.tsx)
+### 루트 레이아웃 (\_\_root.tsx)
 
 ```typescript
 import { createRootRoute, Outlet } from '@tanstack/react-router';
@@ -404,6 +405,7 @@ export default UserPage;
 ## 요약
 
 **Routing 체크리스트:**
+
 - ✅ 폴더 기반: `routes/my-route/index.tsx`
 - ✅ 컴포넌트 Lazy load: `React.lazy(() => import())`
 - ✅ route 경로와 함께 `createFileRoute` 사용
@@ -413,6 +415,7 @@ export default UserPage;
 - ✅ 프로그래매틱 네비게이션에 `useNavigate()` 사용
 
 **참고:**
+
 - [component-patterns.md](component-patterns.md) - Lazy loading 패턴
 - [loading-and-error-states.md](loading-and-error-states.md) - SuspenseLoader 사용
 - [complete-examples.md](complete-examples.md) - 전체 route 예제

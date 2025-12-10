@@ -9,6 +9,7 @@
 ### React.FC를 사용하는 이유
 
 모든 컴포넌트는 다음을 위해 `React.FC<Props>` 패턴을 사용합니다:
+
 - props에 대한 명시적 타입 안전성
 - 일관된 컴포넌트 시그니처
 - 명확한 prop 인터페이스 문서화
@@ -38,6 +39,7 @@ export default MyComponent;
 ```
 
 **핵심 포인트:**
+
 - JSDoc 주석이 있는 별도의 Props 인터페이스 정의
 - `React.FC<Props>`가 타입 안전성 제공
 - 파라미터에서 props 구조분해
@@ -50,6 +52,7 @@ export default MyComponent;
 ### Lazy Load해야 할 때
 
 다음과 같은 컴포넌트는 lazy load합니다:
+
 - 무거운 것 (DataGrid, 차트, 리치 텍스트 에디터)
 - Route 레벨 컴포넌트
 - Modal/dialog 콘텐츠 (초기에 표시되지 않음)
@@ -61,15 +64,13 @@ export default MyComponent;
 import React from 'react';
 
 // 무거운 컴포넌트 lazy load
-const PostDataGrid = React.lazy(() =>
-    import('./grids/PostDataGrid')
-);
+const PostDataGrid = React.lazy(() => import('./grids/PostDataGrid'));
 
 // named exports의 경우
 const MyComponent = React.lazy(() =>
-    import('./MyComponent').then(module => ({
-        default: module.MyComponent
-    }))
+  import('./MyComponent').then((module) => ({
+    default: module.MyComponent,
+  }))
 );
 ```
 
@@ -107,6 +108,7 @@ export default PostTable;
 ### SuspenseLoader 컴포넌트
 
 **Import:**
+
 ```typescript
 import { SuspenseLoader } from '~components/SuspenseLoader';
 // 또는
@@ -114,6 +116,7 @@ import { SuspenseLoader } from '@/components/SuspenseLoader';
 ```
 
 **사용:**
+
 ```typescript
 <SuspenseLoader>
     <LazyLoadedComponent />
@@ -121,6 +124,7 @@ import { SuspenseLoader } from '@/components/SuspenseLoader';
 ```
 
 **기능:**
+
 - lazy 컴포넌트 로드 중 로딩 인디케이터 표시
 - 부드러운 페이드인 애니메이션
 - 일관된 로딩 경험
@@ -129,6 +133,7 @@ import { SuspenseLoader } from '@/components/SuspenseLoader';
 ### Suspense Boundaries 배치 위치
 
 **Route 레벨:**
+
 ```typescript
 // routes/my-route/index.tsx
 const MyPage = lazy(() => import('@/features/my-feature/components/MyPage'));
@@ -143,6 +148,7 @@ function Route() {
 ```
 
 **컴포넌트 레벨:**
+
 ```typescript
 function ParentComponent() {
     return (
@@ -157,6 +163,7 @@ function ParentComponent() {
 ```
 
 **여러 Boundaries:**
+
 ```typescript
 function Page() {
     return (
@@ -307,6 +314,7 @@ export default MyComponent;
 ### 컴포넌트를 분리해야 할 때
 
 **여러 컴포넌트로 분리해야 할 때:**
+
 - 컴포넌트가 300줄 초과
 - 여러 개의 구분된 책임
 - 재사용 가능한 섹션
@@ -339,6 +347,7 @@ function ParentContainer() {
 ### 함께 유지해야 할 때
 
 **같은 파일에 유지해야 할 때:**
+
 - 컴포넌트 200줄 미만
 - 밀접하게 결합된 로직
 - 다른 곳에서 재사용 불가
@@ -359,6 +368,7 @@ export default MyComponent;
 ```
 
 **이유:**
+
 - 테스트/리팩토링을 위한 named export
 - lazy loading 편의를 위한 default export
 - 소비자에게 두 옵션 모두 제공
@@ -367,9 +377,9 @@ export default MyComponent;
 
 ```typescript
 const MyComponent = React.lazy(() =>
-    import('./MyComponent').then(module => ({
-        default: module.MyComponent
-    }))
+  import('./MyComponent').then((module) => ({
+    default: module.MyComponent,
+  }))
 );
 ```
 
@@ -410,6 +420,7 @@ export const Child: React.FC<ChildProps> = ({ data, onSelect }) => {
 ### Prop Drilling 피하기
 
 **깊은 중첩에는 context 사용:**
+
 ```typescript
 // ❌ 피하세요 - 5단계 이상 prop drilling
 <A prop={x}>
@@ -487,6 +498,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 ## 요약
 
 **최신 컴포넌트 레시피:**
+
 1. TypeScript와 함께 `React.FC<Props>`
 2. 무거우면 lazy load: `React.lazy(() => import())`
 3. 로딩을 위해 `<SuspenseLoader>`로 감싸기
@@ -497,6 +509,7 @@ export const DataProvider: React.FC<DataProviderProps> = ({ children }) => {
 8. 로딩 상태에서 early returns 금지
 
 **참고:**
+
 - [data-fetching.md](data-fetching.md) - useSuspenseQuery 세부사항
 - [loading-and-error-states.md](loading-and-error-states.md) - Suspense 모범 사례
 - [complete-examples.md](complete-examples.md) - 전체 작동 예제

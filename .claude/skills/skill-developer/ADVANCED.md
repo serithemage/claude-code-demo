@@ -11,12 +11,14 @@ Skill 시스템의 향후 개선을 위한 아이디어와 개념입니다.
 **향후 개선:** 재시작 없이 설정 핫 리로드
 
 **구현 아이디어:**
+
 - skill-rules.json 변경 감시
 - 파일 수정 시 다시 로드
 - 캐시된 컴파일 regex 무효화
 - 사용자에게 다시 로드 알림
 
 **장점:**
+
 - Skill 개발 시 더 빠른 반복
 - Claude Code 재시작 불필요
 - 개발자 경험 향상
@@ -30,6 +32,7 @@ Skill 시스템의 향후 개선을 위한 아이디어와 개념입니다.
 **향후 개선:** Skill 종속성과 로드 순서 지정
 
 **설정 아이디어:**
+
 ```json
 {
   "my-advanced-skill": {
@@ -41,11 +44,13 @@ Skill 시스템의 향후 개선을 위한 아이디어와 개념입니다.
 ```
 
 **사용 사례:**
+
 - 고급 skill이 기본 skill 지식을 기반으로 함
 - 기초 skills가 먼저 로드되도록 보장
 - 복잡한 워크플로우를 위한 skill 체인
 
 **장점:**
+
 - 더 나은 skill 구성
 - 명확한 skill 관계
 - Progressive disclosure
@@ -59,6 +64,7 @@ Skill 시스템의 향후 개선을 위한 아이디어와 개념입니다.
 **향후 개선:** context 또는 환경에 따라 적용
 
 **설정 아이디어:**
+
 ```json
 {
   "enforcement": {
@@ -73,11 +79,13 @@ Skill 시스템의 향후 개선을 위한 아이디어와 개념입니다.
 ```
 
 **사용 사례:**
+
 - 프로덕션에서 더 엄격한 적용
 - 개발 중 완화된 규칙
 - CI/CD 파이프라인 요구 사항
 
 **장점:**
+
 - 환경에 적합한 적용
 - 유연한 규칙 적용
 - Context 인식 guardrails
@@ -91,6 +99,7 @@ Skill 시스템의 향후 개선을 위한 아이디어와 개념입니다.
 **향후 개선:** Skill 사용 패턴 및 효과 추적
 
 **수집할 지표:**
+
 - Skill 트리거 빈도
 - 오탐률
 - 미탐률
@@ -99,12 +108,14 @@ Skill 시스템의 향후 개선을 위한 아이디어와 개념입니다.
 - 성능 지표 (실행 시간)
 
 **대시보드 아이디어:**
+
 - 가장 많이/적게 사용되는 skills
 - 오탐률이 가장 높은 skills
 - 성능 병목 지점
 - Skill 효과 점수
 
 **장점:**
+
 - 데이터 기반 skill 개선
 - 문제 조기 식별
 - 실제 사용 기반 패턴 최적화
@@ -118,6 +129,7 @@ Skill 시스템의 향후 개선을 위한 아이디어와 개념입니다.
 **향후 개선:** Skills 버전 관리 및 호환성 추적
 
 **설정 아이디어:**
+
 ```json
 {
   "my-skill": {
@@ -130,6 +142,7 @@ Skill 시스템의 향후 개선을 위한 아이디어와 개념입니다.
 ```
 
 **장점:**
+
 - Skill 발전 추적
 - 호환성 보장
 - 변경 사항 문서화
@@ -144,11 +157,13 @@ Skill 시스템의 향후 개선을 위한 아이디어와 개념입니다.
 **향후 개선:** Skill 콘텐츠에 여러 언어 지원
 
 **구현 아이디어:**
+
 - 언어별 SKILL.md 변형
 - 자동 언어 감지
 - 영어로 폴백
 
 **사용 사례:**
+
 - 국제 팀
 - 현지화된 문서
 - 다국어 프로젝트
@@ -162,19 +177,21 @@ Skill 시스템의 향후 개선을 위한 아이디어와 개념입니다.
 **향후 개선:** 자동화된 skill 테스트
 
 **기능:**
+
 - 트리거 패턴용 테스트 케이스
 - Assertion 프레임워크
 - CI/CD 통합
 - 커버리지 리포트
 
 **테스트 예시:**
+
 ```typescript
 describe('database-verification', () => {
   it('triggers on Prisma imports', () => {
     const result = testSkill({
-      prompt: "add user tracking",
-      file: "services/user.ts",
-      content: "import { PrismaService } from './prisma'"
+      prompt: 'add user tracking',
+      file: 'services/user.ts',
+      content: "import { PrismaService } from './prisma'",
     });
 
     expect(result.triggered).toBe(true);
@@ -184,6 +201,7 @@ describe('database-verification', () => {
 ```
 
 **장점:**
+
 - 회귀 방지
 - 배포 전 패턴 검증
 - 변경에 대한 확신

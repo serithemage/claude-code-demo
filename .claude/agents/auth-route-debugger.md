@@ -44,38 +44,35 @@ color: purple
 ### 인증 테스트
 
 1. `scripts/test-auth-route.js`를 사용하여 인증과 함께 라우트 테스트:
-
-    - GET 요청의 경우: `node scripts/test-auth-route.js [URL]`
-    - POST/PUT/DELETE의 경우: `node scripts/test-auth-route.js --method [METHOD] --body '[JSON]' [URL]`
-    - 인증 문제인지 확인하기 위해 인증 없이 테스트: `--no-auth` 플래그
+   - GET 요청의 경우: `node scripts/test-auth-route.js [URL]`
+   - POST/PUT/DELETE의 경우: `node scripts/test-auth-route.js --method [METHOD] --body '[JSON]' [URL]`
+   - 인증 문제인지 확인하기 위해 인증 없이 테스트: `--no-auth` 플래그
 
 2. 인증 없이는 작동하지만 인증과 함께 실패하는 경우, 조사:
-    - 쿠키 구성 (httpOnly, secure, sameSite)
-    - SSO 미들웨어의 JWT 서명/검증
-    - 토큰 만료 설정
-    - 역할/권한 요구사항
+   - 쿠키 구성 (httpOnly, secure, sameSite)
+   - SSO 미들웨어의 JWT 서명/검증
+   - 토큰 만료 설정
+   - 역할/권한 요구사항
 
 ### 확인할 일반적인 문제
 
 1. **라우트를 찾을 수 없음 (404)**:
-
-    - app.ts에서 라우트 등록 누락
-    - catch-all 라우트 뒤에 등록된 라우트
-    - 라우트 경로 또는 HTTP 메서드 오타
-    - 누락된 라우터 export/import
-    - PM2 로그에서 시작 에러 확인: `pm2 logs [service] --lines 500`
+   - app.ts에서 라우트 등록 누락
+   - catch-all 라우트 뒤에 등록된 라우트
+   - 라우트 경로 또는 HTTP 메서드 오타
+   - 누락된 라우터 export/import
+   - PM2 로그에서 시작 에러 확인: `pm2 logs [service] --lines 500`
 
 2. **인증 실패 (401/403)**:
-
-    - 만료된 토큰 (Keycloak 토큰 수명 확인)
-    - 누락되거나 잘못된 형식의 refresh_token 쿠키
-    - form/config.ini의 잘못된 JWT secret
-    - 사용자를 차단하는 역할 기반 접근 제어
+   - 만료된 토큰 (Keycloak 토큰 수명 확인)
+   - 누락되거나 잘못된 형식의 refresh_token 쿠키
+   - form/config.ini의 잘못된 JWT secret
+   - 사용자를 차단하는 역할 기반 접근 제어
 
 3. **쿠키 문제**:
-    - 개발 vs 프로덕션 쿠키 설정
-    - 쿠키 전송을 방해하는 CORS 구성
-    - 교차 출처 요청을 차단하는 SameSite 정책
+   - 개발 vs 프로덕션 쿠키 설정
+   - 쿠키 전송을 방해하는 CORS 구성
+   - 교차 출처 요청을 차단하는 SameSite 정책
 
 ### 페이로드 테스트
 
@@ -97,11 +94,11 @@ POST/PUT 라우트를 테스트할 때, 다음을 통해 필요한 페이로드 
 
 ## 주요 기술 세부사항
 
--   SSO 미들웨어는 `refresh_token` 쿠키에 JWT 서명된 refresh 토큰을 기대합니다
--   사용자 클레임은 username, email, roles를 포함하여 `res.locals.claims`에 저장됩니다
--   기본 개발 자격 증명: username=testuser, password=testpassword
--   Keycloak realm: yourRealm, Client: your-app-client
--   라우트는 쿠키 기반 인증과 잠재적인 Bearer 토큰 폴백을 모두 처리해야 합니다
+- SSO 미들웨어는 `refresh_token` 쿠키에 JWT 서명된 refresh 토큰을 기대합니다
+- 사용자 클레임은 username, email, roles를 포함하여 `res.locals.claims`에 저장됩니다
+- 기본 개발 자격 증명: username=testuser, password=testpassword
+- Keycloak realm: yourRealm, Client: your-app-client
+- 라우트는 쿠키 기반 인증과 잠재적인 Bearer 토큰 폴백을 모두 처리해야 합니다
 
 ## 출력 형식
 

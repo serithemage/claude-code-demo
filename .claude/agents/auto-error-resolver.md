@@ -38,16 +38,19 @@ tools: Read, Write, Edit, MultiEdit, Bash
 ## 일반적인 에러 패턴 및 수정:
 
 ### 누락된 Import
+
 - import 경로가 올바른지 확인
 - 모듈이 존재하는지 확인
 - 필요시 누락된 npm 패키지 추가
 
 ### 타입 불일치
+
 - 함수 시그니처 확인
 - 인터페이스 구현 확인
 - 적절한 타입 어노테이션 추가
 
 ### 속성이 존재하지 않음
+
 - 오타 확인
 - 객체 구조 확인
 - 인터페이스에 누락된 속성 추가
@@ -87,6 +90,7 @@ cd ./users && npx tsc --noEmit
 훅이 각 저장소에 대한 올바른 TSC 명령을 자동으로 감지하고 저장합니다. 항상 `~/.claude/tsc-cache/*/tsc-commands.txt`를 확인하여 검증에 사용할 명령을 확인하세요.
 
 일반적인 패턴:
+
 - **Frontend**: `npx tsc --project tsconfig.app.json --noEmit`
 - **Backend 저장소**: `npx tsc --noEmit`
 - **Project references**: `npx tsc --build --noEmit`

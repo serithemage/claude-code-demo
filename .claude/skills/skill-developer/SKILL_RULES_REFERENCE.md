@@ -25,34 +25,34 @@
 
 ```typescript
 interface SkillRules {
-    version: string;
-    skills: Record<string, SkillRule>;
+  version: string;
+  skills: Record<string, SkillRule>;
 }
 
 interface SkillRule {
-    type: 'guardrail' | 'domain';
-    enforcement: 'block' | 'suggest' | 'warn';
-    priority: 'critical' | 'high' | 'medium' | 'low';
+  type: 'guardrail' | 'domain';
+  enforcement: 'block' | 'suggest' | 'warn';
+  priority: 'critical' | 'high' | 'medium' | 'low';
 
-    promptTriggers?: {
-        keywords?: string[];
-        intentPatterns?: string[];  // Regex 문자열
-    };
+  promptTriggers?: {
+    keywords?: string[];
+    intentPatterns?: string[]; // Regex 문자열
+  };
 
-    fileTriggers?: {
-        pathPatterns: string[];     // Glob 패턴
-        pathExclusions?: string[];  // Glob 패턴
-        contentPatterns?: string[]; // Regex 문자열
-        createOnly?: boolean;       // 파일 생성 시에만 트리거
-    };
+  fileTriggers?: {
+    pathPatterns: string[]; // Glob 패턴
+    pathExclusions?: string[]; // Glob 패턴
+    contentPatterns?: string[]; // Regex 문자열
+    createOnly?: boolean; // 파일 생성 시에만 트리거
+  };
 
-    blockMessage?: string;  // Guardrails용, {file_path} 플레이스홀더
+  blockMessage?: string; // Guardrails용, {file_path} 플레이스홀더
 
-    skipConditions?: {
-        sessionSkillUsed?: boolean;      // 세션에서 사용된 경우 스킵
-        fileMarkers?: string[];          // 예: ["@skip-validation"]
-        envOverride?: string;            // 예: "SKIP_DB_VERIFICATION"
-    };
+  skipConditions?: {
+    sessionSkillUsed?: boolean; // 세션에서 사용된 경우 스킵
+    fileMarkers?: string[]; // 예: ["@skip-validation"]
+    envOverride?: string; // 예: "SKIP_DB_VERIFICATION"
+  };
 }
 ```
 
@@ -62,50 +62,50 @@ interface SkillRule {
 
 ### 최상위 레벨
 
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| `version` | string | 예 | 스키마 버전 (현재 "1.0") |
-| `skills` | object | 예 | skill 이름 → SkillRule 맵 |
+| 필드      | 타입   | 필수 | 설명                      |
+| --------- | ------ | ---- | ------------------------- |
+| `version` | string | 예   | 스키마 버전 (현재 "1.0")  |
+| `skills`  | object | 예   | skill 이름 → SkillRule 맵 |
 
 ### SkillRule 필드
 
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| `type` | string | 예 | "guardrail" (강제) 또는 "domain" (권고) |
-| `enforcement` | string | 예 | "block" (PreToolUse), "suggest" (UserPromptSubmit), 또는 "warn" |
-| `priority` | string | 예 | "critical", "high", "medium", 또는 "low" |
-| `promptTriggers` | object | 선택 | UserPromptSubmit hook용 트리거 |
-| `fileTriggers` | object | 선택 | PreToolUse hook용 트리거 |
-| `blockMessage` | string | 선택* | enforcement="block"인 경우 필수. `{file_path}` 플레이스홀더 사용 |
-| `skipConditions` | object | 선택 | 탈출 조건 및 세션 추적 |
+| 필드             | 타입   | 필수   | 설명                                                             |
+| ---------------- | ------ | ------ | ---------------------------------------------------------------- |
+| `type`           | string | 예     | "guardrail" (강제) 또는 "domain" (권고)                          |
+| `enforcement`    | string | 예     | "block" (PreToolUse), "suggest" (UserPromptSubmit), 또는 "warn"  |
+| `priority`       | string | 예     | "critical", "high", "medium", 또는 "low"                         |
+| `promptTriggers` | object | 선택   | UserPromptSubmit hook용 트리거                                   |
+| `fileTriggers`   | object | 선택   | PreToolUse hook용 트리거                                         |
+| `blockMessage`   | string | 선택\* | enforcement="block"인 경우 필수. `{file_path}` 플레이스홀더 사용 |
+| `skipConditions` | object | 선택   | 탈출 조건 및 세션 추적                                           |
 
-*Guardrails에 필수
+\*Guardrails에 필수
 
 ### promptTriggers 필드
 
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| `keywords` | string[] | 선택 | 정확한 부분 문자열 매칭 (대소문자 구분 안 함) |
-| `intentPatterns` | string[] | 선택 | Intent 감지용 Regex 패턴 |
+| 필드             | 타입     | 필수 | 설명                                          |
+| ---------------- | -------- | ---- | --------------------------------------------- |
+| `keywords`       | string[] | 선택 | 정확한 부분 문자열 매칭 (대소문자 구분 안 함) |
+| `intentPatterns` | string[] | 선택 | Intent 감지용 Regex 패턴                      |
 
 ### fileTriggers 필드
 
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| `pathPatterns` | string[] | 예* | 파일 경로용 Glob 패턴 |
-| `pathExclusions` | string[] | 선택 | 제외할 Glob 패턴 (예: 테스트 파일) |
-| `contentPatterns` | string[] | 선택 | 파일 내용 매칭용 Regex 패턴 |
-| `createOnly` | boolean | 선택 | 새 파일 생성 시에만 트리거 |
+| 필드              | 타입     | 필수 | 설명                               |
+| ----------------- | -------- | ---- | ---------------------------------- |
+| `pathPatterns`    | string[] | 예\* | 파일 경로용 Glob 패턴              |
+| `pathExclusions`  | string[] | 선택 | 제외할 Glob 패턴 (예: 테스트 파일) |
+| `contentPatterns` | string[] | 선택 | 파일 내용 매칭용 Regex 패턴        |
+| `createOnly`      | boolean  | 선택 | 새 파일 생성 시에만 트리거         |
 
-*fileTriggers가 있는 경우 필수
+\*fileTriggers가 있는 경우 필수
 
 ### skipConditions 필드
 
-| 필드 | 타입 | 필수 | 설명 |
-|------|------|------|------|
-| `sessionSkillUsed` | boolean | 선택 | 이 세션에서 skill이 이미 사용된 경우 스킵 |
-| `fileMarkers` | string[] | 선택 | 파일에 주석 마커가 포함된 경우 스킵 |
-| `envOverride` | string | 선택 | Skill을 비활성화하는 환경 변수 이름 |
+| 필드               | 타입     | 필수 | 설명                                      |
+| ------------------ | -------- | ---- | ----------------------------------------- |
+| `sessionSkillUsed` | boolean  | 선택 | 이 세션에서 skill이 이미 사용된 경우 스킵 |
+| `fileMarkers`      | string[] | 선택 | 파일에 주석 마커가 포함된 경우 스킵       |
+| `envOverride`      | string   | 선택 | Skill을 비활성화하는 환경 변수 이름       |
 
 ---
 
@@ -121,15 +121,7 @@ interface SkillRule {
     "priority": "critical",
 
     "promptTriggers": {
-      "keywords": [
-        "prisma",
-        "database",
-        "table",
-        "column",
-        "schema",
-        "query",
-        "migration"
-      ],
+      "keywords": ["prisma", "database", "table", "column", "schema", "query", "migration"],
       "intentPatterns": [
         "(add|create|implement).*?(user|login|auth|tracking|feature)",
         "(modify|update|change).*?(table|column|schema|field)",
@@ -148,10 +140,7 @@ interface SkillRule {
         "projects/src/**/*.ts",
         "utilities/src/**/*.ts"
       ],
-      "pathExclusions": [
-        "**/*.test.ts",
-        "**/*.spec.ts"
-      ],
+      "pathExclusions": ["**/*.test.ts", "**/*.spec.ts"],
       "contentPatterns": [
         "import.*[Pp]risma",
         "PrismaService",
@@ -173,9 +162,7 @@ interface SkillRule {
 
     "skipConditions": {
       "sessionSkillUsed": true,
-      "fileMarkers": [
-        "@skip-validation"
-      ],
+      "fileMarkers": ["@skip-validation"],
       "envOverride": "SKIP_DB_VERIFICATION"
     }
   }
@@ -241,10 +228,7 @@ interface SkillRule {
         "frontend/src/features/submissions/**/*.tsx",
         "frontend/src/features/submissions/**/*.ts"
       ],
-      "pathExclusions": [
-        "**/*.test.tsx",
-        "**/*.test.ts"
-      ]
+      "pathExclusions": ["**/*.test.tsx", "**/*.test.ts"]
     }
   }
 }
@@ -275,23 +259,26 @@ cat .claude/skills/skill-rules.json | jq .
 ### 일반적인 JSON 오류
 
 **후행 쉼표:**
+
 ```json
 {
-  "keywords": ["one", "two",]  // ❌ 후행 쉼표
+  "keywords": ["one", "two"] // ❌ 후행 쉼표
 }
 ```
 
 **따옴표 누락:**
+
 ```json
 {
-  type: "guardrail"  // ❌ 키에 따옴표 누락
+  "type": "guardrail" // ❌ 키에 따옴표 누락
 }
 ```
 
 **작은따옴표 (유효하지 않은 JSON):**
+
 ```json
 {
-  'type': 'guardrail'  // ❌ 큰따옴표 사용해야 함
+  "type": "guardrail" // ❌ 큰따옴표 사용해야 함
 }
 ```
 
@@ -310,6 +297,7 @@ cat .claude/skills/skill-rules.json | jq .
 ---
 
 **관련 파일:**
+
 - [SKILL.md](SKILL.md) - 메인 skill 가이드
 - [TRIGGER_TYPES.md](TRIGGER_TYPES.md) - 전체 트리거 문서
 - [TROUBLESHOOTING.md](TROUBLESHOOTING.md) - 설정 문제 디버깅

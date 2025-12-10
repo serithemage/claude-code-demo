@@ -20,19 +20,19 @@ async/await 패턴과 커스텀 에러 처리에 대한 완전한 가이드입�
 ```typescript
 // ❌ 절대 금지: 처리되지 않은 async 에러
 async function fetchData() {
-    const data = await database.query(); // 던지면 처리 안 됨!
-    return data;
+  const data = await database.query(); // 던지면 처리 안 됨!
+  return data;
 }
 
 // ✅ 항상: try-catch로 감싸기
 async function fetchData() {
-    try {
-        const data = await database.query();
-        return data;
-    } catch (error) {
-        Sentry.captureException(error);
-        throw error;
-    }
+  try {
+    const data = await database.query();
+    return data;
+  } catch (error) {
+    Sentry.captureException(error);
+    throw error;
+  }
 }
 ```
 
@@ -41,24 +41,24 @@ async function fetchData() {
 ```typescript
 // ❌ 피하기: Promise 체인
 function processData() {
-    return fetchData()
-        .then(data => transform(data))
-        .then(transformed => save(transformed))
-        .catch(error => {
-            console.error(error);
-        });
+  return fetchData()
+    .then((data) => transform(data))
+    .then((transformed) => save(transformed))
+    .catch((error) => {
+      console.error(error);
+    });
 }
 
 // ✅ 선호: Async/await
 async function processData() {
-    try {
-        const data = await fetchData();
-        const transformed = await transform(data);
-        return await save(transformed);
-    } catch (error) {
-        Sentry.captureException(error);
-        throw error;
-    }
+  try {
+    const data = await fetchData();
+    const transformed = await transform(data);
+    return await save(transformed);
+  } catch (error) {
+    Sentry.captureException(error);
+    throw error;
+  }
 }
 ```
 
@@ -71,30 +71,30 @@ async function processData() {
 ```typescript
 // ✅ Promise.all에서 에러 처리
 try {
-    const [users, profiles, settings] = await Promise.all([
-        userService.getAll(),
-        profileService.getAll(),
-        settingsService.getAll(),
-    ]);
+  const [users, profiles, settings] = await Promise.all([
+    userService.getAll(),
+    profileService.getAll(),
+    settingsService.getAll(),
+  ]);
 } catch (error) {
-    // 하나가 실패하면 전체 실패
-    Sentry.captureException(error);
-    throw error;
+  // 하나가 실패하면 전체 실패
+  Sentry.captureException(error);
+  throw error;
 }
 
 // ✅ Promise.allSettled로 개별 에러 처리
 const results = await Promise.allSettled([
-    userService.getAll(),
-    profileService.getAll(),
-    settingsService.getAll(),
+  userService.getAll(),
+  profileService.getAll(),
+  settingsService.getAll(),
 ]);
 
 results.forEach((result, index) => {
-    if (result.status === 'rejected') {
-        Sentry.captureException(result.reason, {
-            tags: { operation: ['users', 'profiles', 'settings'][index] }
-        });
-    }
+  if (result.status === 'rejected') {
+    Sentry.captureException(result.reason, {
+      tags: { operation: ['users', 'profiles', 'settings'][index] },
+    });
+  }
 });
 ```
 
@@ -107,41 +107,41 @@ results.forEach((result, index) => {
 ```typescript
 // 기본 에러 클래스
 export class AppError extends Error {
-    constructor(
-        message: string,
-        public code: string,
-        public statusCode: number,
-        public isOperational: boolean = true
-    ) {
-        super(message);
-        this.name = this.constructor.name;
-        Error.captureStackTrace(this, this.constructor);
-    }
+  constructor(
+    message: string,
+    public code: string,
+    public statusCode: number,
+    public isOperational: boolean = true
+  ) {
+    super(message);
+    this.name = this.constructor.name;
+    Error.captureStackTrace(this, this.constructor);
+  }
 }
 
 // 특정 에러 타입들
 export class ValidationError extends AppError {
-    constructor(message: string) {
-        super(message, 'VALIDATION_ERROR', 400);
-    }
+  constructor(message: string) {
+    super(message, 'VALIDATION_ERROR', 400);
+  }
 }
 
 export class NotFoundError extends AppError {
-    constructor(message: string) {
-        super(message, 'NOT_FOUND', 404);
-    }
+  constructor(message: string) {
+    super(message, 'NOT_FOUND', 404);
+  }
 }
 
 export class ForbiddenError extends AppError {
-    constructor(message: string) {
-        super(message, 'FORBIDDEN', 403);
-    }
+  constructor(message: string) {
+    super(message, 'FORBIDDEN', 403);
+  }
 }
 
 export class ConflictError extends AppError {
-    constructor(message: string) {
-        super(message, 'CONFLICT', 409);
-    }
+  constructor(message: string) {
+    super(message, 'CONFLICT', 409);
+  }
 }
 ```
 
@@ -150,27 +150,27 @@ export class ConflictError extends AppError {
 ```typescript
 // 특정 에러 던지기
 if (!user) {
-    throw new NotFoundError('User not found');
+  throw new NotFoundError('User not found');
 }
 
 if (user.age < 18) {
-    throw new ValidationError('User must be 18+');
+  throw new ValidationError('User must be 18+');
 }
 
 // Error boundary가 처리
 function errorBoundary(error, req, res, next) {
-    if (error instanceof AppError) {
-        return res.status(error.statusCode).json({
-            error: {
-                message: error.message,
-                code: error.code
-            }
-        });
-    }
+  if (error instanceof AppError) {
+    return res.status(error.statusCode).json({
+      error: {
+        message: error.message,
+        code: error.code,
+      },
+    });
+  }
 
-    // 알 수 없는 에러
-    Sentry.captureException(error);
-    res.status(500).json({ error: { message: 'Internal server error' } });
+  // 알 수 없는 에러
+  Sentry.captureException(error);
+  res.status(500).json({ error: { message: 'Internal server error' } });
 }
 ```
 
@@ -182,15 +182,15 @@ function errorBoundary(error, req, res, next) {
 
 ```typescript
 export function asyncErrorWrapper(
-    handler: (req: Request, res: Response, next: NextFunction) => Promise<any>
+  handler: (req: Request, res: Response, next: NextFunction) => Promise<any>
 ) {
-    return async (req: Request, res: Response, next: NextFunction) => {
-        try {
-            await handler(req, res, next);
-        } catch (error) {
-            next(error);
-        }
-    };
+  return async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await handler(req, res, next);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 ```
 
@@ -199,15 +199,18 @@ export function asyncErrorWrapper(
 ```typescript
 // wrapper 없이 - 에러가 처리되지 않을 수 있음
 router.get('/users', async (req, res) => {
-    const users = await userService.getAll(); // 던지면 처리 안 됨!
-    res.json(users);
+  const users = await userService.getAll(); // 던지면 처리 안 됨!
+  res.json(users);
 });
 
 // wrapper 사용 - 에러가 캐치됨
-router.get('/users', asyncErrorWrapper(async (req, res) => {
+router.get(
+  '/users',
+  asyncErrorWrapper(async (req, res) => {
     const users = await userService.getAll();
     res.json(users);
-}));
+  })
+);
 ```
 
 ---
@@ -219,30 +222,30 @@ router.get('/users', asyncErrorWrapper(async (req, res) => {
 ```typescript
 // ✅ 스택을 따라 에러 전파
 async function repositoryMethod() {
-    try {
-        return await PrismaService.main.user.findMany();
-    } catch (error) {
-        Sentry.captureException(error, { tags: { layer: 'repository' } });
-        throw error; // service로 전파
-    }
+  try {
+    return await PrismaService.main.user.findMany();
+  } catch (error) {
+    Sentry.captureException(error, { tags: { layer: 'repository' } });
+    throw error; // service로 전파
+  }
 }
 
 async function serviceMethod() {
-    try {
-        return await repositoryMethod();
-    } catch (error) {
-        Sentry.captureException(error, { tags: { layer: 'service' } });
-        throw error; // controller로 전파
-    }
+  try {
+    return await repositoryMethod();
+  } catch (error) {
+    Sentry.captureException(error, { tags: { layer: 'service' } });
+    throw error; // controller로 전파
+  }
 }
 
 async function controllerMethod(req, res) {
-    try {
-        const result = await serviceMethod();
-        res.json(result);
-    } catch (error) {
-        this.handleError(error, res, 'controllerMethod'); // 최종 핸들러
-    }
+  try {
+    const result = await serviceMethod();
+    res.json(result);
+  } catch (error) {
+    this.handleError(error, res, 'controllerMethod'); // 최종 핸들러
+  }
 }
 ```
 
@@ -255,27 +258,27 @@ async function controllerMethod(req, res) {
 ```typescript
 // ❌ 절대 금지: Fire and forget
 async function processRequest(req, res) {
-    sendEmail(user.email); // async로 실행, 에러 처리 안 됨!
-    res.json({ success: true });
+  sendEmail(user.email); // async로 실행, 에러 처리 안 됨!
+  res.json({ success: true });
 }
 
 // ✅ 항상: await 또는 처리
 async function processRequest(req, res) {
-    try {
-        await sendEmail(user.email);
-        res.json({ success: true });
-    } catch (error) {
-        Sentry.captureException(error);
-        res.status(500).json({ error: 'Failed to send email' });
-    }
+  try {
+    await sendEmail(user.email);
+    res.json({ success: true });
+  } catch (error) {
+    Sentry.captureException(error);
+    res.status(500).json({ error: 'Failed to send email' });
+  }
 }
 
 // ✅ 또는: 의도적인 백그라운드 작업
 async function processRequest(req, res) {
-    sendEmail(user.email).catch(error => {
-        Sentry.captureException(error);
-    });
-    res.json({ success: true });
+  sendEmail(user.email).catch((error) => {
+    Sentry.captureException(error);
+  });
+  res.json({ success: true });
 }
 ```
 
@@ -284,24 +287,25 @@ async function processRequest(req, res) {
 ```typescript
 // ✅ 처리되지 않은 rejection을 위한 글로벌 핸들러
 process.on('unhandledRejection', (reason, promise) => {
-    Sentry.captureException(reason, {
-        tags: { type: 'unhandled_rejection' }
-    });
-    console.error('Unhandled Rejection:', reason);
+  Sentry.captureException(reason, {
+    tags: { type: 'unhandled_rejection' },
+  });
+  console.error('Unhandled Rejection:', reason);
 });
 
 process.on('uncaughtException', (error) => {
-    Sentry.captureException(error, {
-        tags: { type: 'uncaught_exception' }
-    });
-    console.error('Uncaught Exception:', error);
-    process.exit(1);
+  Sentry.captureException(error, {
+    tags: { type: 'uncaught_exception' },
+  });
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
 });
 ```
 
 ---
 
 **관련 파일:**
+
 - [SKILL.md](SKILL.md)
 - [sentry-and-monitoring.md](sentry-and-monitoring.md)
 - [complete-examples.md](complete-examples.md)

@@ -1,18 +1,8 @@
 {
   "enableAllProjectMcpServers": true,
-  "enabledMcpjsonServers": [
-    "mysql",
-    "sequential-thinking",
-    "playwright"
-  ],
+  "enabledMcpjsonServers": ["mysql", "sequential-thinking", "playwright"],
   "permissions": {
-    "allow": [
-      "Edit:*",
-      "Write:*",
-      "MultiEdit:*",
-      "NotebookEdit:*",
-      "Bash:*"
-    ],
+    "allow": ["Edit:*", "Write:*", "MultiEdit:*", "NotebookEdit:*", "Bash:*"],
     "defaultMode": "acceptEdits"
   },
   "hooks": {

@@ -40,9 +40,9 @@ claude-code-demo/
 
 ### docs/와 .claude/skills/의 관계
 
-| 폴더 | 역할 | 대상 |
-|------|------|------|
-| `docs/` | 상위 레벨 설계 문서 | 사람이 읽는 문서 |
+| 폴더              | 역할                     | 대상                     |
+| ----------------- | ------------------------ | ------------------------ |
+| `docs/`           | 상위 레벨 설계 문서      | 사람이 읽는 문서         |
 | `.claude/skills/` | 에이전트 실행 가이드라인 | Claude를 위한 가이드라인 |
 
 `docs/`의 내용은 `.claude/skills/`의 리소스 문서로 변환되어 Claude가 코딩 시 참조합니다.
@@ -68,6 +68,7 @@ claude-code-demo/
 ```
 
 **자동 활성화 방법** (`skill-rules.json`):
+
 - `pathPatterns`: 특정 파일 편집 시 (`backend/**/*.ts`)
 - `keywords`: 프롬프트에 키워드 포함 시 (`"backend"`, `"API"`)
 - `intentPatterns`: 사용자 의도 패턴 매칭
@@ -88,6 +89,7 @@ claude-code-demo/
 ```
 
 **이 프로젝트의 Hooks**:
+
 - `skill-activation-prompt.sh`: 프롬프트 분석 후 관련 skill 추천
 - `post-tool-use-tracker.sh`: 파일 편집 추적
 - `tsc-check.sh`: TypeScript 컴파일 검사
@@ -192,23 +194,23 @@ claude "backend/src/routes/에 새 route 추가해줘"
 
 ## 기술 스택
 
-| 영역 | 기술 |
-|------|------|
+| 영역           | 기술                                                      |
+| -------------- | --------------------------------------------------------- |
 | **프론트엔드** | React 19, TypeScript, MUI v7, TanStack Query/Router, Vite |
-| **백엔드** | Node.js 20, Express 4, TypeScript, Prisma 5, SQLite |
-| **인증** | JWT (localStorage 저장) |
-| **테스팅** | Vitest, Testing Library, Supertest |
+| **백엔드**     | Node.js 20, Express 4, TypeScript, Prisma 5, SQLite       |
+| **인증**       | JWT (localStorage 저장)                                   |
+| **테스팅**     | Vitest, Testing Library, Supertest                        |
 
 ---
 
 ## 주요 파일 설명
 
-| 파일 | 설명 |
-|------|------|
-| `CLAUDE.md` | 프로젝트 작업 시 Claude Code가 참조하는 메인 가이드라인 |
-| `.claude/settings.json` | 권한, MCP 서버, hook 설정 |
-| `.claude/skills/skill-rules.json` | Skill 자동 활성화 규칙 정의 |
-| `docs/Architecture.md` | 시스템 아키텍처 (Mermaid 다이어그램 포함) |
+| 파일                              | 설명                                                    |
+| --------------------------------- | ------------------------------------------------------- |
+| `CLAUDE.md`                       | 프로젝트 작업 시 Claude Code가 참조하는 메인 가이드라인 |
+| `.claude/settings.json`           | 권한, MCP 서버, hook 설정                               |
+| `.claude/skills/skill-rules.json` | Skill 자동 활성화 규칙 정의                             |
+| `docs/Architecture.md`            | 시스템 아키텍처 (Mermaid 다이어그램 포함)               |
 
 ---
 
@@ -238,11 +240,11 @@ pnpm format
 
 이 프로젝트는 다국어로 제공됩니다:
 
-| 브랜치 | 언어 | 링크 |
-|--------|------|------|
-| `main` | English | [View](https://github.com/serithemage/claude-code-demo/tree/main) |
-| `korean` | 한국어 (현재) | [View](https://github.com/serithemage/claude-code-demo/tree/korean) |
-| `japanese` | 日本語 | [View](https://github.com/serithemage/claude-code-demo/tree/japanese) |
+| 브랜치     | 언어          | 링크                                                                  |
+| ---------- | ------------- | --------------------------------------------------------------------- |
+| `main`     | English       | [View](https://github.com/serithemage/claude-code-demo/tree/main)     |
+| `korean`   | 한국어 (현재) | [View](https://github.com/serithemage/claude-code-demo/tree/korean)   |
+| `japanese` | 日本語        | [View](https://github.com/serithemage/claude-code-demo/tree/japanese) |
 
 ---
 

@@ -115,6 +115,7 @@ export const MyForm: React.FC = () => {
 ### 표준 Dialog 구조
 
 BEST_PRACTICES.md에서 - 모든 dialogs는 다음을 포함해야 합니다:
+
 - 제목에 아이콘
 - 닫기 버튼 (X)
 - 하단에 액션 버튼
@@ -168,11 +169,13 @@ export const MyDialog: React.FC<MyDialogProps> = ({ open, onClose, onConfirm }) 
 BEST_PRACTICES.md에서 - DataGrid wrappers는 다음을 받아야 합니다:
 
 **필수 Props:**
+
 - `rows`: 데이터 배열
 - `columns`: 컬럼 정의
 - Loading/error 상태
 
 **선택적 Props:**
+
 - Toolbar 컴포넌트
 - 커스텀 액션
 - 초기 상태
@@ -225,32 +228,31 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
 export const useUpdateEntity = () => {
-    const queryClient = useQueryClient();
-    const { showSuccess, showError } = useMuiSnackbar();
+  const queryClient = useQueryClient();
+  const { showSuccess, showError } = useMuiSnackbar();
 
-    return useMutation({
-        mutationFn: ({ id, data }: { id: number; data: any }) =>
-            api.updateEntity(id, data),
+  return useMutation({
+    mutationFn: ({ id, data }: { id: number; data: any }) => api.updateEntity(id, data),
 
-        onSuccess: (result, variables) => {
-            // 영향받는 쿼리 invalidate
-            queryClient.invalidateQueries({ queryKey: ['entity', variables.id] });
-            queryClient.invalidateQueries({ queryKey: ['entities'] });
+    onSuccess: (result, variables) => {
+      // 영향받는 쿼리 invalidate
+      queryClient.invalidateQueries({ queryKey: ['entity', variables.id] });
+      queryClient.invalidateQueries({ queryKey: ['entities'] });
 
-            showSuccess('Entity updated');
-        },
+      showSuccess('Entity updated');
+    },
 
-        onError: () => {
-            showError('Failed to update entity');
-        },
-    });
+    onError: () => {
+      showError('Failed to update entity');
+    },
+  });
 };
 
 // 사용
 const updateEntity = useUpdateEntity();
 
 const handleSave = () => {
-    updateEntity.mutate({ id: 123, data: { name: 'New Name' } });
+  updateEntity.mutate({ id: 123, data: { name: 'New Name' } });
 };
 ```
 
@@ -261,6 +263,7 @@ const handleSave = () => {
 ### 서버 상태를 위한 TanStack Query (주요)
 
 **모든 서버 데이터**에 TanStack Query 사용:
+
 - Fetching: useSuspenseQuery
 - Mutations: useMutation
 - 캐싱: 자동
@@ -269,14 +272,15 @@ const handleSave = () => {
 ```typescript
 // ✅ 올바름 - 서버 데이터에 TanStack Query
 const { data: users } = useSuspenseQuery({
-    queryKey: ['users'],
-    queryFn: () => userApi.getUsers(),
+  queryKey: ['users'],
+  queryFn: () => userApi.getUsers(),
 });
 ```
 
 ### UI 상태를 위한 useState
 
 **로컬 UI 상태에만** `useState` 사용:
+
 - Form 입력 (uncontrolled)
 - Modal 열림/닫힘
 - 선택된 탭
@@ -291,6 +295,7 @@ const [selectedTab, setSelectedTab] = useState(0);
 ### 전역 클라이언트 상태를 위한 Zustand (최소한으로)
 
 **전역 클라이언트 상태에만** Zustand 사용:
+
 - 테마 선호
 - 사이드바 접힘 상태
 - 사용자 선호 (서버에서 오지 않는)
@@ -299,13 +304,13 @@ const [selectedTab, setSelectedTab] = useState(0);
 import { create } from 'zustand';
 
 interface AppState {
-    sidebarOpen: boolean;
-    toggleSidebar: () => void;
+  sidebarOpen: boolean;
+  toggleSidebar: () => void;
 }
 
 export const useAppState = create<AppState>((set) => ({
-    sidebarOpen: true,
-    toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+  sidebarOpen: true,
+  toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
 }));
 ```
 
@@ -316,6 +321,7 @@ export const useAppState = create<AppState>((set) => ({
 ## 요약
 
 **공통 패턴:**
+
 - ✅ 현재 사용자를 위한 useAuth hook (id, email, roles, username)
 - ✅ forms를 위한 React Hook Form + Zod
 - ✅ 아이콘 + 닫기 버튼이 있는 Dialog
@@ -326,6 +332,7 @@ export const useAppState = create<AppState>((set) => ({
 - ✅ 전역 클라이언트 상태를 위한 Zustand (최소한으로)
 
 **참고:**
+
 - [data-fetching.md](data-fetching.md) - TanStack Query 패턴
 - [component-patterns.md](component-patterns.md) - 컴포넌트 구조
 - [loading-and-error-states.md](loading-and-error-states.md) - 에러 처리

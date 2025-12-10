@@ -6,9 +6,11 @@ description: 프로젝트 서비스에 Sentry v8 error tracking 및 performance 
 # 프로젝트 Sentry 통합 Skill
 
 ## 목적
+
 이 skill은 Sentry v8 패턴을 따라 모든 프로젝트 서비스에서 종합적인 Sentry error tracking 및 performance monitoring을 강제합니다.
 
 ## 이 Skill 사용 시점
+
 - 어떤 코드에든 error handling 추가
 - 새 controllers 또는 routes 생성
 - Cron jobs 계측
@@ -23,12 +25,14 @@ description: 프로젝트 서비스에 Sentry v8 error tracking 및 performance 
 ## 현재 상태
 
 ### Form Service ✅ 완료
+
 - Sentry v8 완전 통합
 - 모든 workflow errors 추적됨
 - SystemActionQueueProcessor 계측됨
 - 테스트 엔드포인트 사용 가능
 
 ### Email Service 🟡 진행 중
+
 - Phase 1-2 완료 (6/22 작업)
 - 189개 ErrorLogger.log() 호출 남음
 
@@ -41,13 +45,13 @@ description: 프로젝트 서비스에 Sentry v8 error tracking 및 performance 
 import { BaseController } from '../controllers/BaseController';
 
 export class MyController extends BaseController {
-    async myMethod() {
-        try {
-            // ... 코드
-        } catch (error) {
-            this.handleError(error, 'myMethod'); // 자동으로 Sentry에 전송
-        }
+  async myMethod() {
+    try {
+      // ... 코드
+    } catch (error) {
+      this.handleError(error, 'myMethod'); // 자동으로 Sentry에 전송
     }
+  }
 }
 ```
 
@@ -57,15 +61,15 @@ export class MyController extends BaseController {
 import * as Sentry from '@sentry/node';
 
 router.get('/route', async (req, res) => {
-    try {
-        // ... 코드
-    } catch (error) {
-        Sentry.captureException(error, {
-            tags: { route: '/route', method: 'GET' },
-            extra: { userId: req.user?.id }
-        });
-        res.status(500).json({ error: 'Internal server error' });
-    }
+  try {
+    // ... 코드
+  } catch (error) {
+    Sentry.captureException(error, {
+      tags: { route: '/route', method: 'GET' },
+      extra: { userId: req.user?.id },
+    });
+    res.status(500).json({ error: 'Internal server error' });
+  }
 });
 ```
 
@@ -76,12 +80,12 @@ import { WorkflowSentryHelper } from '../workflow/utils/sentryHelper';
 
 // ✅ 올바름 - WorkflowSentryHelper 사용
 WorkflowSentryHelper.captureWorkflowError(error, {
-    workflowCode: 'DHS_CLOSEOUT',
-    instanceId: 123,
-    stepId: 456,
-    userId: 'user-123',
-    operation: 'stepCompletion',
-    metadata: { additionalInfo: 'value' }
+  workflowCode: 'DHS_CLOSEOUT',
+  instanceId: 123,
+  stepId: 456,
+  userId: 'user-123',
+  operation: 'stepCompletion',
+  metadata: { additionalInfo: 'value' },
 });
 ```
 
@@ -94,38 +98,41 @@ import '../instrument';
 import * as Sentry from '@sentry/node';
 
 async function main() {
-    return await Sentry.startSpan({
-        name: 'cron.job-name',
-        op: 'cron',
-        attributes: {
+  return await Sentry.startSpan(
+    {
+      name: 'cron.job-name',
+      op: 'cron',
+      attributes: {
+        'cron.job': 'job-name',
+        'cron.startTime': new Date().toISOString(),
+      },
+    },
+    async () => {
+      try {
+        // cron job 로직
+      } catch (error) {
+        Sentry.captureException(error, {
+          tags: {
             'cron.job': 'job-name',
-            'cron.startTime': new Date().toISOString(),
-        }
-    }, async () => {
-        try {
-            // cron job 로직
-        } catch (error) {
-            Sentry.captureException(error, {
-                tags: {
-                    'cron.job': 'job-name',
-                    'error.type': 'execution_error'
-                }
-            });
-            console.error('[Job] Error:', error);
-            process.exit(1);
-        }
-    });
+            'error.type': 'execution_error',
+          },
+        });
+        console.error('[Job] Error:', error);
+        process.exit(1);
+      }
+    }
+  );
 }
 
 main()
-    .then(() => {
-        console.log('[Job] 성공적으로 완료');
-        process.exit(0);
-    })
-    .catch((error) => {
-        console.error('[Job] Fatal error:', error);
-        process.exit(1);
-    });
+  .then(() => {
+    console.log('[Job] 성공적으로 완료');
+    process.exit(0);
+  })
+  .catch((error) => {
+    console.error('[Job] Fatal error:', error);
+    process.exit(1);
+  });
 ```
 
 ### 5. Database Performance Monitoring
@@ -135,13 +142,13 @@ import { DatabasePerformanceMonitor } from '../utils/databasePerformance';
 
 // ✅ 올바름 - 데이터베이스 작업 래핑
 const result = await DatabasePerformanceMonitor.withPerformanceTracking(
-    'findMany',
-    'UserProfile',
-    async () => {
-        return await PrismaService.main.userProfile.findMany({
-            take: 5,
-        });
-    }
+  'findMany',
+  'UserProfile',
+  async () => {
+    return await PrismaService.main.userProfile.findMany({
+      take: 5,
+    });
+  }
 );
 ```
 
@@ -150,16 +157,19 @@ const result = await DatabasePerformanceMonitor.withPerformanceTracking(
 ```typescript
 import * as Sentry from '@sentry/node';
 
-const result = await Sentry.startSpan({
+const result = await Sentry.startSpan(
+  {
     name: 'operation.name',
     op: 'operation.type',
     attributes: {
-        'custom.attribute': 'value'
-    }
-}, async () => {
+      'custom.attribute': 'value',
+    },
+  },
+  async () => {
     // async 작업
     return await someAsyncOperation();
-});
+  }
+);
 ```
 
 ## 에러 레벨
@@ -178,19 +188,19 @@ const result = await Sentry.startSpan({
 import * as Sentry from '@sentry/node';
 
 Sentry.withScope((scope) => {
-    // 사용 가능한 경우 항상 포함
-    scope.setUser({ id: userId });
-    scope.setTag('service', 'form'); // 또는 'email', 'users' 등
-    scope.setTag('environment', process.env.NODE_ENV);
+  // 사용 가능한 경우 항상 포함
+  scope.setUser({ id: userId });
+  scope.setTag('service', 'form'); // 또는 'email', 'users' 등
+  scope.setTag('environment', process.env.NODE_ENV);
 
-    // 작업별 context 추가
-    scope.setContext('operation', {
-        type: 'workflow.start',
-        workflowCode: 'DHS_CLOSEOUT',
-        entityId: 123
-    });
+  // 작업별 context 추가
+  scope.setContext('operation', {
+    type: 'workflow.start',
+    workflowCode: 'DHS_CLOSEOUT',
+    entityId: 123,
+  });
 
-    Sentry.captureException(error);
+  Sentry.captureException(error);
 });
 ```
 
@@ -205,17 +215,16 @@ import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV || 'development',
-    integrations: [
-        nodeProfilingIntegration(),
-    ],
-    tracesSampleRate: 0.1,
-    profilesSampleRate: 0.1,
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV || 'development',
+  integrations: [nodeProfilingIntegration()],
+  tracesSampleRate: 0.1,
+  profilesSampleRate: 0.1,
 });
 ```
 
 **주요 Helper**:
+
 - `WorkflowSentryHelper` - Workflow 전용 에러
 - `DatabasePerformanceMonitor` - DB 쿼리 추적
 - `BaseController` - Controller error handling
@@ -229,17 +238,16 @@ import * as Sentry from '@sentry/node';
 import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV || 'development',
-    integrations: [
-        nodeProfilingIntegration(),
-    ],
-    tracesSampleRate: 0.1,
-    profilesSampleRate: 0.1,
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV || 'development',
+  integrations: [nodeProfilingIntegration()],
+  tracesSampleRate: 0.1,
+  profilesSampleRate: 0.1,
 });
 ```
 
 **주요 Helper**:
+
 - `EmailSentryHelper` - 이메일 전용 에러
 - `BaseController` - Controller error handling
 
@@ -311,14 +319,14 @@ app.use(Sentry.Handlers.tracingHandler());
 
 // 커스텀 작업용 수동 트랜잭션
 const transaction = Sentry.startTransaction({
-    op: 'operation.type',
-    name: 'Operation Name',
+  op: 'operation.type',
+  name: 'Operation Name',
 });
 
 try {
-    // 작업 수행
+  // 작업 수행
 } finally {
-    transaction.finish();
+  transaction.finish();
 }
 ```
 
@@ -347,17 +355,20 @@ try {
 ## 핵심 파일
 
 ### Form Service
+
 - `/blog-api/src/instrument.ts` - Sentry 초기화
 - `/blog-api/src/workflow/utils/sentryHelper.ts` - Workflow 에러
 - `/blog-api/src/utils/databasePerformance.ts` - DB 모니터링
 - `/blog-api/src/controllers/BaseController.ts` - Controller 베이스
 
 ### Email Service
+
 - `/notifications/src/instrument.ts` - Sentry 초기화
 - `/notifications/src/utils/EmailSentryHelper.ts` - 이메일 에러
 - `/notifications/src/controllers/BaseController.ts` - Controller 베이스
 
 ### 설정
+
 - `/blog-api/config.ini` - Form service 설정
 - `/notifications/config.ini` - Email service 설정
 - `/sentry.ini` - 공유 Sentry 설정

@@ -32,8 +32,8 @@ export interface Article {
   description: string;
   body: string;
   tagList: string[];
-  createdAt: string;      // ISO 8601
-  updatedAt: string;      // ISO 8601
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
   favorited: boolean;
   favoritesCount: number;
   author: Profile;
@@ -41,8 +41,8 @@ export interface Article {
 
 export interface Comment {
   id: number;
-  createdAt: string;      // ISO 8601
-  updatedAt: string;      // ISO 8601
+  createdAt: string; // ISO 8601
+  updatedAt: string; // ISO 8601
   body: string;
   author: Profile;
 }
@@ -107,7 +107,7 @@ export const articleApi = {
   // 피드 조회 (팔로우한 사용자)
   getFeed: async (limit = 20, offset = 0): Promise<ArticlesResponse> => {
     const { data } = await apiClient.get('/articles/feed', {
-      params: { limit, offset }
+      params: { limit, offset },
     });
     return data;
   },
@@ -152,6 +152,7 @@ export const articleApi = {
 **모든 새 컴포넌트**에서는 일반 `useQuery` 대신 `useSuspenseQuery`를 사용하세요:
 
 **장점:**
+
 - `isLoading` 체크가 필요 없음
 - Suspense boundaries와 통합
 - 더 깔끔한 컴포넌트 코드
@@ -183,15 +184,16 @@ export const MyComponent: React.FC<Props> = ({ id }) => {
 
 ### useSuspenseQuery vs useQuery
 
-| 특징 | useSuspenseQuery | useQuery |
-|------|------------------|----------|
-| 로딩 상태 | Suspense가 처리 | 수동 `isLoading` 체크 |
-| 데이터 타입 | 항상 정의됨 | `Data \| undefined` |
-| 사용 대상 | Suspense boundaries | 전통적인 컴포넌트 |
-| 권장 대상 | **새 컴포넌트** | 레거시 코드만 |
-| 에러 처리 | Error boundaries | 수동 에러 상태 |
+| 특징        | useSuspenseQuery    | useQuery              |
+| ----------- | ------------------- | --------------------- |
+| 로딩 상태   | Suspense가 처리     | 수동 `isLoading` 체크 |
+| 데이터 타입 | 항상 정의됨         | `Data \| undefined`   |
+| 사용 대상   | Suspense boundaries | 전통적인 컴포넌트     |
+| 권장 대상   | **새 컴포넌트**     | 레거시 코드만         |
+| 에러 처리   | Error boundaries    | 수동 에러 상태        |
 
 **일반 useQuery를 사용해야 할 때:**
+
 - 레거시 코드 유지보수
 - Suspense 없는 매우 단순한 케이스
 - 백그라운드 업데이트가 있는 폴링
@@ -211,38 +213,34 @@ import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
 import { postApi } from '../api/postApi';
 
 export function useSuspensePost(postId: number) {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useSuspenseQuery({
-        queryKey: ['post', postId],
-        queryFn: async () => {
-            // 전략 1: 리스트 캐시에서 먼저 가져오기 시도
-            const cachedListData = queryClient.getQueryData<{ posts: Post[] }>([
-                'posts',
-                'list'
-            ]);
+  return useSuspenseQuery({
+    queryKey: ['post', postId],
+    queryFn: async () => {
+      // 전략 1: 리스트 캐시에서 먼저 가져오기 시도
+      const cachedListData = queryClient.getQueryData<{ posts: Post[] }>(['posts', 'list']);
 
-            if (cachedListData?.posts) {
-                const cachedPost = cachedListData.posts.find(
-                    (post) => post.id === postId
-                );
+      if (cachedListData?.posts) {
+        const cachedPost = cachedListData.posts.find((post) => post.id === postId);
 
-                if (cachedPost) {
-                    return cachedPost;  // 캐시에서 반환!
-                }
-            }
+        if (cachedPost) {
+          return cachedPost; // 캐시에서 반환!
+        }
+      }
 
-            // 전략 2: 캐시에 없음, API에서 fetch
-            return postApi.getPost(postId);
-        },
-        staleTime: 5 * 60 * 1000,      // 5분 동안 fresh로 간주
-        gcTime: 10 * 60 * 1000,         // 10분 동안 캐시에 유지
-        refetchOnWindowFocus: false,    // 포커스 시 refetch 안 함
-    });
+      // 전략 2: 캐시에 없음, API에서 fetch
+      return postApi.getPost(postId);
+    },
+    staleTime: 5 * 60 * 1000, // 5분 동안 fresh로 간주
+    gcTime: 10 * 60 * 1000, // 10분 동안 캐시에 유지
+    refetchOnWindowFocus: false, // 포커스 시 refetch 안 함
+  });
 }
 ```
 
 **핵심 포인트:**
+
 - API 호출 전 그리드/리스트 캐시 확인
 - 중복 요청 방지
 - `staleTime`: 데이터가 fresh로 간주되는 기간
@@ -288,6 +286,7 @@ export const MyComponent: React.FC = () => {
 ```
 
 **장점:**
+
 - 모든 쿼리가 병렬로 실행
 - 단일 Suspense boundary
 - 타입 안전한 결과
@@ -300,23 +299,20 @@ export const MyComponent: React.FC = () => {
 
 ```typescript
 // Entity 리스트
-['entities', blogId]
-['entities', blogId, 'summary']    // 뷰 모드와 함께
-['entities', blogId, 'flat']
-
-// 단일 entity
-['entity', blogId, entityId]
-
-// 관련 데이터
-['entity', entityId, 'history']
-['entity', entityId, 'comments']
-
-// 사용자별
-['user', userId, 'profile']
-['user', userId, 'permissions']
+['entities', blogId][('entities', blogId, 'summary')][('entities', blogId, 'flat')][ // 뷰 모드와 함께
+  // 단일 entity
+  ('entity', blogId, entityId)
+][
+  // 관련 데이터
+  ('entity', entityId, 'history')
+][('entity', entityId, 'comments')][
+  // 사용자별
+  ('user', userId, 'profile')
+][('user', userId, 'permissions')];
 ```
 
 **규칙:**
+
 - entity 이름으로 시작 (리스트는 복수, 단일은 단수)
 - 특정성을 위해 ID 포함
 - 뷰 모드 / 관계는 끝에 추가
@@ -326,12 +322,12 @@ export const MyComponent: React.FC = () => {
 
 ```typescript
 // useSuspensePost.ts에서
-queryKey: ['post', blogId, postId]
-queryKey: ['posts-v2', blogId, 'summary']
+queryKey: ['post', blogId, postId];
+queryKey: ['posts-v2', blogId, 'summary'];
 
 // Invalidation 패턴
-queryClient.invalidateQueries({ queryKey: ['post', blogId] });  // form의 모든 posts
-queryClient.invalidateQueries({ queryKey: ['post'] });          // 모든 posts
+queryClient.invalidateQueries({ queryKey: ['post', blogId] }); // form의 모든 posts
+queryClient.invalidateQueries({ queryKey: ['post'] }); // 모든 posts
 ```
 
 ---
@@ -360,52 +356,45 @@ import apiClient from '@/lib/apiClient';
 import type { MyEntity, UpdatePayload } from '../types';
 
 export const myFeatureApi = {
-    /**
-     * 단일 entity fetch
-     */
-    getEntity: async (blogId: number, entityId: number): Promise<MyEntity> => {
-        const { data } = await apiClient.get(
-            `/blog/entities/${blogId}/${entityId}`
-        );
-        return data;
-    },
+  /**
+   * 단일 entity fetch
+   */
+  getEntity: async (blogId: number, entityId: number): Promise<MyEntity> => {
+    const { data } = await apiClient.get(`/blog/entities/${blogId}/${entityId}`);
+    return data;
+  },
 
-    /**
-     * form의 모든 entities fetch
-     */
-    getEntities: async (blogId: number, view: 'summary' | 'flat'): Promise<MyEntity[]> => {
-        const { data } = await apiClient.get(
-            `/blog/entities/${blogId}`,
-            { params: { view } }
-        );
-        return data.rows;
-    },
+  /**
+   * form의 모든 entities fetch
+   */
+  getEntities: async (blogId: number, view: 'summary' | 'flat'): Promise<MyEntity[]> => {
+    const { data } = await apiClient.get(`/blog/entities/${blogId}`, { params: { view } });
+    return data.rows;
+  },
 
-    /**
-     * Entity 업데이트
-     */
-    updateEntity: async (
-        blogId: number,
-        entityId: number,
-        payload: UpdatePayload
-    ): Promise<MyEntity> => {
-        const { data } = await apiClient.put(
-            `/blog/entities/${blogId}/${entityId}`,
-            payload
-        );
-        return data;
-    },
+  /**
+   * Entity 업데이트
+   */
+  updateEntity: async (
+    blogId: number,
+    entityId: number,
+    payload: UpdatePayload
+  ): Promise<MyEntity> => {
+    const { data } = await apiClient.put(`/blog/entities/${blogId}/${entityId}`, payload);
+    return data;
+  },
 
-    /**
-     * Entity 삭제
-     */
-    deleteEntity: async (blogId: number, entityId: number): Promise<void> => {
-        await apiClient.delete(`/blog/entities/${blogId}/${entityId}`);
-    },
+  /**
+   * Entity 삭제
+   */
+  deleteEntity: async (blogId: number, entityId: number): Promise<void> => {
+    await apiClient.delete(`/blog/entities/${blogId}/${entityId}`);
+  },
 };
 ```
 
 **핵심 포인트:**
+
 - 메서드가 있는 단일 객체 export
 - `apiClient` 사용 (`@/lib/apiClient`의 axios 인스턴스)
 - 타입 안전한 파라미터와 반환값
@@ -426,11 +415,12 @@ await apiClient.put('/users/update/456', updates);
 await apiClient.get('/email/templates');
 
 // ❌ 잘못됨 - /api/ 접두사 추가하지 마세요
-await apiClient.get('/api/blog/posts/123');  // 잘못됨!
+await apiClient.get('/api/blog/posts/123'); // 잘못됨!
 await apiClient.post('/api/projects/create', data); // 잘못됨!
 ```
 
 **마이크로서비스 라우팅:**
+
 - Form 서비스: `/blog/*`
 - Projects 서비스: `/projects/*`
 - Email 서비스: `/email/*`
@@ -490,36 +480,36 @@ export const MyComponent: React.FC = () => {
 
 ```typescript
 const updateMutation = useMutation({
-    mutationFn: (payload) => myFeatureApi.update(id, payload),
+  mutationFn: (payload) => myFeatureApi.update(id, payload),
 
-    // Optimistic update
-    onMutate: async (newData) => {
-        // 진행 중인 refetch 취소
-        await queryClient.cancelQueries({ queryKey: ['entity', id] });
+  // Optimistic update
+  onMutate: async (newData) => {
+    // 진행 중인 refetch 취소
+    await queryClient.cancelQueries({ queryKey: ['entity', id] });
 
-        // 현재 값 스냅샷
-        const previousData = queryClient.getQueryData(['entity', id]);
+    // 현재 값 스냅샷
+    const previousData = queryClient.getQueryData(['entity', id]);
 
-        // Optimistically 업데이트
-        queryClient.setQueryData(['entity', id], (old) => ({
-            ...old,
-            ...newData,
-        }));
+    // Optimistically 업데이트
+    queryClient.setQueryData(['entity', id], (old) => ({
+      ...old,
+      ...newData,
+    }));
 
-        // 롤백 함수 반환
-        return { previousData };
-    },
+    // 롤백 함수 반환
+    return { previousData };
+  },
 
-    // 에러 시 롤백
-    onError: (err, newData, context) => {
-        queryClient.setQueryData(['entity', id], context.previousData);
-        showError('Update failed');
-    },
+  // 에러 시 롤백
+  onError: (err, newData, context) => {
+    queryClient.setQueryData(['entity', id], context.previousData);
+    showError('Update failed');
+  },
 
-    // 성공 또는 에러 후 refetch
-    onSettled: () => {
-        queryClient.invalidateQueries({ queryKey: ['entity', id] });
-    },
+  // 성공 또는 에러 후 refetch
+  onSettled: () => {
+    queryClient.invalidateQueries({ queryKey: ['entity', id] });
+  },
 });
 ```
 
@@ -552,17 +542,17 @@ export function usePrefetchEntity() {
 
 ```typescript
 export function useEntityFromCache(blogId: number, entityId: number) {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    // 캐시에서 가져오기, 없으면 fetch하지 않음
-    const directCache = queryClient.getQueryData<MyEntity>(['entity', blogId, entityId]);
+  // 캐시에서 가져오기, 없으면 fetch하지 않음
+  const directCache = queryClient.getQueryData<MyEntity>(['entity', blogId, entityId]);
 
-    if (directCache) return directCache;
+  if (directCache) return directCache;
 
-    // 그리드 캐시 시도
-    const gridCache = queryClient.getQueryData<{ rows: MyEntity[] }>(['entities-v2', blogId]);
+  // 그리드 캐시 시도
+  const gridCache = queryClient.getQueryData<{ rows: MyEntity[] }>(['entities-v2', blogId]);
 
-    return gridCache?.rows.find(row => row.id === entityId);
+  return gridCache?.rows.find((row) => row.id === entityId);
 }
 ```
 
@@ -571,14 +561,14 @@ export function useEntityFromCache(blogId: number, entityId: number) {
 ```typescript
 // 사용자 먼저 fetch, 그 다음 사용자 설정
 const { data: user } = useSuspenseQuery({
-    queryKey: ['user', userId],
-    queryFn: () => userApi.getUser(userId),
+  queryKey: ['user', userId],
+  queryFn: () => userApi.getUser(userId),
 });
 
 const { data: settings } = useSuspenseQuery({
-    queryKey: ['user', userId, 'settings'],
-    queryFn: () => settingsApi.getUserSettings(user.id),
-    // Suspense로 인해 자동으로 user 로드 대기
+  queryKey: ['user', userId, 'settings'],
+  queryFn: () => settingsApi.getUserSettings(user.id),
+  // Suspense로 인해 자동으로 user 로드 대기
 });
 ```
 
@@ -613,14 +603,14 @@ import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 const { showError } = useMuiSnackbar();
 
 const { data } = useSuspenseQuery({
-    queryKey: ['entity', id],
-    queryFn: () => myFeatureApi.getEntity(id),
+  queryKey: ['entity', id],
+  queryFn: () => myFeatureApi.getEntity(id),
 
-    // 에러 처리
-    onError: (error) => {
-        showError('Failed to load entity');
-        console.error('Load error:', error);
-    },
+  // 에러 처리
+  onError: (error) => {
+    showError('Failed to load entity');
+    console.error('Load error:', error);
+  },
 });
 ```
 
@@ -690,40 +680,35 @@ import type { Post } from '../types';
  * API 호출 전 그리드 캐시 확인
  */
 export function useSuspensePost(blogId: number, postId: number) {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    return useSuspenseQuery<Post, Error>({
-        queryKey: ['post', blogId, postId],
-        queryFn: async () => {
-            // 1. 그리드 캐시 먼저 확인
-            const gridCache = queryClient.getQueryData<{ rows: Post[] }>([
-                'posts-v2',
-                blogId,
-                'summary'
-            ]) || queryClient.getQueryData<{ rows: Post[] }>([
-                'posts-v2',
-                blogId,
-                'flat'
-            ]);
+  return useSuspenseQuery<Post, Error>({
+    queryKey: ['post', blogId, postId],
+    queryFn: async () => {
+      // 1. 그리드 캐시 먼저 확인
+      const gridCache =
+        queryClient.getQueryData<{ rows: Post[] }>(['posts-v2', blogId, 'summary']) ||
+        queryClient.getQueryData<{ rows: Post[] }>(['posts-v2', blogId, 'flat']);
 
-            if (gridCache?.rows) {
-                const cached = gridCache.rows.find(row => row.S_ID === postId);
-                if (cached) {
-                    return cached;  // 그리드 데이터 재사용
-                }
-            }
+      if (gridCache?.rows) {
+        const cached = gridCache.rows.find((row) => row.S_ID === postId);
+        if (cached) {
+          return cached; // 그리드 데이터 재사용
+        }
+      }
 
-            // 2. 캐시에 없음, 직접 fetch
-            return postApi.getPost(blogId, postId);
-        },
-        staleTime: 5 * 60 * 1000,
-        gcTime: 10 * 60 * 1000,
-        refetchOnWindowFocus: false,
-    });
+      // 2. 캐시에 없음, 직접 fetch
+      return postApi.getPost(blogId, postId);
+    },
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
 }
 ```
 
 **장점:**
+
 - 중복 API 호출 방지
 - 이미 로드된 경우 즉시 데이터
 - 캐시에 없으면 API로 fallback
@@ -773,43 +758,43 @@ import { postApi } from '../api/postApi';
 import { useMuiSnackbar } from '@/hooks/useMuiSnackbar';
 
 export const useUpdatePost = () => {
-    const queryClient = useQueryClient();
-    const { showSuccess, showError } = useMuiSnackbar();
+  const queryClient = useQueryClient();
+  const { showSuccess, showError } = useMuiSnackbar();
 
-    return useMutation({
-        mutationFn: ({ blogId, postId, data }: UpdateParams) =>
-            postApi.updatePost(blogId, postId, data),
+  return useMutation({
+    mutationFn: ({ blogId, postId, data }: UpdateParams) =>
+      postApi.updatePost(blogId, postId, data),
 
-        onSuccess: (data, variables) => {
-            // 특정 post invalidate
-            queryClient.invalidateQueries({
-                queryKey: ['post', variables.blogId, variables.postId]
-            });
+    onSuccess: (data, variables) => {
+      // 특정 post invalidate
+      queryClient.invalidateQueries({
+        queryKey: ['post', variables.blogId, variables.postId],
+      });
 
-            // 그리드 새로고침을 위해 리스트 invalidate
-            queryClient.invalidateQueries({
-                queryKey: ['posts-v2', variables.blogId]
-            });
+      // 그리드 새로고침을 위해 리스트 invalidate
+      queryClient.invalidateQueries({
+        queryKey: ['posts-v2', variables.blogId],
+      });
 
-            showSuccess('Post updated');
-        },
+      showSuccess('Post updated');
+    },
 
-        onError: (error) => {
-            showError('Failed to update post');
-            console.error('Update error:', error);
-        },
-    });
+    onError: (error) => {
+      showError('Failed to update post');
+      console.error('Update error:', error);
+    },
+  });
 };
 
 // 사용
 const updatePost = useUpdatePost();
 
 const handleSave = () => {
-    updatePost.mutate({
-        blogId: 123,
-        postId: 456,
-        data: { responses: { '101': 'value' } }
-    });
+  updatePost.mutate({
+    blogId: 123,
+    postId: 456,
+    data: { responses: { '101': 'value' } },
+  });
 };
 ```
 
@@ -817,34 +802,30 @@ const handleSave = () => {
 
 ```typescript
 export const useDeletePost = () => {
-    const queryClient = useQueryClient();
-    const { showSuccess, showError } = useMuiSnackbar();
+  const queryClient = useQueryClient();
+  const { showSuccess, showError } = useMuiSnackbar();
 
-    return useMutation({
-        mutationFn: ({ blogId, postId }: DeleteParams) =>
-            postApi.deletePost(blogId, postId),
+  return useMutation({
+    mutationFn: ({ blogId, postId }: DeleteParams) => postApi.deletePost(blogId, postId),
 
-        onSuccess: (data, variables) => {
-            // 캐시에서 수동으로 제거 (optimistic)
-            queryClient.setQueryData<{ rows: Post[] }>(
-                ['posts-v2', variables.blogId],
-                (old) => ({
-                    ...old,
-                    rows: old?.rows.filter(row => row.S_ID !== variables.postId) || []
-                })
-            );
+    onSuccess: (data, variables) => {
+      // 캐시에서 수동으로 제거 (optimistic)
+      queryClient.setQueryData<{ rows: Post[] }>(['posts-v2', variables.blogId], (old) => ({
+        ...old,
+        rows: old?.rows.filter((row) => row.S_ID !== variables.postId) || [],
+      }));
 
-            showSuccess('Post deleted');
-        },
+      showSuccess('Post deleted');
+    },
 
-        onError: (error, variables) => {
-            // 롤백 - 정확한 상태를 위해 refetch
-            queryClient.invalidateQueries({
-                queryKey: ['posts-v2', variables.blogId]
-            });
-            showError('Failed to delete post');
-        },
-    });
+    onError: (error, variables) => {
+      // 롤백 - 정확한 상태를 위해 refetch
+      queryClient.invalidateQueries({
+        queryKey: ['posts-v2', variables.blogId],
+      });
+      showError('Failed to delete post');
+    },
+  });
 };
 ```
 
@@ -857,15 +838,15 @@ export const useDeletePost = () => {
 ```typescript
 // QueryClientProvider 설정에서
 const queryClient = new QueryClient({
-    defaultOptions: {
-        queries: {
-            staleTime: 1000 * 60 * 5,        // 5분
-            gcTime: 1000 * 60 * 10,           // 10분 (이전 cacheTime)
-            refetchOnWindowFocus: false,       // 포커스 시 refetch 안 함
-            refetchOnMount: false,             // fresh면 마운트 시 refetch 안 함
-            retry: 1,                          // 실패한 쿼리 한 번 재시도
-        },
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5분
+      gcTime: 1000 * 60 * 10, // 10분 (이전 cacheTime)
+      refetchOnWindowFocus: false, // 포커스 시 refetch 안 함
+      refetchOnMount: false, // fresh면 마운트 시 refetch 안 함
+      retry: 1, // 실패한 쿼리 한 번 재시도
     },
+  },
 });
 ```
 
@@ -874,16 +855,16 @@ const queryClient = new QueryClient({
 ```typescript
 // 자주 변경되는 데이터 - 짧은 staleTime
 useSuspenseQuery({
-    queryKey: ['notifications', 'unread'],
-    queryFn: () => notificationApi.getUnread(),
-    staleTime: 30 * 1000,  // 30초
+  queryKey: ['notifications', 'unread'],
+  queryFn: () => notificationApi.getUnread(),
+  staleTime: 30 * 1000, // 30초
 });
 
 // 거의 변경되지 않는 데이터 - 긴 staleTime
 useSuspenseQuery({
-    queryKey: ['form', blogId, 'structure'],
-    queryFn: () => formApi.getStructure(blogId),
-    staleTime: 30 * 60 * 1000,  // 30분
+  queryKey: ['form', blogId, 'structure'],
+  queryFn: () => formApi.getStructure(blogId),
+  staleTime: 30 * 60 * 1000, // 30분
 });
 ```
 
@@ -903,6 +884,7 @@ useSuspenseQuery({
 8. **타입 안전**: 모든 파라미터와 반환값 타입 지정
 
 **참고:**
+
 - [component-patterns.md](component-patterns.md) - Suspense 통합
 - [loading-and-error-states.md](loading-and-error-states.md) - SuspenseLoader 사용
 - [complete-examples.md](complete-examples.md) - 전체 작동 예제

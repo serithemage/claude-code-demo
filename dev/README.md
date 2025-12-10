@@ -7,6 +7,7 @@ Claude Codeセッションとcontextリセット間でプロジェクトcontext�
 ## 問題点
 
 **Contextリセットはすべてを失います：**
+
 - 実装決定事項
 - 重要ファイルとその目的
 - 作業進行状況
@@ -39,6 +40,7 @@ dev/active/[task-name]/
 **目的：** 実装のための戦略的計画
 
 **含まれる内容：**
+
 - 要約
 - 現在状態分析
 - 提案される将来状態
@@ -53,24 +55,29 @@ dev/active/[task-name]/
 **更新時期：** スコープが変更されたり新しいステップが発見された時
 
 **例：**
+
 ```markdown
 # 機能名 - 実装計画
 
 ## 要約
+
 何を構築していて、なぜするのか
 
 ## 現在状態
+
 現在地
 
 ## 実装ステップ
 
 ### Phase 1: Infrastructure（2時間）
+
 - Task 1.1: Database schema設定
   - 受け入れ: Schemaコンパイル済み、関係正確
 - Task 1.2: Service構造生成
   - 受け入れ: すべてのディレクトリ生成済み
 
 ### Phase 2: Core Functionality（3時間）
+
 ...
 ```
 
@@ -81,6 +88,7 @@ dev/active/[task-name]/
 **目的：** 作業再開のための重要情報
 
 **含まれる内容：**
+
 - SESSION PROGRESSセクション（頻繁に更新！）
 - 完了したもの vs 進行中のもの
 - 重要ファイルとその目的
@@ -94,36 +102,44 @@ dev/active/[task-name]/
 **更新時期：** **頻繁に** - 重要な決定、完了、または発見後
 
 **例：**
+
 ```markdown
 # 機能名 - Context
 
 ## SESSION PROGRESS (2025-10-29)
 
 ### ✅ 完了
+
 - Database schema生成済み（User、Post、Commentモデル）
 - PostControllerをBaseControllerパターンで実装
 - Sentry統合動作中
 
 ### 🟡 進行中
+
 - ビジネスロジックがあるPostService生成中
 - ファイル: src/services/postService.ts
 
 ### ⚠️ ブロッカー
+
 - キャッシュ戦略決定必要
 
 ## 重要ファイル
 
 **src/controllers/PostController.ts**
+
 - BaseController拡張
 - Postsに対するHTTPリクエスト処理
 - PostServiceに委任
 
 **src/services/postService.ts**（進行中）
+
 - Post操作のためのビジネスロジック
 - 次: キャッシュ追加
 
 ## 迅速な再開
+
 続けるには:
+
 1. このファイルを読む
 2. PostService.createPost()実装を続ける
 3. 残りのタスクはtasksファイル参照
@@ -138,6 +154,7 @@ dev/active/[task-name]/
 **目的：** 進行状況追跡のためのチェックリスト
 
 **含まれる内容：**
+
 - 論理的セクションに分けられたステップ
 - チェックボックス形式のタスク
 - ステータス表示（✅/🟡/⏳）
@@ -149,21 +166,25 @@ dev/active/[task-name]/
 **更新時期：** 各タスク完了後または新タスク発見時
 
 **例：**
+
 ```markdown
 # 機能名 - Taskチェックリスト
 
 ## Phase 1: セットアップ ✅ 完了
+
 - [x] Database schema生成
 - [x] Controllers設定
 - [x] Sentry設定
 
 ## Phase 2: 実装 🟡 進行中
+
 - [x] PostController生成
 - [ ] PostService生成（進行中）
 - [ ] PostRepository生成
 - [ ] Zodで検証追加
 
 ## Phase 3: テスト ⏳ 未開始
+
 - [ ] Serviceユニットテスト
 - [ ] 統合テスト
 - [ ] 手動APIテスト
@@ -174,6 +195,7 @@ dev/active/[task-name]/
 ## Dev Docs使用時期
 
 **使用する場合：**
+
 - ✅ 複数日にわたる複雑なタスク
 - ✅ 多くの部分が動く機能
 - ✅ 複数セッションにまたがる可能性のある作業
@@ -181,6 +203,7 @@ dev/active/[task-name]/
 - ✅ 大規模システムリファクタリング
 
 **スキップする場合：**
+
 - ❌ 簡単なバグ修正
 - ❌ 単一ファイル変更
 - ❌ 迅速な更新
@@ -195,6 +218,7 @@ dev/active/[task-name]/
 ### 新タスク開始
 
 1. **/dev-docs slash command使用：**
+
    ```
    /dev-docs refactor authentication system
    ```
@@ -232,28 +256,34 @@ dev/active/[task-name]/
 ## Slash Commandsとの統合
 
 ### /dev-docs
+
 **生成：** タスクのための新しいdev docs
 
 **使用法：**
+
 ```
 /dev-docs implement real-time notifications
 ```
 
 **生成されるもの：**
+
 - `dev/active/implement-real-time-notifications/`
   - implement-real-time-notifications-plan.md
   - implement-real-time-notifications-context.md
   - implement-real-time-notifications-tasks.md
 
 ### /dev-docs-update
+
 **更新：** Contextリセット前の既存dev docs
 
 **使用法：**
+
 ```
 /dev-docs-update
 ```
 
 **更新内容：**
+
 - 完了したタスクを表示
 - 発見された新タスク追加
 - セッション進行状況でcontext更新
@@ -288,6 +318,7 @@ dev/
 ## 例：実際の使用
 
 このrepositoryの**dev/active/public-infrastructure-repo/**で実際の例を確認：
+
 - **plan.md** - このshowcase作成のための700行以上の戦略的計画
 - **context.md** - 完了した内容、決定事項、次にやること追跡
 - **tasks.md** - すべてのステップとタスクのチェックリスト
@@ -304,11 +335,14 @@ dev/
 **良い：** 各主要マイルストーン後に更新
 
 **SESSION PROGRESSセクションは常に現実を反映すべき：**
+
 ```markdown
 ## SESSION PROGRESS (YYYY-MM-DD)
 
 ### ✅ 完了（完了したすべてを列挙）
+
 ### 🟡 進行中（今まさに作業中のもの）
+
 ### ⚠️ ブロッカー（進行を妨げているもの）
 ```
 
@@ -318,6 +352,7 @@ dev/
 **良い：** 「AuthMiddleware.tsでJWTトークン検証実装（受け入れ: トークン検証済み、エラーはSentryへ）」
 
 **含めるべき内容：**
+
 - 具体的なファイル名
 - 明確な受け入れ基準
 - 他のタスクへの依存関係
@@ -325,6 +360,7 @@ dev/
 ### 計画を最新状態に維持
 
 スコープが変更されたら：
+
 - 計画を更新
 - 新しいステップを追加
 - スケジュール見積もりを調整
@@ -362,6 +398,7 @@ dev/
 4. **plan.md参照** - 全体戦略を理解
 
 **頻繁に更新：**
+
 - タスク完了したらすぐ表示
 - 重要なタスク後SESSION PROGRESSを更新
 - 発見された新タスクを追加
@@ -373,23 +410,27 @@ dev/
 /dev-docs commandがない場合：
 
 **1. ディレクトリ作成：**
+
 ```bash
 mkdir -p dev/active/your-task-name
 ```
 
 **2. plan.md作成：**
+
 - 要約
 - 実装ステップ
 - 詳細タスク
 - スケジュール見積もり
 
 **3. context.md作成：**
+
 - SESSION PROGRESSセクション
 - 重要ファイル
 - 重要な決定事項
 - 迅速な再開指示
 
 **4. tasks.md作成：**
+
 - チェックボックス付きステップ
 - [ ] タスク形式
 - 受け入れ基準
@@ -399,12 +440,14 @@ mkdir -p dev/active/your-task-name
 ## メリット
 
 **Dev docs以前：**
+
 - Contextリセット = 最初からやり直し
 - 決定の理由を忘れる
 - 進行状況を失う
 - タスク繰り返し
 
 **Dev docs以後：**
+
 - Contextリセット = 3ファイル読んで即再開
 - 決定事項ドキュメント化済み
 - 進行状況追跡済み

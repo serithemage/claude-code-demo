@@ -64,17 +64,17 @@ export const MyComponent: React.FC = () => {
 
 ```typescript
 const formStyles: Record<string, SxProps<Theme>> = {
-    gridContainer: {
-        height: '100%',
-        maxHeight: 'calc(100vh - 220px)',
-    },
-    section: {
-        height: '100%',
-        maxHeight: 'calc(100vh - 220px)',
-        overflow: 'auto',
-        p: 4,
-    },
-    // ... 15개 이상의 스타일 객체
+  gridContainer: {
+    height: '100%',
+    maxHeight: 'calc(100vh - 220px)',
+  },
+  section: {
+    height: '100%',
+    maxHeight: 'calc(100vh - 220px)',
+    overflow: 'auto',
+    p: 4,
+  },
+  // ... 15개 이상의 스타일 객체
 };
 ```
 
@@ -213,16 +213,16 @@ import type { SxProps, Theme } from '@mui/material';
 
 // 타입 안전 스타일
 const styles: Record<string, SxProps<Theme>> = {
-    container: {
-        p: 2,
-        // 자동완성과 타입 체크가 여기서 작동
-    },
+  container: {
+    p: 2,
+    // 자동완성과 타입 체크가 여기서 작동
+  },
 };
 
 // 또는 개별 스타일
 const containerStyle: SxProps<Theme> = {
-    p: 2,
-    display: 'flex',
+  p: 2,
+  display: 'flex',
 };
 ```
 
@@ -230,17 +230,17 @@ const containerStyle: SxProps<Theme> = {
 
 ```typescript
 const styles: Record<string, SxProps<Theme>> = {
-    primary: {
-        color: (theme) => theme.palette.primary.main,
-        backgroundColor: (theme) => theme.palette.primary.light,
-        '&:hover': {
-            backgroundColor: (theme) => theme.palette.primary.dark,
-        },
+  primary: {
+    color: (theme) => theme.palette.primary.main,
+    backgroundColor: (theme) => theme.palette.primary.light,
+    '&:hover': {
+      backgroundColor: (theme) => theme.palette.primary.dark,
     },
-    customSpacing: {
-        padding: (theme) => theme.spacing(2),
-        margin: (theme) => theme.spacing(1, 2), // 위/아래: 1, 좌/우: 2
-    },
+  },
+  customSpacing: {
+    padding: (theme) => theme.spacing(2),
+    margin: (theme) => theme.spacing(1, 2), // 위/아래: 1, 좌/우: 2
+  },
 };
 ```
 
@@ -255,9 +255,9 @@ const styles: Record<string, SxProps<Theme>> = {
 import { makeStyles } from '@mui/styles';
 
 const useStyles = makeStyles((theme) => ({
-    root: {
-        padding: theme.spacing(2),
-    },
+  root: {
+    padding: theme.spacing(2),
+  },
 }));
 ```
 
@@ -270,7 +270,7 @@ const useStyles = makeStyles((theme) => ({
 import { styled } from '@mui/material/styles';
 
 const StyledBox = styled(Box)(({ theme }) => ({
-    padding: theme.spacing(2),
+  padding: theme.spacing(2),
 }));
 ```
 
@@ -300,11 +300,11 @@ const StyledBox = styled(Box)(({ theme }) => ({
 
 ```typescript
 const styles: Record<string, SxProps<Theme>> = {
-    container: {
-        p: 2,
-        display: 'flex',
-        flexDirection: 'column',
-    },
+  container: {
+    p: 2,
+    display: 'flex',
+    flexDirection: 'column',
+  },
 };
 ```
 
@@ -318,8 +318,8 @@ const color = 'primary.main';
 import { Box } from '@mui/material';
 
 // ❌ 잘못됨
-const color = "primary.main";
-import { Box } from "@mui/material";
+const color = 'primary.main';
+import { Box } from '@mui/material';
 ```
 
 ### 후행 쉼표
@@ -329,19 +329,19 @@ import { Box } from "@mui/material";
 ```typescript
 // ✅ 올바름
 const styles = {
-    container: { p: 2 },
-    header: { mb: 1 },  // 후행 쉼표
+  container: { p: 2 },
+  header: { mb: 1 }, // 후행 쉼표
 };
 
 const items = [
-    'item1',
-    'item2',  // 후행 쉼표
+  'item1',
+  'item2', // 후행 쉼표
 ];
 
 // ❌ 잘못됨 - 후행 쉼표 없음
 const styles = {
-    container: { p: 2 },
-    header: { mb: 1 }  // 쉼표 누락
+  container: { p: 2 },
+  header: { mb: 1 }, // 쉼표 누락
 };
 ```
 
@@ -353,22 +353,22 @@ const styles = {
 
 ```typescript
 const styles = {
-    flexRow: {
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 2,
-    },
-    flexColumn: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 1,
-    },
-    spaceBetween: {
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-    },
+  flexRow: {
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  flexColumn: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 1,
+  },
+  spaceBetween: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
 };
 ```
 
@@ -393,19 +393,19 @@ p: 0.5  // = 4px
 
 ```typescript
 const styles = {
-    relative: {
-        position: 'relative',
-    },
-    absolute: {
-        position: 'absolute',
-        top: 0,
-        right: 0,
-    },
-    sticky: {
-        position: 'sticky',
-        top: 0,
-        zIndex: 1000,
-    },
+  relative: {
+    position: 'relative',
+  },
+  absolute: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+  },
+  sticky: {
+    position: 'sticky',
+    top: 0,
+    zIndex: 1000,
+  },
 };
 ```
 
@@ -414,6 +414,7 @@ const styles = {
 ## 요약
 
 **스타일링 체크리스트:**
+
 - ✅ MUI 스타일링에 `sx` prop 사용
 - ✅ `SxProps<Theme>`로 타입 안전
 - ✅ <100줄: 인라인; >100줄: 별도 파일
@@ -424,5 +425,6 @@ const styles = {
 - ❌ makeStyles나 styled() 사용 금지
 
 **참고:**
+
 - [component-patterns.md](component-patterns.md) - 컴포넌트 구조
 - [complete-examples.md](complete-examples.md) - 전체 스타일링 예제

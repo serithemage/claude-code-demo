@@ -56,12 +56,12 @@ Suspense 기반 데이터 fetching, lazy loading, 적절한 파일 구성, 성�
 
 ## Import Aliases 빠른 참조
 
-| Alias | 해석 | 예시 |
-|-------|-------------|---------|
-| `@/` | `src/` | `import { apiClient } from '@/lib/apiClient'` |
-| `~types` | `src/types` | `import type { User } from '~types/user'` |
+| Alias         | 해석             | 예시                                                          |
+| ------------- | ---------------- | ------------------------------------------------------------- |
+| `@/`          | `src/`           | `import { apiClient } from '@/lib/apiClient'`                 |
+| `~types`      | `src/types`      | `import type { User } from '~types/user'`                     |
 | `~components` | `src/components` | `import { SuspenseLoader } from '~components/SuspenseLoader'` |
-| `~features` | `src/features` | `import { authApi } from '~features/auth'` |
+| `~features`   | `src/features`   | `import { authApi } from '~features/auth'`                    |
 
 정의 위치: [vite.config.ts](../../vite.config.ts) 180-185줄
 
@@ -102,12 +102,14 @@ import type { Post } from '~types/post';
 ### 🎨 컴포넌트 패턴
 
 **최신 React 컴포넌트 사용:**
+
 - 타입 안전성을 위한 `React.FC<Props>`
 - 코드 분할을 위한 `React.lazy()`
 - Loading 상태를 위한 `SuspenseLoader`
 - Named const + default export 패턴
 
 **핵심 개념:**
+
 - 무거운 컴포넌트 Lazy load (DataGrid, 차트, 에디터)
 - Lazy 컴포넌트는 항상 Suspense로 래핑
 - SuspenseLoader 컴포넌트 사용 (fade 애니메이션 포함)
@@ -120,12 +122,14 @@ import type { Post } from '~types/post';
 ### 📊 데이터 Fetching
 
 **기본 패턴: useSuspenseQuery**
+
 - Suspense boundaries와 함께 사용
 - Cache-first 전략 (API 전에 grid 캐시 확인)
 - `isLoading` 체크 대체
 - 제네릭으로 타입 안전
 
 **API Service 레이어:**
+
 - `features/{feature}/api/{feature}Api.ts` 생성
 - `apiClient` axios 인스턴스 사용
 - 기능별 중앙화된 메서드
@@ -138,10 +142,12 @@ import type { Post } from '~types/post';
 ### 📁 파일 구성
 
 **features/ vs components/:**
+
 - `features/`: 도메인 특화 (posts, comments, auth)
 - `components/`: 진정으로 재사용 가능한 것 (SuspenseLoader, CustomAppBar)
 
 **Feature 하위 디렉토리:**
+
 ```
 features/
   my-feature/
@@ -159,15 +165,18 @@ features/
 ### 🎨 Styling
 
 **인라인 vs 분리:**
+
 - 100줄 미만: 인라인 `const styles: Record<string, SxProps<Theme>>`
 - 100줄 초과: 별도 `.styles.ts` 파일
 
 **기본 방법:**
+
 - MUI 컴포넌트에 `sx` prop 사용
 - `SxProps<Theme>`로 타입 안전
 - Theme 접근: `(theme) => theme.palette.primary.main`
 
 **MUI v7 Grid:**
+
 ```typescript
 <Grid size={{ xs: 12, md: 6 }}>  // ✅ v7 문법
 <Grid xs={12} md={6}>             // ❌ 이전 문법
@@ -180,12 +189,14 @@ features/
 ### 🛣️ Routing
 
 **TanStack Router - 폴더 기반:**
+
 - 디렉토리: `routes/my-route/index.tsx`
 - 컴포넌트 Lazy load
 - `createFileRoute` 사용
 - Loader에 Breadcrumb 데이터
 
 **예시:**
+
 ```typescript
 import { createFileRoute } from '@tanstack/react-router';
 import { lazy } from 'react';
@@ -193,8 +204,8 @@ import { lazy } from 'react';
 const MyPage = lazy(() => import('@/features/my-feature/components/MyPage'));
 
 export const Route = createFileRoute('/my-route/')({
-    component: MyPage,
-    loader: () => ({ crumb: 'My Route' }),
+  component: MyPage,
+  loader: () => ({ crumb: 'My Route' }),
 });
 ```
 
@@ -221,6 +232,7 @@ if (isLoading) {
 **이유:** Cumulative Layout Shift (CLS) 방지, 더 나은 UX
 
 **Error Handling:**
+
 - 사용자 피드백에 `useMuiSnackbar` 사용
 - `react-toastify` 절대 사용 금지
 - TanStack Query `onError` 콜백
@@ -232,6 +244,7 @@ if (isLoading) {
 ### ⚡ 성능
 
 **최적화 패턴:**
+
 - `useMemo`: 비용이 큰 계산 (filter, sort, map)
 - `useCallback`: 자식에게 전달되는 이벤트 핸들러
 - `React.memo`: 비용이 큰 컴포넌트
@@ -245,6 +258,7 @@ if (isLoading) {
 ### 📘 TypeScript
 
 **표준:**
+
 - Strict 모드, `any` 타입 금지
 - 함수에 명시적 반환 타입
 - Type imports: `import type { User } from '~types/user'`
@@ -257,6 +271,7 @@ if (isLoading) {
 ### 🔧 공통 패턴
 
 **다루는 주제:**
+
 - Zod 검증과 React Hook Form
 - DataGrid wrapper 계약
 - Dialog 컴포넌트 표준
@@ -270,6 +285,7 @@ if (isLoading) {
 ### 📚 전체 예시
 
 **작동하는 전체 예시:**
+
 - 모든 패턴이 포함된 최신 컴포넌트
 - 완전한 기능 구조
 - API service 레이어
@@ -283,18 +299,18 @@ if (isLoading) {
 
 ## 네비게이션 가이드
 
-| 필요한 작업... | 읽어야 할 리소스 |
-|------------|-------------------|
-| 컴포넌트 생성 | [component-patterns.md](resources/component-patterns.md) |
-| 데이터 fetch | [data-fetching.md](resources/data-fetching.md) |
-| 파일/폴더 구성 | [file-organization.md](resources/file-organization.md) |
-| 컴포넌트 스타일링 | [styling-guide.md](resources/styling-guide.md) |
-| Routing 설정 | [routing-guide.md](resources/routing-guide.md) |
+| 필요한 작업...      | 읽어야 할 리소스                                                     |
+| ------------------- | -------------------------------------------------------------------- |
+| 컴포넌트 생성       | [component-patterns.md](resources/component-patterns.md)             |
+| 데이터 fetch        | [data-fetching.md](resources/data-fetching.md)                       |
+| 파일/폴더 구성      | [file-organization.md](resources/file-organization.md)               |
+| 컴포넌트 스타일링   | [styling-guide.md](resources/styling-guide.md)                       |
+| Routing 설정        | [routing-guide.md](resources/routing-guide.md)                       |
 | Loading/errors 처리 | [loading-and-error-states.md](resources/loading-and-error-states.md) |
-| 성능 최적화 | [performance.md](resources/performance.md) |
-| TypeScript 타입 | [typescript-standards.md](resources/typescript-standards.md) |
-| Forms/Auth/DataGrid | [common-patterns.md](resources/common-patterns.md) |
-| 전체 예시 보기 | [complete-examples.md](resources/complete-examples.md) |
+| 성능 최적화         | [performance.md](resources/performance.md)                           |
+| TypeScript 타입     | [typescript-standards.md](resources/typescript-standards.md)         |
+| Forms/Auth/DataGrid | [common-patterns.md](resources/common-patterns.md)                   |
+| 전체 예시 보기      | [complete-examples.md](resources/complete-examples.md)               |
 
 ---
 

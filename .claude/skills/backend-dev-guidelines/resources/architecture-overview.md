@@ -10,28 +10,28 @@
 
 ### 기술 스택
 
-| 영역 | 기술 | 버전 |
-|------|------|------|
-| **런타임** | Node.js | 20.x LTS |
-| **프레임워크** | Express | 4.x |
-| **언어** | TypeScript | 5.x |
-| **ORM** | Prisma | 5.x |
-| **데이터베이스** | SQLite | 3.x |
-| **인증** | JWT | jsonwebtoken |
-| **비밀번호 해싱** | bcryptjs | 2.4.x |
-| **검증** | Zod | 3.x |
-| **보안** | Helmet, CORS | 최신 |
+| 영역              | 기술         | 버전         |
+| ----------------- | ------------ | ------------ |
+| **런타임**        | Node.js      | 20.x LTS     |
+| **프레임워크**    | Express      | 4.x          |
+| **언어**          | TypeScript   | 5.x          |
+| **ORM**           | Prisma       | 5.x          |
+| **데이터베이스**  | SQLite       | 3.x          |
+| **인증**          | JWT          | jsonwebtoken |
+| **비밀번호 해싱** | bcryptjs     | 2.4.x        |
+| **검증**          | Zod          | 3.x          |
+| **보안**          | Helmet, CORS | 최신         |
 
 ### 핵심 도메인
 
-| 도메인 | 설명 | 주요 기능 |
-|--------|------|----------|
-| **Users** | 사용자 관리 | 가입, 로그인, 프로필 수정 |
-| **Articles** | 게시글 관리 | CRUD, 피드, 필터링 |
-| **Comments** | 댓글 관리 | 게시글별 댓글 CRUD |
-| **Tags** | 태그 관리 | 게시글 태그, 인기 태그 |
-| **Favorites** | 좋아요 | 게시글 좋아요/취소 |
-| **Follows** | 팔로우 | 사용자 팔로우/언팔로우 |
+| 도메인        | 설명        | 주요 기능                 |
+| ------------- | ----------- | ------------------------- |
+| **Users**     | 사용자 관리 | 가입, 로그인, 프로필 수정 |
+| **Articles**  | 게시글 관리 | CRUD, 피드, 필터링        |
+| **Comments**  | 댓글 관리   | 게시글별 댓글 CRUD        |
+| **Tags**      | 태그 관리   | 게시글 태그, 인기 태그    |
+| **Favorites** | 좋아요      | 게시글 좋아요/취소        |
+| **Follows**   | 팔로우      | 사용자 팔로우/언팔로우    |
 
 ### 인증 방식
 
@@ -144,21 +144,25 @@ backend/
 ### 이 아키텍처를 사용하는 이유
 
 **테스트 용이성:**
+
 - 각 계층을 독립적으로 테스트 가능
 - 의존성을 쉽게 모킹
 - 명확한 테스트 경계
 
 **유지보수성:**
+
 - 변경 사항이 특정 계층에 격리됨
 - 비즈니스 로직이 HTTP 관심사와 분리됨
 - 버그 위치를 쉽게 파악
 
 **재사용성:**
+
 - Service를 routes, cron jobs, scripts에서 사용 가능
 - Repository가 데이터베이스 구현을 숨김
 - 비즈니스 로직이 HTTP에 종속되지 않음
 
 **확장성:**
+
 - 새 엔드포인트 추가가 쉬움
 - 따라야 할 명확한 패턴
 - 일관된 구조
@@ -205,15 +209,15 @@ backend/
 **중요:** Middleware는 등록 순서대로 실행됩니다
 
 ```typescript
-app.use(Sentry.Handlers.requestHandler());  // 1. Sentry 추적 (첫 번째)
-app.use(express.json());                     // 2. Body 파싱
+app.use(Sentry.Handlers.requestHandler()); // 1. Sentry 추적 (첫 번째)
+app.use(express.json()); // 2. Body 파싱
 app.use(express.urlencoded({ extended: true })); // 3. URL 인코딩
-app.use(cookieParser());                     // 4. Cookie 파싱
-app.use(SSOMiddleware.initialize());         // 5. 인증 초기화
+app.use(cookieParser()); // 4. Cookie 파싱
+app.use(SSOMiddleware.initialize()); // 5. 인증 초기화
 // ... 여기서 routes 등록
-app.use(auditMiddleware);                    // 6. 감사 (글로벌인 경우)
-app.use(errorBoundary);                      // 7. 에러 핸들러 (마지막)
-app.use(Sentry.Handlers.errorHandler());     // 8. Sentry 에러 (마지막)
+app.use(auditMiddleware); // 6. 감사 (글로벌인 경우)
+app.use(errorBoundary); // 7. 에러 핸들러 (마지막)
+app.use(Sentry.Handlers.errorHandler()); // 8. Sentry 에러 (마지막)
 ```
 
 **규칙:** 에러 핸들러는 반드시 routes 이후에 등록해야 합니다!
@@ -225,6 +229,7 @@ app.use(Sentry.Handlers.errorHandler());     // 8. Sentry 에러 (마지막)
 ### Email Service (성숙한 패턴 ✅)
 
 **강점:**
+
 - Sentry 통합이 포함된 포괄적인 BaseController
 - 깔끔한 라우트 위임 (routes에 비즈니스 로직 없음)
 - 일관된 의존성 주입 패턴
@@ -233,6 +238,7 @@ app.use(Sentry.Handlers.errorHandler());     // 8. Sentry 에러 (마지막)
 - 훌륭한 에러 처리
 
 **예시 구조:**
+
 ```
 email/src/
 ├── controllers/
@@ -255,18 +261,21 @@ email/src/
 ### Form Service (전환 중 ⚠️)
 
 **강점:**
+
 - 우수한 workflow 아키텍처 (이벤트 소싱)
 - 좋은 Sentry 통합
 - 혁신적인 audit middleware (AsyncLocalStorage)
 - 포괄적인 권한 시스템
 
 **약점:**
+
 - 일부 routes에 200줄 이상의 비즈니스 로직
 - 일관성 없는 controller 네이밍
 - 직접적인 process.env 사용 (60개 이상 발생)
 - 최소한의 repository 패턴 사용
 
 **예시:**
+
 ```
 form/src/
 ├── routes/
@@ -296,12 +305,14 @@ form/src/
 **목적:** HTTP 요청/응답 관심사 처리
 
 **내용:**
+
 - `BaseController.ts` - 공통 메서드가 있는 기본 클래스
 - `{Feature}Controller.ts` - 기능별 controllers
 
 **네이밍:** PascalCase + Controller
 
 **책임:**
+
 - 요청 파라미터 파싱
 - 입력 유효성 검사 (Zod)
 - 적절한 service 메서드 호출
@@ -314,11 +325,13 @@ form/src/
 **목적:** 비즈니스 로직과 오케스트레이션
 
 **내용:**
+
 - `{feature}Service.ts` - 기능 비즈니스 로직
 
 **네이밍:** camelCase + Service (또는 PascalCase + Service)
 
 **책임:**
+
 - 비즈니스 규칙 구현
 - 여러 repositories 오케스트레이션
 - 트랜잭션 관리
@@ -330,11 +343,13 @@ form/src/
 **목적:** 데이터 액세스 추상화
 
 **내용:**
+
 - `{Entity}Repository.ts` - 엔티티의 데이터베이스 작업
 
 **네이밍:** PascalCase + Repository
 
 **책임:**
+
 - Prisma 쿼리 작업
 - 쿼리 최적화
 - 데이터베이스 에러 처리
@@ -348,11 +363,13 @@ form/src/
 **목적:** 라우트 등록만
 
 **내용:**
+
 - `{feature}Routes.ts` - 기능을 위한 Express router
 
 **네이밍:** camelCase + Routes
 
 **책임:**
+
 - Express에 routes 등록
 - Middleware 적용
 - Controllers로 위임
@@ -363,6 +380,7 @@ form/src/
 **목적:** 횡단 관심사
 
 **내용:**
+
 - 인증 middleware
 - Audit middleware
 - Error boundaries
@@ -372,6 +390,7 @@ form/src/
 **네이밍:** camelCase
 
 **유형:**
+
 - 요청 처리 (핸들러 이전)
 - 응답 처리 (핸들러 이후)
 - 에러 처리 (error boundary)
@@ -381,6 +400,7 @@ form/src/
 **목적:** 설정 관리
 
 **내용:**
+
 - `unifiedConfig.ts` - 타입 안전 설정
 - 환경별 설정
 
@@ -391,6 +411,7 @@ form/src/
 **목적:** TypeScript 타입 정의
 
 **내용:**
+
 - `{feature}.types.ts` - 기능별 타입
 - DTOs (Data Transfer Objects)
 - Request/Response 타입
@@ -415,6 +436,7 @@ src/workflow/
 ```
 
 **사용 시점:**
+
 - 기능에 5개 이상의 파일이 있을 때
 - 명확한 하위 도메인이 존재할 때
 - 논리적 그룹화가 명확성을 높일 때
@@ -432,6 +454,7 @@ src/
 ```
 
 **사용 시점:**
+
 - 간단한 기능 (< 5개 파일)
 - 명확한 하위 도메인 없음
 - 평면 구조가 더 명확할 때
@@ -443,6 +466,7 @@ src/
 ### 무엇을 어디에 둘 것인가
 
 **Routes 계층:**
+
 - ✅ 라우트 정의
 - ✅ Middleware 등록
 - ✅ Controller 위임
@@ -451,6 +475,7 @@ src/
 - ❌ 유효성 검사 로직 (validator 또는 controller에 있어야 함)
 
 **Controllers 계층:**
+
 - ✅ 요청 파싱 (params, body, query)
 - ✅ 입력 유효성 검사 (Zod)
 - ✅ Service 호출
@@ -460,6 +485,7 @@ src/
 - ❌ 데이터베이스 작업
 
 **Services 계층:**
+
 - ✅ 비즈니스 로직
 - ✅ 비즈니스 규칙 적용
 - ✅ 오케스트레이션 (여러 repos)
@@ -468,6 +494,7 @@ src/
 - ❌ 직접 Prisma 호출 (repositories 사용)
 
 **Repositories 계층:**
+
 - ✅ Prisma 작업
 - ✅ 쿼리 구성
 - ✅ 데이터베이스 에러 처리
@@ -478,15 +505,15 @@ src/
 ### 예시: 사용자 생성
 
 **Route:**
+
 ```typescript
-router.post('/users',
-    SSOMiddleware.verifyLoginStatus,
-    auditMiddleware,
-    (req, res) => userController.create(req, res)
+router.post('/users', SSOMiddleware.verifyLoginStatus, auditMiddleware, (req, res) =>
+  userController.create(req, res)
 );
 ```
 
 **Controller:**
+
 ```typescript
 async create(req: Request, res: Response): Promise<void> {
     try {
@@ -500,6 +527,7 @@ async create(req: Request, res: Response): Promise<void> {
 ```
 
 **Service:**
+
 ```typescript
 async create(data: CreateUserDTO): Promise<User> {
     // 비즈니스 규칙: 이메일이 이미 존재하는지 확인
@@ -512,6 +540,7 @@ async create(data: CreateUserDTO): Promise<User> {
 ```
 
 **Repository:**
+
 ```typescript
 async create(data: CreateUserDTO): Promise<User> {
     return PrismaService.main.user.create({ data });
@@ -527,6 +556,7 @@ async findByEmail(email: string): Promise<User | null> {
 ---
 
 **관련 파일:**
+
 - [SKILL.md](SKILL.md) - 메인 가이드
 - [routing-and-controllers.md](routing-and-controllers.md) - Routes와 controllers 세부사항
 - [services-and-repositories.md](services-and-repositories.md) - Service와 repository 패턴

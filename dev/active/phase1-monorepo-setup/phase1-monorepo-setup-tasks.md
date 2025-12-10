@@ -13,6 +13,7 @@ RealWorld (Conduit) 프로젝트를 위한 pnpm 기반 모노레포 구조 설�
   - 참조: plan.md Step 1
 
 **파일 내용:**
+
 ```yaml
 packages:
   - 'frontend'
@@ -43,6 +44,7 @@ packages:
   - [ ] typescript
 
 **수락 기준:**
+
 - `pnpm install` 성공
 - 모든 scripts 정의됨
 
@@ -53,16 +55,18 @@ packages:
 - [ ] `.gitignore` 파일 업데이트
 
 **추가 항목:**
+
 - [ ] node_modules/
 - [ ] dist/, build/
-- [ ] .env, .env.local, .env.*.local
-- [ ] .idea/, .vscode/, *.swp, *.swo
+- [ ] .env, .env.local, .env.\*.local
+- [ ] .idea/, .vscode/, _.swp, _.swo
 - [ ] .DS_Store, Thumbs.db
-- [ ] *.log, npm-debug.log*, pnpm-debug.log*
-- [ ] *.db, *.sqlite
+- [ ] _.log, npm-debug.log_, pnpm-debug.log\*
+- [ ] _.db, _.sqlite
 - [ ] coverage/
 
 **수락 기준:**
+
 - node_modules, .env, dist 등 제외됨
 
 ---
@@ -72,6 +76,7 @@ packages:
 - [ ] `.prettierrc` 파일 생성
 
 **설정 내용:**
+
 ```json
 {
   "semi": true,
@@ -83,6 +88,7 @@ packages:
 ```
 
 **수락 기준:**
+
 - `pnpm format` 실행 가능
 
 ---
@@ -95,6 +101,7 @@ packages:
 - [ ] 프로젝트 공통 규칙 정의
 
 **수락 기준:**
+
 - `pnpm lint` 실행 가능
 
 ---
@@ -105,6 +112,7 @@ packages:
 - [ ] `frontend/package.json` 파일 생성
 
 **파일 내용:**
+
 ```json
 {
   "name": "frontend",
@@ -120,6 +128,7 @@ packages:
 ```
 
 **수락 기준:**
+
 - pnpm workspace에서 인식됨
 - `pnpm -r list`에서 frontend 표시
 
@@ -131,6 +140,7 @@ packages:
 - [ ] `backend/package.json` 파일 생성
 
 **파일 내용:**
+
 ```json
 {
   "name": "backend",
@@ -146,6 +156,7 @@ packages:
 ```
 
 **수락 기준:**
+
 - pnpm workspace에서 인식됨
 - `pnpm -r list`에서 backend 표시
 
@@ -163,6 +174,7 @@ packages:
 ## 빠른 재개
 
 **다음 태스크 찾기:**
+
 1. 위 체크리스트에서 첫 번째 미완료 항목 (`[ ]`) 찾기
 2. 해당 Step의 수락 기준 확인
 3. 완료 후 체크표시 (`[x]`)로 업데이트

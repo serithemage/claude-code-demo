@@ -75,13 +75,13 @@ frontend/src/
 
 ### 핵심 기능 설명
 
-| 기능 | 설명 | 주요 컴포넌트 |
-|------|------|--------------|
-| **auth** | 인증 및 설정 | Login, Register, Settings |
-| **articles** | 게시글 CRUD | ArticleList, ArticleDetail, Editor |
-| **comments** | 댓글 관리 | CommentList, CommentForm |
-| **profiles** | 사용자 프로필 | Profile, FollowButton |
-| **tags** | 인기 태그 | PopularTags, TagFilter |
+| 기능         | 설명          | 주요 컴포넌트                      |
+| ------------ | ------------- | ---------------------------------- |
+| **auth**     | 인증 및 설정  | Login, Register, Settings          |
+| **articles** | 게시글 CRUD   | ArticleList, ArticleDetail, Editor |
+| **comments** | 댓글 관리     | CommentList, CommentForm           |
+| **profiles** | 사용자 프로필 | Profile, FollowButton              |
+| **tags**     | 인기 태그     | PopularTags, TagFilter             |
 
 ---
 
@@ -92,17 +92,20 @@ frontend/src/
 **목적**: 자체 로직, API, 컴포넌트가 있는 도메인별 기능
 
 **사용 시점:**
+
 - 기능에 여러 관련 컴포넌트가 있을 때
 - 기능에 자체 API 엔드포인트가 있을 때
 - 도메인별 로직이 있을 때
 - 커스텀 hooks/유틸리티가 있을 때
 
 **예시:**
+
 - `features/posts/` - 프로젝트 카탈로그/포스트 관리
 - `features/blogs/` - 블로그 빌더 및 렌더링
 - `features/auth/` - 인증 플로우
 
 **구조:**
+
 ```
 features/
   my-feature/
@@ -126,17 +129,20 @@ features/
 **목적**: 여러 기능에서 사용되는 진정한 재사용 가능 컴포넌트
 
 **사용 시점:**
+
 - 컴포넌트가 3개 이상의 곳에서 사용될 때
 - 컴포넌트가 제네릭 (기능별 로직 없음)
 - 컴포넌트가 UI 원시 또는 패턴일 때
 
 **예시:**
+
 - `components/SuspenseLoader/` - 로딩 wrapper
 - `components/CustomAppBar/` - 애플리케이션 헤더
 - `components/ErrorBoundary/` - 에러 처리
 - `components/LoadingOverlay/` - 로딩 오버레이
 
 **구조:**
+
 ```
 components/
   SuspenseLoader/
@@ -206,22 +212,24 @@ features/
 **목적**: 기능에 대한 중앙화된 API 호출
 
 **파일:**
+
 - `{feature}Api.ts` - 메인 API 서비스
 
 **패턴:**
+
 ```typescript
 // features/my-feature/api/myFeatureApi.ts
 import apiClient from '@/lib/apiClient';
 
 export const myFeatureApi = {
-    getItem: async (id: number) => {
-        const { data } = await apiClient.get(`/blog/items/${id}`);
-        return data;
-    },
-    createItem: async (payload) => {
-        const { data } = await apiClient.post('/blog/items', payload);
-        return data;
-    },
+  getItem: async (id: number) => {
+    const { data } = await apiClient.get(`/blog/items/${id}`);
+    return data;
+  },
+  createItem: async (payload) => {
+    const { data } = await apiClient.post('/blog/items', payload);
+    return data;
+  },
 };
 ```
 
@@ -230,10 +238,12 @@ export const myFeatureApi = {
 **목적**: 기능별 컴포넌트
 
 **구성:**
+
 - 5개 미만 컴포넌트면 평면 구조
 - 5개 이상 컴포넌트면 책임별 하위 디렉토리
 
 **예시:**
+
 ```
 components/
   MyFeatureMain.tsx           # 메인 컴포넌트
@@ -254,10 +264,12 @@ components/
 **목적**: 기능에 대한 커스텀 hooks
 
 **네이밍:**
+
 - `use` 접두사 (camelCase)
 - 기능을 설명하는 이름
 
 **예시:**
+
 ```
 hooks/
   useMyFeature.ts               # 메인 hook
@@ -271,6 +283,7 @@ hooks/
 **목적**: 기능에 특화된 유틸리티 함수
 
 **예시:**
+
 ```
 helpers/
   myFeatureHelpers.ts           # 일반 유틸리티
@@ -284,6 +297,7 @@ helpers/
 **목적**: TypeScript 타입 정의
 
 **파일:**
+
 ```
 types/
   index.ts                      # 메인 타입, 내보내기
@@ -298,12 +312,12 @@ types/
 
 `vite.config.ts` 180-185번 줄 참조:
 
-| 별칭 | 해석 | 용도 |
-|-------|-------------|---------|
-| `@/` | `src/` | src 루트에서 절대 경로 import |
-| `~types` | `src/types` | 공유 TypeScript 타입 |
-| `~components` | `src/components` | 재사용 가능 컴포넌트 |
-| `~features` | `src/features` | Feature imports |
+| 별칭          | 해석             | 용도                          |
+| ------------- | ---------------- | ----------------------------- |
+| `@/`          | `src/`           | src 루트에서 절대 경로 import |
+| `~types`      | `src/types`      | 공유 TypeScript 타입          |
+| `~components` | `src/components` | 재사용 가능 컴포넌트          |
+| `~features`   | `src/features`   | Feature imports               |
 
 ### 사용 예시
 
@@ -322,18 +336,21 @@ import { SuspenseLoader } from '../../../components/SuspenseLoader';
 ### 어떤 별칭을 사용할지
 
 **@/ (일반)**:
+
 - Lib 유틸리티: `@/lib/apiClient`
 - Hooks: `@/hooks/useAuth`
 - Config: `@/config/theme`
 - 공유 서비스: `@/services/authService`
 
 **~types (타입 Import)**:
+
 ```typescript
 import type { Post } from '~types/post';
 import type { User, UserRole } from '~types/user';
 ```
 
 **~components (재사용 가능 컴포넌트)**:
+
 ```typescript
 import { SuspenseLoader } from '~components/SuspenseLoader';
 import { CustomAppBar } from '~components/CustomAppBar';
@@ -341,6 +358,7 @@ import { ErrorBoundary } from '~components/ErrorBoundary';
 ```
 
 **~features (Feature Imports)**:
+
 ```typescript
 import { postApi } from '~features/posts/api/postApi';
 import { useAuth } from '~features/auth/hooks/useAuth';
@@ -361,6 +379,7 @@ CustomAppBar.tsx
 ```
 
 **피하세요:**
+
 - camelCase: `myComponent.tsx` ❌
 - kebab-case: `my-component.tsx` ❌
 - 모두 대문자: `MYCOMPONENT.tsx` ❌
@@ -420,6 +439,7 @@ types/user.ts
 - 여러 routes에서 재사용
 
 **예시:** `features/posts/`
+
 - 20개 이상 컴포넌트
 - 자체 API 서비스
 - 복잡한 상태 관리
@@ -506,6 +526,7 @@ export type { MyFeatureData, MyFeatureConfig } from './types';
 ```
 
 **사용:**
+
 ```typescript
 // ✅ feature index에서 깔끔한 import
 import { MyFeatureMain, useMyFeature } from '~features/my-feature';
@@ -570,6 +591,7 @@ src/
 ## 요약
 
 **핵심 원칙:**
+
 1. **features/** 도메인별 코드용
 2. **components/** 진정한 재사용 가능 UI용
 3. 하위 디렉토리 사용: api/, components/, hooks/, helpers/, types/
@@ -578,6 +600,7 @@ src/
 6. feature index.ts에서 public API 내보내기
 
 **참고:**
+
 - [component-patterns.md](component-patterns.md) - 컴포넌트 구조
 - [data-fetching.md](data-fetching.md) - API 서비스 패턴
 - [complete-examples.md](complete-examples.md) - 전체 feature 예제

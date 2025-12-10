@@ -47,6 +47,7 @@ packages:
 ```
 
 **수락 기준:**
+
 - pnpm이 frontend, backend를 워크스페이스로 인식
 
 ---
@@ -56,6 +57,7 @@ packages:
 **파일:** `package.json`
 
 **포함 내용:**
+
 - name: "claude-code-demo"
 - private: true
 - scripts:
@@ -73,6 +75,7 @@ packages:
   - typescript
 
 **수락 기준:**
+
 - `pnpm install` 성공
 - 모든 scripts 정의됨
 
@@ -81,6 +84,7 @@ packages:
 ### Step 3: .gitignore 업데이트
 
 **추가 항목:**
+
 ```
 # Dependencies
 node_modules/
@@ -118,6 +122,7 @@ coverage/
 ```
 
 **수락 기준:**
+
 - node_modules, .env, dist 등 제외됨
 
 ---
@@ -137,6 +142,7 @@ coverage/
 ```
 
 **수락 기준:**
+
 - `pnpm format` 실행 가능
 
 ---
@@ -146,11 +152,13 @@ coverage/
 **파일:** `eslint.config.js` (Flat config - ESLint 9+)
 
 **설정 내용:**
+
 - TypeScript 지원
 - React 지원 (프론트엔드)
 - 프로젝트 공통 규칙
 
 **수락 기준:**
+
 - `pnpm lint` 실행 가능
 
 ---
@@ -174,6 +182,7 @@ coverage/
 ```
 
 **수락 기준:**
+
 - pnpm workspace에서 인식됨
 
 ---
@@ -197,17 +206,18 @@ coverage/
 ```
 
 **수락 기준:**
+
 - pnpm workspace에서 인식됨
 
 ---
 
 ## 리스크 평가
 
-| 리스크 | 영향도 | 대응책 |
-|--------|--------|--------|
-| pnpm 미설치 | 높음 | 설치 가이드 제공 |
-| Node.js 버전 불일치 | 중간 | .nvmrc 파일 추가 고려 |
-| ESLint 설정 충돌 | 낮음 | 기본 설정 사용 |
+| 리스크              | 영향도 | 대응책                |
+| ------------------- | ------ | --------------------- |
+| pnpm 미설치         | 높음   | 설치 가이드 제공      |
+| Node.js 버전 불일치 | 중간   | .nvmrc 파일 추가 고려 |
+| ESLint 설정 충돌    | 낮음   | 기본 설정 사용        |
 
 ---
 
@@ -223,5 +233,6 @@ coverage/
 ## 다음 단계
 
 Phase 1 완료 후:
+
 - Task 1.2: 백엔드 프로젝트 초기화 (Express, TypeScript, Prisma)
 - Task 1.3: 프론트엔드 프로젝트 초기화 (Vite, React 19, MUI)

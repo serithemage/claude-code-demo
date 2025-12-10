@@ -6,9 +6,11 @@ description: RealWorld 프로젝트에서 JWT 인증을 사용하는 API 라우�
 # RealWorld Route Tester Skill
 
 ## 목적
+
 이 skill은 RealWorld (Conduit) 프로젝트에서 JWT 인증을 사용하는 API 라우트를 테스트하기 위한 패턴을 제공합니다.
 
 ## 이 Skill 사용 시점
+
 - 새 API 엔드포인트 테스트
 - 변경 후 라우트 기능 검증
 - 인증 문제 디버깅
@@ -18,6 +20,7 @@ description: RealWorld 프로젝트에서 JWT 인증을 사용하는 API 라우�
 ## RealWorld 인증 개요
 
 RealWorld 프로젝트에서 사용하는 것:
+
 - **JWT 토큰**: localStorage에 저장 (프론트엔드)
 - **Authorization 헤더**: `Token jwt.token.here`
 - **bcrypt**: 비밀번호 해싱
@@ -69,80 +72,85 @@ import request from 'supertest';
 import app from '../app';
 
 describe('Articles API', () => {
-    let authToken: string;
+  let authToken: string;
 
-    beforeAll(async () => {
-        // 테스트 사용자로 로그인
-        const res = await request(app)
-            .post('/api/users/login')
-            .send({
-                user: {
-                    email: 'test@example.com',
-                    password: 'testpassword'
-                }
-            });
-        authToken = res.body.user.token;
-    });
+  beforeAll(async () => {
+    // 테스트 사용자로 로그인
+    const res = await request(app)
+      .post('/api/users/login')
+      .send({
+        user: {
+          email: 'test@example.com',
+          password: 'testpassword',
+        },
+      });
+    authToken = res.body.user.token;
+  });
 
-    it('should create article', async () => {
-        const res = await request(app)
-            .post('/api/articles')
-            .set('Authorization', `Token ${authToken}`)
-            .send({
-                article: {
-                    title: 'Test Article',
-                    description: 'Test description',
-                    body: 'Test body',
-                    tagList: ['test']
-                }
-            });
+  it('should create article', async () => {
+    const res = await request(app)
+      .post('/api/articles')
+      .set('Authorization', `Token ${authToken}`)
+      .send({
+        article: {
+          title: 'Test Article',
+          description: 'Test description',
+          body: 'Test body',
+          tagList: ['test'],
+        },
+      });
 
-        expect(res.status).toBe(201);
-        expect(res.body.article.title).toBe('Test Article');
-    });
+    expect(res.status).toBe(201);
+    expect(res.body.article.title).toBe('Test Article');
+  });
 });
 ```
 
 ## RealWorld API 엔드포인트
 
 ### 인증 엔드포인트
-| 메서드 | 엔드포인트 | 인증 | 설명 |
-|--------|----------|------|------|
-| POST | `/api/users` | 불필요 | 사용자 가입 |
-| POST | `/api/users/login` | 불필요 | 로그인 |
-| GET | `/api/user` | 필수 | 현재 사용자 조회 |
-| PUT | `/api/user` | 필수 | 사용자 정보 수정 |
+
+| 메서드 | 엔드포인트         | 인증   | 설명             |
+| ------ | ------------------ | ------ | ---------------- |
+| POST   | `/api/users`       | 불필요 | 사용자 가입      |
+| POST   | `/api/users/login` | 불필요 | 로그인           |
+| GET    | `/api/user`        | 필수   | 현재 사용자 조회 |
+| PUT    | `/api/user`        | 필수   | 사용자 정보 수정 |
 
 ### 프로필 엔드포인트
-| 메서드 | 엔드포인트 | 인증 | 설명 |
-|--------|----------|------|------|
-| GET | `/api/profiles/:username` | 선택 | 프로필 조회 |
-| POST | `/api/profiles/:username/follow` | 필수 | 팔로우 |
-| DELETE | `/api/profiles/:username/follow` | 필수 | 언팔로우 |
+
+| 메서드 | 엔드포인트                       | 인증 | 설명        |
+| ------ | -------------------------------- | ---- | ----------- |
+| GET    | `/api/profiles/:username`        | 선택 | 프로필 조회 |
+| POST   | `/api/profiles/:username/follow` | 필수 | 팔로우      |
+| DELETE | `/api/profiles/:username/follow` | 필수 | 언팔로우    |
 
 ### 게시글 엔드포인트
-| 메서드 | 엔드포인트 | 인증 | 설명 |
-|--------|----------|------|------|
-| GET | `/api/articles` | 선택 | 게시글 목록 |
-| GET | `/api/articles/feed` | 필수 | 피드 (팔로우한 사용자) |
-| GET | `/api/articles/:slug` | 선택 | 게시글 상세 |
-| POST | `/api/articles` | 필수 | 게시글 작성 |
-| PUT | `/api/articles/:slug` | 필수 | 게시글 수정 (작성자만) |
+
+| 메서드 | 엔드포인트            | 인증 | 설명                   |
+| ------ | --------------------- | ---- | ---------------------- |
+| GET    | `/api/articles`       | 선택 | 게시글 목록            |
+| GET    | `/api/articles/feed`  | 필수 | 피드 (팔로우한 사용자) |
+| GET    | `/api/articles/:slug` | 선택 | 게시글 상세            |
+| POST   | `/api/articles`       | 필수 | 게시글 작성            |
+| PUT    | `/api/articles/:slug` | 필수 | 게시글 수정 (작성자만) |
 | DELETE | `/api/articles/:slug` | 필수 | 게시글 삭제 (작성자만) |
 
 ### 댓글 엔드포인트
-| 메서드 | 엔드포인트 | 인증 | 설명 |
-|--------|----------|------|------|
-| GET | `/api/articles/:slug/comments` | 선택 | 댓글 목록 |
-| POST | `/api/articles/:slug/comments` | 필수 | 댓글 작성 |
+
+| 메서드 | 엔드포인트                         | 인증 | 설명                 |
+| ------ | ---------------------------------- | ---- | -------------------- |
+| GET    | `/api/articles/:slug/comments`     | 선택 | 댓글 목록            |
+| POST   | `/api/articles/:slug/comments`     | 필수 | 댓글 작성            |
 | DELETE | `/api/articles/:slug/comments/:id` | 필수 | 댓글 삭제 (작성자만) |
 
 ### 좋아요 & 태그 엔드포인트
-| 메서드 | 엔드포인트 | 인증 | 설명 |
-|--------|----------|------|------|
-| POST | `/api/articles/:slug/favorite` | 필수 | 좋아요 추가 |
-| DELETE | `/api/articles/:slug/favorite` | 필수 | 좋아요 취소 |
-| GET | `/api/tags` | 불필요 | 태그 목록 |
+
+| 메서드 | 엔드포인트                     | 인증   | 설명        |
+| ------ | ------------------------------ | ------ | ----------- |
+| POST   | `/api/articles/:slug/favorite` | 필수   | 좋아요 추가 |
+| DELETE | `/api/articles/:slug/favorite` | 필수   | 좋아요 취소 |
+| GET    | `/api/tags`                    | 불필요 | 태그 목록   |
 
 ## 일반적인 테스트 시나리오
 
@@ -206,11 +214,13 @@ curl "http://localhost:3000/api/articles?limit=10&offset=0"
 ### 401 Unauthorized
 
 **가능한 원인**:
+
 1. 토큰이 없거나 잘못됨
 2. 토큰 형식 오류 (`Token` 대신 `Bearer` 사용)
 3. 토큰 만료
 
 **해결책**:
+
 ```bash
 # 헤더 형식 확인 - Token 사용 필수!
 -H "Authorization: Token eyJhbG..."  # ✅ 올바름
@@ -222,10 +232,12 @@ curl "http://localhost:3000/api/articles?limit=10&offset=0"
 ### 403 Forbidden
 
 **가능한 원인**:
+
 1. 다른 사용자의 리소스에 접근 시도
 2. 작성자만 수정/삭제 가능
 
 **해결책**:
+
 ```bash
 # 리소스 소유자 확인
 curl http://localhost:3000/api/articles/some-article
@@ -235,10 +247,12 @@ curl http://localhost:3000/api/articles/some-article
 ### 404 Not Found
 
 **가능한 원인**:
+
 1. 잘못된 URL 또는 slug
 2. 리소스가 존재하지 않음
 
 **해결책**:
+
 1. 엔드포인트 경로 확인
 2. slug 철자 확인
 3. 리소스가 실제로 존재하는지 확인
@@ -246,11 +260,13 @@ curl http://localhost:3000/api/articles/some-article
 ### 422 Unprocessable Entity
 
 **가능한 원인**:
+
 1. 검증 오류
 2. 필수 필드 누락
 3. 잘못된 데이터 형식
 
 **해결책**:
+
 ```bash
 # 응답의 errors 객체 확인
 {"errors":{"title":["can't be blank"]}}

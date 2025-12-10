@@ -118,14 +118,14 @@ model Follow {
 
 ### 주요 관계 설명
 
-| 관계 | 타입 | 설명 |
-|------|------|------|
-| User → Article | 1:N | 사용자가 여러 게시글 작성 |
-| User → Comment | 1:N | 사용자가 여러 댓글 작성 |
-| User → Favorite | 1:N | 사용자가 여러 게시글 좋아요 |
-| User ↔ User (Follow) | N:N | 팔로우/팔로워 관계 |
-| Article → Comment | 1:N | 게시글에 여러 댓글 |
-| Article ↔ Tag | N:N | 게시글에 여러 태그, 태그에 여러 게시글 |
+| 관계                 | 타입 | 설명                                   |
+| -------------------- | ---- | -------------------------------------- |
+| User → Article       | 1:N  | 사용자가 여러 게시글 작성              |
+| User → Comment       | 1:N  | 사용자가 여러 댓글 작성                |
+| User → Favorite      | 1:N  | 사용자가 여러 게시글 좋아요            |
+| User ↔ User (Follow) | N:N  | 팔로우/팔로워 관계                     |
+| Article → Comment    | 1:N  | 게시글에 여러 댓글                     |
+| Article ↔ Tag        | N:N  | 게시글에 여러 태그, 태그에 여러 게시글 |
 
 ---
 
@@ -155,7 +155,7 @@ const users = await PrismaService.main.user.findMany();
 
 ```typescript
 if (!PrismaService.isAvailable) {
-    throw new Error('Prisma client not initialized');
+  throw new Error('Prisma client not initialized');
 }
 
 const user = await PrismaService.main.user.findUnique({ where: { id } });
@@ -168,12 +168,14 @@ const user = await PrismaService.main.user.findUnique({ where: { id } });
 ### Repository를 사용해야 할 때
 
 ✅ **다음 경우 repositories 사용:**
+
 - 조인/include가 있는 복잡한 쿼리
 - 여러 곳에서 사용되는 쿼리
 - 캐싱 계층이 필요할 때
 - 테스트를 위해 모킹하고 싶을 때
 
 ❌ **다음 경우 repositories 생략:**
+
 - 간단한 일회성 쿼리
 - 프로토타이핑 (나중에 리팩토링 가능)
 
@@ -181,23 +183,23 @@ const user = await PrismaService.main.user.findUnique({ where: { id } });
 
 ```typescript
 export class UserRepository {
-    async findById(id: string): Promise<User | null> {
-        return PrismaService.main.user.findUnique({
-            where: { id },
-            include: { profile: true },
-        });
-    }
+  async findById(id: string): Promise<User | null> {
+    return PrismaService.main.user.findUnique({
+      where: { id },
+      include: { profile: true },
+    });
+  }
 
-    async findActive(): Promise<User[]> {
-        return PrismaService.main.user.findMany({
-            where: { isActive: true },
-            orderBy: { createdAt: 'desc' },
-        });
-    }
+  async findActive(): Promise<User[]> {
+    return PrismaService.main.user.findMany({
+      where: { isActive: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 
-    async create(data: Prisma.UserCreateInput): Promise<User> {
-        return PrismaService.main.user.create({ data });
-    }
+  async create(data: Prisma.UserCreateInput): Promise<User> {
+    return PrismaService.main.user.create({ data });
+  }
 }
 ```
 
@@ -209,9 +211,9 @@ export class UserRepository {
 
 ```typescript
 const result = await PrismaService.main.$transaction(async (tx) => {
-    const user = await tx.user.create({ data: userData });
-    const profile = await tx.userProfile.create({ data: { userId: user.id } });
-    return { user, profile };
+  const user = await tx.user.create({ data: userData });
+  const profile = await tx.userProfile.create({ data: { userId: user.id } });
+  return { user, profile };
 });
 ```
 
@@ -219,19 +221,19 @@ const result = await PrismaService.main.$transaction(async (tx) => {
 
 ```typescript
 const result = await PrismaService.main.$transaction(
-    async (tx) => {
-        const user = await tx.user.findUnique({ where: { id } });
-        if (!user) throw new Error('User not found');
+  async (tx) => {
+    const user = await tx.user.findUnique({ where: { id } });
+    if (!user) throw new Error('User not found');
 
-        return await tx.user.update({
-            where: { id },
-            data: { lastLogin: new Date() },
-        });
-    },
-    {
-        maxWait: 5000,
-        timeout: 10000,
-    }
+    return await tx.user.update({
+      where: { id },
+      data: { lastLogin: new Date() },
+    });
+  },
+  {
+    maxWait: 5000,
+    timeout: 10000,
+  }
 );
 ```
 
@@ -247,11 +249,11 @@ const users = await PrismaService.main.user.findMany();
 
 // ✅ 필요한 필드만 가져오기
 const users = await PrismaService.main.user.findMany({
-    select: {
-        id: true,
-        email: true,
-        profile: { select: { firstName: true, lastName: true } },
-    },
+  select: {
+    id: true,
+    email: true,
+    profile: { select: { firstName: true, lastName: true } },
+  },
 });
 ```
 
@@ -260,18 +262,18 @@ const users = await PrismaService.main.user.findMany({
 ```typescript
 // ❌ 과도한 includes
 const user = await PrismaService.main.user.findUnique({
-    where: { id },
-    include: {
-        profile: true,
-        posts: { include: { comments: true } },
-        workflows: { include: { steps: { include: { actions: true } } } },
-    },
+  where: { id },
+  include: {
+    profile: true,
+    posts: { include: { comments: true } },
+    workflows: { include: { steps: { include: { actions: true } } } },
+  },
 });
 
 // ✅ 필요한 것만 include
 const user = await PrismaService.main.user.findUnique({
-    where: { id },
-    include: { profile: true },
+  where: { id },
+  include: { profile: true },
 });
 ```
 
@@ -286,10 +288,10 @@ const user = await PrismaService.main.user.findUnique({
 const users = await PrismaService.main.user.findMany(); // 1개 쿼리
 
 for (const user of users) {
-    // N개 쿼리 (사용자당 하나)
-    const profile = await PrismaService.main.userProfile.findUnique({
-        where: { userId: user.id },
-    });
+  // N개 쿼리 (사용자당 하나)
+  const profile = await PrismaService.main.userProfile.findUnique({
+    where: { userId: user.id },
+  });
 }
 ```
 
@@ -298,13 +300,13 @@ for (const user of users) {
 ```typescript
 // ✅ include로 단일 쿼리
 const users = await PrismaService.main.user.findMany({
-    include: { profile: true },
+  include: { profile: true },
 });
 
 // ✅ 또는 배치 쿼리
-const userIds = users.map(u => u.id);
+const userIds = users.map((u) => u.id);
 const profiles = await PrismaService.main.userProfile.findMany({
-    where: { userId: { in: userIds } },
+  where: { userId: { in: userIds } },
 });
 ```
 
@@ -318,34 +320,35 @@ const profiles = await PrismaService.main.userProfile.findMany({
 import { Prisma } from '@prisma/client';
 
 try {
-    await PrismaService.main.user.create({ data });
+  await PrismaService.main.user.create({ data });
 } catch (error) {
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        // 고유 제약 조건 위반
-        if (error.code === 'P2002') {
-            throw new ConflictError('Email already exists');
-        }
-
-        // 외래 키 제약 조건
-        if (error.code === 'P2003') {
-            throw new ValidationError('Invalid reference');
-        }
-
-        // 레코드 찾을 수 없음
-        if (error.code === 'P2025') {
-            throw new NotFoundError('Record not found');
-        }
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    // 고유 제약 조건 위반
+    if (error.code === 'P2002') {
+      throw new ConflictError('Email already exists');
     }
 
-    // 알 수 없는 에러
-    Sentry.captureException(error);
-    throw error;
+    // 외래 키 제약 조건
+    if (error.code === 'P2003') {
+      throw new ValidationError('Invalid reference');
+    }
+
+    // 레코드 찾을 수 없음
+    if (error.code === 'P2025') {
+      throw new NotFoundError('Record not found');
+    }
+  }
+
+  // 알 수 없는 에러
+  Sentry.captureException(error);
+  throw error;
 }
 ```
 
 ---
 
 **관련 파일:**
+
 - [SKILL.md](SKILL.md)
 - [services-and-repositories.md](services-and-repositories.md)
 - [async-and-errors.md](async-and-errors.md)

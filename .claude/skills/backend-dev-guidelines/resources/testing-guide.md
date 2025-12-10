@@ -25,50 +25,50 @@ import { UserRepository } from '../repositories/UserRepository';
 jest.mock('../repositories/UserRepository');
 
 describe('UserService', () => {
-    let service: UserService;
-    let mockRepository: jest.Mocked<UserRepository>;
+  let service: UserService;
+  let mockRepository: jest.Mocked<UserRepository>;
 
-    beforeEach(() => {
-        mockRepository = {
-            findByEmail: jest.fn(),
-            create: jest.fn(),
-        } as any;
+  beforeEach(() => {
+    mockRepository = {
+      findByEmail: jest.fn(),
+      create: jest.fn(),
+    } as any;
 
-        service = new UserService();
-        (service as any).userRepository = mockRepository;
+    service = new UserService();
+    (service as any).userRepository = mockRepository;
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+  });
+
+  describe('create', () => {
+    it('이메일이 존재하면 에러를 던져야 한다', async () => {
+      mockRepository.findByEmail.mockResolvedValue({ id: '123' } as any);
+
+      await expect(service.create({ email: 'test@test.com' })).rejects.toThrow(
+        'Email already in use'
+      );
     });
 
-    afterEach(() => {
-        jest.clearAllMocks();
+    it('이메일이 고유하면 사용자를 생성해야 한다', async () => {
+      mockRepository.findByEmail.mockResolvedValue(null);
+      mockRepository.create.mockResolvedValue({ id: '123' } as any);
+
+      const user = await service.create({
+        email: 'test@test.com',
+        firstName: 'John',
+        lastName: 'Doe',
+      });
+
+      expect(user).toBeDefined();
+      expect(mockRepository.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          email: 'test@test.com',
+        })
+      );
     });
-
-    describe('create', () => {
-        it('이메일이 존재하면 에러를 던져야 한다', async () => {
-            mockRepository.findByEmail.mockResolvedValue({ id: '123' } as any);
-
-            await expect(
-                service.create({ email: 'test@test.com' })
-            ).rejects.toThrow('Email already in use');
-        });
-
-        it('이메일이 고유하면 사용자를 생성해야 한다', async () => {
-            mockRepository.findByEmail.mockResolvedValue(null);
-            mockRepository.create.mockResolvedValue({ id: '123' } as any);
-
-            const user = await service.create({
-                email: 'test@test.com',
-                firstName: 'John',
-                lastName: 'Doe',
-            });
-
-            expect(user).toBeDefined();
-            expect(mockRepository.create).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    email: 'test@test.com'
-                })
-            );
-        });
-    });
+  });
 });
 ```
 
@@ -82,28 +82,28 @@ describe('UserService', () => {
 import { PrismaService } from '@project-lifecycle-portal/database';
 
 describe('UserService Integration', () => {
-    let testUser: any;
+  let testUser: any;
 
-    beforeAll(async () => {
-        // 테스트 데이터 생성
-        testUser = await PrismaService.main.user.create({
-            data: {
-                email: 'test@test.com',
-                profile: { create: { firstName: 'Test', lastName: 'User' } },
-            },
-        });
+  beforeAll(async () => {
+    // 테스트 데이터 생성
+    testUser = await PrismaService.main.user.create({
+      data: {
+        email: 'test@test.com',
+        profile: { create: { firstName: 'Test', lastName: 'User' } },
+      },
     });
+  });
 
-    afterAll(async () => {
-        // 정리
-        await PrismaService.main.user.delete({ where: { id: testUser.id } });
-    });
+  afterAll(async () => {
+    // 정리
+    await PrismaService.main.user.delete({ where: { id: testUser.id } });
+  });
 
-    it('이메일로 사용자를 찾아야 한다', async () => {
-        const user = await userService.findByEmail('test@test.com');
-        expect(user).toBeDefined();
-        expect(user?.email).toBe('test@test.com');
-    });
+  it('이메일로 사용자를 찾아야 한다', async () => {
+    const user = await userService.findByEmail('test@test.com');
+    expect(user).toBeDefined();
+    expect(user?.email).toBe('test@test.com');
+  });
 });
 ```
 
@@ -115,17 +115,17 @@ describe('UserService Integration', () => {
 
 ```typescript
 jest.mock('@project-lifecycle-portal/database', () => ({
-    PrismaService: {
-        main: {
-            user: {
-                findMany: jest.fn(),
-                findUnique: jest.fn(),
-                create: jest.fn(),
-                update: jest.fn(),
-            },
-        },
-        isAvailable: true,
+  PrismaService: {
+    main: {
+      user: {
+        findMany: jest.fn(),
+        findUnique: jest.fn(),
+        create: jest.fn(),
+        update: jest.fn(),
+      },
     },
+    isAvailable: true,
+  },
 }));
 ```
 
@@ -133,9 +133,9 @@ jest.mock('@project-lifecycle-portal/database', () => ({
 
 ```typescript
 const mockUserService = {
-    findById: jest.fn(),
-    create: jest.fn(),
-    update: jest.fn(),
+  findById: jest.fn(),
+  create: jest.fn(),
+  update: jest.fn(),
 } as jest.Mocked<UserService>;
 ```
 
@@ -147,36 +147,36 @@ const mockUserService = {
 
 ```typescript
 describe('PermissionService', () => {
-    let instanceId: number;
+  let instanceId: number;
 
-    beforeAll(async () => {
-        // 테스트 post 생성
-        const post = await PrismaService.main.post.create({
-            data: { title: 'Test Post', content: 'Test', authorId: 'test-user' },
-        });
-        instanceId = post.id;
+  beforeAll(async () => {
+    // 테스트 post 생성
+    const post = await PrismaService.main.post.create({
+      data: { title: 'Test Post', content: 'Test', authorId: 'test-user' },
     });
+    instanceId = post.id;
+  });
 
-    afterAll(async () => {
-        // 정리
-        await PrismaService.main.post.delete({
-            where: { id: instanceId },
-        });
+  afterAll(async () => {
+    // 정리
+    await PrismaService.main.post.delete({
+      where: { id: instanceId },
     });
+  });
 
-    beforeEach(() => {
-        // 캐시 클리어
-        permissionService.clearCache();
-    });
+  beforeEach(() => {
+    // 캐시 클리어
+    permissionService.clearCache();
+  });
 
-    it('권한을 확인해야 한다', async () => {
-        const hasPermission = await permissionService.checkPermission(
-            'user-id',
-            instanceId,
-            'VIEW_WORKFLOW'
-        );
-        expect(hasPermission).toBeDefined();
-    });
+  it('권한을 확인해야 한다', async () => {
+    const hasPermission = await permissionService.checkPermission(
+      'user-id',
+      instanceId,
+      'VIEW_WORKFLOW'
+    );
+    expect(hasPermission).toBeDefined();
+  });
 });
 ```
 
@@ -199,15 +199,15 @@ node scripts/test-auth-route.js http://localhost:3002/form/api/users POST '{"ema
 ```typescript
 // auth middleware 모킹
 jest.mock('../middleware/SSOMiddleware', () => ({
-    SSOMiddlewareClient: {
-        verifyLoginStatus: (req, res, next) => {
-            res.locals.claims = {
-                sub: 'test-user-id',
-                preferred_username: 'testuser',
-            };
-            next();
-        },
+  SSOMiddlewareClient: {
+    verifyLoginStatus: (req, res, next) => {
+      res.locals.claims = {
+        sub: 'test-user-id',
+        preferred_username: 'testuser',
+      };
+      next();
     },
+  },
 }));
 ```
 
@@ -230,6 +230,7 @@ npm test -- --coverage
 ---
 
 **관련 파일:**
+
 - [SKILL.md](SKILL.md)
 - [services-and-repositories.md](services-and-repositories.md)
 - [complete-examples.md](complete-examples.md)

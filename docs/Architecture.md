@@ -38,11 +38,11 @@ flowchart TB
 
 ### 1.2 컴포넌트 간 통신
 
-| 통신 경로 | 프로토콜 | 포맷 |
-|----------|---------|------|
-| 브라우저 ↔ 프론트엔드 | HTTP/HTTPS | HTML/JS/CSS |
-| 프론트엔드 ↔ 백엔드 | REST API | JSON |
-| 백엔드 ↔ 데이터베이스 | Prisma Client | SQL |
+| 통신 경로             | 프로토콜      | 포맷        |
+| --------------------- | ------------- | ----------- |
+| 브라우저 ↔ 프론트엔드 | HTTP/HTTPS    | HTML/JS/CSS |
+| 프론트엔드 ↔ 백엔드   | REST API      | JSON        |
+| 백엔드 ↔ 데이터베이스 | Prisma Client | SQL         |
 
 ---
 
@@ -86,12 +86,12 @@ flowchart TB
 
 ### 2.2 레이어 책임
 
-| 레이어 | 책임 | 의존성 |
-|--------|------|--------|
-| **Routes** | 엔드포인트 정의, 미들웨어 적용 | Controllers |
-| **Controllers** | HTTP 처리, 검증, 응답 | Services |
-| **Services** | 비즈니스 로직 | Repositories |
-| **Repositories** | 데이터 액세스 | Prisma |
+| 레이어           | 책임                           | 의존성       |
+| ---------------- | ------------------------------ | ------------ |
+| **Routes**       | 엔드포인트 정의, 미들웨어 적용 | Controllers  |
+| **Controllers**  | HTTP 처리, 검증, 응답          | Services     |
+| **Services**     | 비즈니스 로직                  | Repositories |
+| **Repositories** | 데이터 액세스                  | Prisma       |
 
 ### 2.3 미들웨어 스택
 
@@ -165,12 +165,12 @@ src/
 
 ### 3.2 상태 관리 전략
 
-| 상태 유형 | 관리 방법 | 예시 |
-|----------|----------|------|
-| **서버 상태** | TanStack Query | 게시글 목록, 사용자 정보 |
-| **인증 상태** | Context + localStorage | 로그인 상태, JWT |
-| **UI 상태** | React State | 모달, 폼 |
-| **URL 상태** | TanStack Router | 필터, 페이지 번호 |
+| 상태 유형     | 관리 방법              | 예시                     |
+| ------------- | ---------------------- | ------------------------ |
+| **서버 상태** | TanStack Query         | 게시글 목록, 사용자 정보 |
+| **인증 상태** | Context + localStorage | 로그인 상태, JWT         |
+| **UI 상태**   | React State            | 모달, 폼                 |
+| **URL 상태**  | TanStack Router        | 필터, 페이지 번호        |
 
 ### 3.3 데이터 페칭 패턴
 
@@ -429,37 +429,32 @@ sequenceDiagram
 
 ### 6.2 HTTP 상태 코드
 
-| 코드 | 의미 | 용도 |
-|------|------|------|
-| 200 | OK | 성공 (GET, PUT) |
-| 201 | Created | 성공 (POST) |
-| 204 | No Content | 성공 (DELETE) |
-| 400 | Bad Request | 검증 오류 |
-| 401 | Unauthorized | 인증 필요 |
-| 403 | Forbidden | 권한 부족 |
-| 404 | Not Found | 리소스 없음 |
-| 422 | Unprocessable Entity | 검증 오류 |
-| 500 | Internal Server Error | 서버 오류 |
+| 코드 | 의미                  | 용도            |
+| ---- | --------------------- | --------------- |
+| 200  | OK                    | 성공 (GET, PUT) |
+| 201  | Created               | 성공 (POST)     |
+| 204  | No Content            | 성공 (DELETE)   |
+| 400  | Bad Request           | 검증 오류       |
+| 401  | Unauthorized          | 인증 필요       |
+| 403  | Forbidden             | 권한 부족       |
+| 404  | Not Found             | 리소스 없음     |
+| 422  | Unprocessable Entity  | 검증 오류       |
+| 500  | Internal Server Error | 서버 오류       |
 
 ### 6.3 백엔드 에러 처리
 
 ```typescript
 // middleware/errorHandler.ts
-export function errorHandler(
-  err: Error,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
+export function errorHandler(err: Error, req: Request, res: Response, next: NextFunction) {
   if (err instanceof ValidationError) {
     return res.status(422).json({
-      errors: err.errors
+      errors: err.errors,
     });
   }
 
   if (err instanceof UnauthorizedError) {
     return res.status(401).json({
-      errors: { message: ['Unauthorized'] }
+      errors: { message: ['Unauthorized'] },
     });
   }
 
@@ -467,7 +462,7 @@ export function errorHandler(
   Sentry.captureException(err);
 
   return res.status(500).json({
-    errors: { message: ['Internal server error'] }
+    errors: { message: ['Internal server error'] },
   });
 }
 ```
@@ -478,20 +473,20 @@ export function errorHandler(
 
 ### 7.1 백엔드
 
-| 최적화 | 구현 |
-|--------|------|
-| **데이터베이스 인덱스** | 자주 쿼리되는 필드에 인덱스 |
-| **N+1 문제 방지** | Prisma include로 관련 데이터 일괄 조회 |
-| **페이지네이션** | offset/limit으로 데이터 조회 제한 |
+| 최적화                  | 구현                                   |
+| ----------------------- | -------------------------------------- |
+| **데이터베이스 인덱스** | 자주 쿼리되는 필드에 인덱스            |
+| **N+1 문제 방지**       | Prisma include로 관련 데이터 일괄 조회 |
+| **페이지네이션**        | offset/limit으로 데이터 조회 제한      |
 
 ### 7.2 프론트엔드
 
-| 최적화 | 구현 |
-|--------|------|
-| **코드 분할** | React.lazy + Suspense |
-| **캐싱** | TanStack Query staleTime 설정 |
+| 최적화           | 구현                             |
+| ---------------- | -------------------------------- |
+| **코드 분할**    | React.lazy + Suspense            |
+| **캐싱**         | TanStack Query staleTime 설정    |
 | **메모이제이션** | React.memo, useMemo, useCallback |
-| **번들 최적화** | Vite 청크 분할 |
+| **번들 최적화**  | Vite 청크 분할                   |
 
 ---
 
@@ -499,25 +494,27 @@ export function errorHandler(
 
 ### 8.1 보안 구현
 
-| 위협 | 대응책 |
-|------|--------|
-| **XSS** | React 이스케이핑, CSP 헤더 |
-| **CSRF** | SameSite Cookie (향후) |
-| **SQL 인젝션** | Prisma ORM (파라미터화된 쿼리) |
-| **무차별 대입** | Rate Limiting (향후) |
-| **자격 증명 유출** | bcrypt 해싱, HTTPS |
+| 위협               | 대응책                         |
+| ------------------ | ------------------------------ |
+| **XSS**            | React 이스케이핑, CSP 헤더     |
+| **CSRF**           | SameSite Cookie (향후)         |
+| **SQL 인젝션**     | Prisma ORM (파라미터화된 쿼리) |
+| **무차별 대입**    | Rate Limiting (향후)           |
+| **자격 증명 유출** | bcrypt 해싱, HTTPS             |
 
 ### 8.2 보안 헤더 (Helmet)
 
 ```typescript
-app.use(helmet({
-  contentSecurityPolicy: {
-    directives: {
-      defaultSrc: ["'self'"],
-      styleSrc: ["'self'", "'unsafe-inline'"],
-      scriptSrc: ["'self'"],
-      imgSrc: ["'self'", "data:", "https:"]
-    }
-  }
-}));
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'"],
+        scriptSrc: ["'self'"],
+        imgSrc: ["'self'", 'data:', 'https:'],
+      },
+    },
+  })
+);
 ```

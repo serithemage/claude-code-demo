@@ -1,6 +1,6 @@
 ---
 description: 수정된 라우트 매핑 및 테스트 실행
-argument-hint: "[/extra/path …]"
+argument-hint: '[/extra/path …]'
 allowed-tools: Bash(cat:*), Bash(awk:*), Bash(grep:*), Bash(sort:*), Bash(xargs:*), Bash(sed:*)
 model: sonnet
 ---
@@ -28,10 +28,10 @@ model: sonnet
 
 ```json
 {
-    "tool": "Task",
-    "parameters": {
-        "description": "route smoke tests",
-        "prompt": "Run the auth-route-tester sub-agent on the JSON above."
-    }
+  "tool": "Task",
+  "parameters": {
+    "description": "route smoke tests",
+    "prompt": "Run the auth-route-tester sub-agent on the JSON above."
+  }
 }
 ```

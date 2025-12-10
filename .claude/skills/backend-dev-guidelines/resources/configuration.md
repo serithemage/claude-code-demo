@@ -18,6 +18,7 @@
 ### UnifiedConfig를 사용하는 이유
 
 **process.env의 문제점:**
+
 - ❌ 타입 안전성 없음
 - ❌ 유효성 검사 없음
 - ❌ 테스트하기 어려움
@@ -26,6 +27,7 @@
 - ❌ 오타에 대한 런타임 에러
 
 **unifiedConfig의 장점:**
+
 - ✅ 타입 안전 설정
 - ✅ 단일 진실 공급원
 - ✅ 시작 시 유효성 검사
@@ -53,6 +55,7 @@ const dbHost = config.database.host;
 ### 이것이 중요한 이유
 
 **문제 예시:**
+
 ```typescript
 // 환경 변수 이름 오타
 const host = process.env.DB_HSOT; // undefined! 에러 없음!
@@ -63,6 +66,7 @@ const timeout = parseInt(process.env.TIMEOUT); // 설정 안 되면 NaN!
 ```
 
 **unifiedConfig 사용 시:**
+
 ```typescript
 const port = config.server.port; // number, 보장됨
 const timeout = config.timeouts.default; // number, 폴백 포함
@@ -76,40 +80,40 @@ const timeout = config.timeouts.default; // number, 폴백 포함
 
 ```typescript
 export interface UnifiedConfig {
-    database: {
-        host: string;
-        port: number;
-        username: string;
-        password: string;
-        database: string;
-    };
-    server: {
-        port: number;
-        sessionSecret: string;
-    };
-    tokens: {
-        jwt: string;
-        inactivity: string;
-        internal: string;
-    };
-    keycloak: {
-        realm: string;
-        client: string;
-        baseUrl: string;
-        secret: string;
-    };
-    aws: {
-        region: string;
-        emailQueueUrl: string;
-        accessKeyId: string;
-        secretAccessKey: string;
-    };
-    sentry: {
-        dsn: string;
-        environment: string;
-        tracesSampleRate: number;
-    };
-    // ... 더 많은 섹션
+  database: {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    database: string;
+  };
+  server: {
+    port: number;
+    sessionSecret: string;
+  };
+  tokens: {
+    jwt: string;
+    inactivity: string;
+    internal: string;
+  };
+  keycloak: {
+    realm: string;
+    client: string;
+    baseUrl: string;
+    secret: string;
+  };
+  aws: {
+    region: string;
+    emailQueueUrl: string;
+    accessKeyId: string;
+    secretAccessKey: string;
+  };
+  sentry: {
+    dsn: string;
+    environment: string;
+    tracesSampleRate: number;
+  };
+  // ... 더 많은 섹션
 }
 ```
 
@@ -126,27 +130,28 @@ const configPath = path.join(__dirname, '../../config.ini');
 const iniConfig = ini.parse(fs.readFileSync(configPath, 'utf-8'));
 
 export const config: UnifiedConfig = {
-    database: {
-        host: iniConfig.database?.host || process.env.DB_HOST || 'localhost',
-        port: parseInt(iniConfig.database?.port || process.env.DB_PORT || '3306'),
-        username: iniConfig.database?.username || process.env.DB_USER || 'root',
-        password: iniConfig.database?.password || process.env.DB_PASSWORD || '',
-        database: iniConfig.database?.database || process.env.DB_NAME || 'blog_dev',
-    },
-    server: {
-        port: parseInt(iniConfig.server?.port || process.env.PORT || '3002'),
-        sessionSecret: iniConfig.server?.sessionSecret || process.env.SESSION_SECRET || 'dev-secret',
-    },
-    // ... 더 많은 설정
+  database: {
+    host: iniConfig.database?.host || process.env.DB_HOST || 'localhost',
+    port: parseInt(iniConfig.database?.port || process.env.DB_PORT || '3306'),
+    username: iniConfig.database?.username || process.env.DB_USER || 'root',
+    password: iniConfig.database?.password || process.env.DB_PASSWORD || '',
+    database: iniConfig.database?.database || process.env.DB_NAME || 'blog_dev',
+  },
+  server: {
+    port: parseInt(iniConfig.server?.port || process.env.PORT || '3002'),
+    sessionSecret: iniConfig.server?.sessionSecret || process.env.SESSION_SECRET || 'dev-secret',
+  },
+  // ... 더 많은 설정
 };
 
 // 중요 설정 유효성 검사
 if (!config.tokens.jwt) {
-    throw new Error('JWT secret not configured!');
+  throw new Error('JWT secret not configured!');
 }
 ```
 
 **핵심 포인트:**
+
 - config.ini에서 먼저 읽기
 - process.env로 폴백
 - 개발용 기본값
@@ -198,6 +203,7 @@ PORT=80
 ```
 
 **우선순위:**
+
 1. config.ini (최고 우선순위)
 2. process.env 변수
 3. 하드코딩된 기본값 (최저 우선순위)
@@ -224,12 +230,12 @@ sentry.ini
 // 프로덕션: 환경 변수
 
 export const config: UnifiedConfig = {
-    database: {
-        password: process.env.DB_PASSWORD || iniConfig.database?.password || '',
-    },
-    tokens: {
-        jwt: process.env.JWT_SECRET || iniConfig.tokens?.jwt || '',
-    },
+  database: {
+    password: process.env.DB_PASSWORD || iniConfig.database?.password || '',
+  },
+  tokens: {
+    jwt: process.env.JWT_SECRET || iniConfig.tokens?.jwt || '',
+  },
 };
 ```
 
@@ -246,6 +252,7 @@ grep -r "process.env" blog-api/src/ --include="*.ts" | wc -l
 ### 마이그레이션 예시
 
 **이전:**
+
 ```typescript
 // 코드 전체에 분산됨
 const timeout = parseInt(process.env.OPENID_HTTP_TIMEOUT_MS || '15000');
@@ -254,6 +261,7 @@ const jwtSecret = process.env.JWT_SECRET;
 ```
 
 **이후:**
+
 ```typescript
 import { config } from './config/unifiedConfig';
 
@@ -263,6 +271,7 @@ const jwtSecret = config.tokens.jwt;
 ```
 
 **장점:**
+
 - 타입 안전
 - 중앙 집중화
 - 테스트하기 쉬움
@@ -271,5 +280,6 @@ const jwtSecret = config.tokens.jwt;
 ---
 
 **관련 파일:**
+
 - [SKILL.md](SKILL.md)
 - [testing-guide.md](testing-guide.md)

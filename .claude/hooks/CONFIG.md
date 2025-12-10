@@ -98,6 +98,7 @@ esac
 ### 빌드 명령어 감지
 
 Hooks는 다음을 기반으로 빌드 명령어를 자동 감지합니다:
+
 1. "build" 스크립트가 있는 `package.json`의 존재 여부
 2. 패키지 매니저 (pnpm > npm > yarn)
 3. 특수 케이스 (Prisma 스키마)
@@ -117,6 +118,7 @@ fi
 ### TypeScript 설정
 
 Hooks는 자동으로 감지합니다:
+
 - 표준 TypeScript 프로젝트용 `tsconfig.json`
 - Vite/React 프로젝트용 `tsconfig.app.json`
 
@@ -134,6 +136,7 @@ fi
 ### Prettier 설정
 
 Prettier hook은 다음 순서로 설정을 검색합니다:
+
 1. 현재 파일 디렉토리 (상위로 탐색)
 2. 프로젝트 루트
 3. Prettier 기본값으로 폴백
@@ -156,9 +159,9 @@ fi
 
 ```typescript
 function getFileCategory(filePath: string): 'backend' | 'frontend' | 'database' | 'other' {
-    // 커스텀 패턴 추가
-    if (filePath.includes('/my-custom-dir/')) return 'backend';
-    // ... 기존 패턴
+  // 커스텀 패턴 추가
+  if (filePath.includes('/my-custom-dir/')) return 'backend';
+  // ... 기존 패턴
 }
 ```
 
@@ -214,6 +217,7 @@ Stop hooks는 `settings.json`에 지정된 순서대로 실행됩니다:
 ```
 
 **이 순서가 중요한 이유:**
+
 1. 먼저 파일 포맷팅 (깔끔한 코드)
 2. 그 다음 에러 확인
 3. 마지막으로 리마인더 표시
@@ -350,6 +354,7 @@ fi
 **문제:** Hooks가 느림
 
 **해결책:**
+
 1. TypeScript 검사를 변경된 파일로만 제한
 2. 더 빠른 패키지 매니저 사용 (pnpm > npm)
 3. 스킵 조건 추가

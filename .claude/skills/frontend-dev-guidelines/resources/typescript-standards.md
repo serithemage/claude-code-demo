@@ -13,15 +13,16 @@ React 프론트엔드 코드의 타입 안전성과 유지보수성을 위한 Ty
 ```json
 // tsconfig.json
 {
-    "compilerOptions": {
-        "strict": true,
-        "noImplicitAny": true,
-        "strictNullChecks": true
-    }
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true
+  }
 }
 ```
 
 **의미:**
+
 - 암시적 `any` 타입 금지
 - Null/undefined를 명시적으로 처리해야 함
 - 타입 안전성 강제
@@ -35,27 +36,28 @@ React 프론트엔드 코드의 타입 안전성과 유지보수성을 위한 Ty
 ```typescript
 // ❌ 절대 any 사용 금지
 function handleData(data: any) {
-    return data.something;
+  return data.something;
 }
 
 // ✅ 특정 타입 사용
 interface MyData {
-    something: string;
+  something: string;
 }
 
 function handleData(data: MyData) {
-    return data.something;
+  return data.something;
 }
 
 // ✅ 또는 진짜 알 수 없는 데이터에는 unknown 사용
 function handleUnknown(data: unknown) {
-    if (typeof data === 'object' && data !== null && 'something' in data) {
-        return (data as MyData).something;
-    }
+  if (typeof data === 'object' && data !== null && 'something' in data) {
+    return (data as MyData).something;
+  }
 }
 ```
 
 **타입을 정말 모르는 경우:**
+
 - `unknown` 사용 (타입 체크 강제)
 - Type guards로 좁히기
 - 타입이 알 수 없는 이유 문서화
@@ -69,16 +71,16 @@ function handleUnknown(data: unknown) {
 ```typescript
 // ✅ 올바름 - 명시적 반환 타입
 function getUser(id: number): Promise<User> {
-    return apiClient.get(`/users/${id}`);
+  return apiClient.get(`/users/${id}`);
 }
 
 function calculateTotal(items: Item[]): number {
-    return items.reduce((sum, item) => sum + item.price, 0);
+  return items.reduce((sum, item) => sum + item.price, 0);
 }
 
 // ❌ 피하세요 - 암시적 반환 타입 (덜 명확)
 function getUser(id: number) {
-    return apiClient.get(`/users/${id}`);
+  return apiClient.get(`/users/${id}`);
 }
 ```
 
@@ -112,10 +114,11 @@ import type { Post } from '~types/post';
 import type { SxProps, Theme } from '@mui/material';
 
 // ❌ 피하세요 - 값과 타입 import 혼합
-import { User } from '~types/user';  // 타입인지 값인지 불명확
+import { User } from '~types/user'; // 타입인지 값인지 불명확
 ```
 
 **장점:**
+
 - 타입과 값을 명확히 분리
 - 더 나은 tree-shaking
 - 순환 의존성 방지
@@ -156,6 +159,7 @@ export const MyComponent: React.FC<MyComponentProps> = ({
 ```
 
 **핵심 포인트:**
+
 - props를 위한 별도 인터페이스
 - 각 prop에 JSDoc 주석
 - 선택적 props는 `?` 사용
@@ -191,7 +195,7 @@ export const Container: React.FC<ContainerProps> = ({ children, title }) => {
 type UserUpdate = Partial<User>;
 
 function updateUser(id: number, updates: Partial<User>) {
-    // updates는 User 속성의 어떤 부분집합도 가능
+  // updates는 User 속성의 어떤 부분집합도 가능
 }
 ```
 
@@ -202,10 +206,10 @@ function updateUser(id: number, updates: Partial<User>) {
 type UserPreview = Pick<User, 'id' | 'name' | 'email'>;
 
 const preview: UserPreview = {
-    id: 1,
-    name: 'John',
-    email: 'john@example.com',
-    // 다른 User 속성 허용 안 됨
+  id: 1,
+  name: 'John',
+  email: 'john@example.com',
+  // 다른 User 속성 허용 안 됨
 };
 ```
 
@@ -216,10 +220,10 @@ const preview: UserPreview = {
 type UserWithoutPassword = Omit<User, 'password' | 'passwordHash'>;
 
 const publicUser: UserWithoutPassword = {
-    id: 1,
-    name: 'John',
-    email: 'john@example.com',
-    // password와 passwordHash 허용 안 됨
+  id: 1,
+  name: 'John',
+  email: 'john@example.com',
+  // password와 passwordHash 허용 안 됨
 };
 ```
 
@@ -227,7 +231,7 @@ const publicUser: UserWithoutPassword = {
 
 ```typescript
 // 모든 속성을 필수로
-type RequiredConfig = Required<Config>;  // 모든 선택적 props가 필수로
+type RequiredConfig = Required<Config>; // 모든 선택적 props가 필수로
 ```
 
 ### Record<K, V>
@@ -235,16 +239,16 @@ type RequiredConfig = Required<Config>;  // 모든 선택적 props가 필수로
 ```typescript
 // 타입 안전 객체/맵
 const userMap: Record<string, User> = {
-    'user1': { id: 1, name: 'John' },
-    'user2': { id: 2, name: 'Jane' },
+  user1: { id: 1, name: 'John' },
+  user2: { id: 2, name: 'Jane' },
 };
 
 // 스타일용
 import type { SxProps, Theme } from '@mui/material';
 
 const styles: Record<string, SxProps<Theme>> = {
-    container: { p: 2 },
-    header: { mb: 1 },
+  container: { p: 2 },
+  header: { mb: 1 },
 };
 ```
 
@@ -256,17 +260,12 @@ const styles: Record<string, SxProps<Theme>> = {
 
 ```typescript
 function isUser(data: unknown): data is User {
-    return (
-        typeof data === 'object' &&
-        data !== null &&
-        'id' in data &&
-        'name' in data
-    );
+  return typeof data === 'object' && data !== null && 'id' in data && 'name' in data;
 }
 
 // 사용
 if (isUser(response)) {
-    console.log(response.name);  // TypeScript가 User로 인식
+  console.log(response.name); // TypeScript가 User로 인식
 }
 ```
 
@@ -347,17 +346,17 @@ const value = element.value;
 
 // ✅ OK - 검증한 API 응답
 const response = await api.getData();
-const user = response.data as User;  // 형태를 알고 있음
+const user = response.data as User; // 형태를 알고 있음
 ```
 
 ### 사용하면 안 되는 경우
 
 ```typescript
 // ❌ 피하세요 - 타입 안전성 우회
-const data = getData() as any;  // 잘못됨 - TypeScript 무력화
+const data = getData() as any; // 잘못됨 - TypeScript 무력화
 
 // ❌ 피하세요 - 안전하지 않은 단언
-const value = unknownValue as string;  // 실제로 string이 아닐 수 있음
+const value = unknownValue as string; // 실제로 string이 아닐 수 있음
 ```
 
 ---
@@ -394,7 +393,7 @@ const data = queryClient.getQueryData<Data>(['data'])!;
 // 명시적 체크가 더 나음:
 const data = queryClient.getQueryData<Data>(['data']);
 if (data) {
-    // data 사용
+  // data 사용
 }
 ```
 
@@ -403,6 +402,7 @@ if (data) {
 ## 요약
 
 **TypeScript 체크리스트:**
+
 - ✅ Strict 모드 활성화
 - ✅ `any` 타입 금지 (필요하면 `unknown` 사용)
 - ✅ 함수에 명시적 반환 타입
@@ -414,5 +414,6 @@ if (data) {
 - ❌ 꼭 필요한 경우 아니면 타입 단언 피하기
 
 **참고:**
+
 - [component-patterns.md](component-patterns.md) - 컴포넌트 타이핑
 - [data-fetching.md](data-fetching.md) - API 타이핑

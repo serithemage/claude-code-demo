@@ -7,6 +7,7 @@ Skills 자동 활성화, 파일 추적, 유효성 검사를 가능하게 하는 
 ## Hooks란?
 
 Hooks는 Claude 워크플로우의 특정 시점에 실행되는 스크립트입니다:
+
 - **UserPromptSubmit**: 사용자가 프롬프트를 제출할 때
 - **PreToolUse**: 도구가 실행되기 전
 - **PostToolUse**: 도구가 완료된 후
@@ -23,6 +24,7 @@ Hooks는 Claude 워크플로우의 특정 시점에 실행되는 스크립트입
 **목적:** 사용자 프롬프트와 파일 컨텍스트를 기반으로 관련 skills를 자동으로 제안
 
 **작동 방식:**
+
 1. `skill-rules.json`을 읽음
 2. 사용자 프롬프트를 트리거 패턴과 매칭
 3. 사용자가 작업 중인 파일 확인
@@ -31,6 +33,7 @@ Hooks는 Claude 워크플로우의 특정 시점에 실행되는 스크립트입
 **필수인 이유:** Skills가 자동 활성화되게 만드는 핵심 hook입니다.
 
 **통합 방법:**
+
 ```bash
 # 두 파일 모두 복사
 cp skill-activation-prompt.sh your-project/.claude/hooks/
@@ -45,6 +48,7 @@ npm install
 ```
 
 **settings.json에 추가:**
+
 ```json
 {
   "hooks": {
@@ -71,6 +75,7 @@ npm install
 **목적:** 세션 간 컨텍스트를 유지하기 위해 파일 변경 사항 추적
 
 **작동 방식:**
+
 1. Edit/Write/MultiEdit 도구 호출 모니터링
 2. 수정된 파일 기록
 3. 컨텍스트 관리를 위한 캐시 생성
@@ -79,6 +84,7 @@ npm install
 **필수인 이유:** Claude가 코드베이스의 어떤 부분이 활성 상태인지 이해하는 데 도움을 줍니다.
 
 **통합 방법:**
+
 ```bash
 # 파일 복사
 cp post-tool-use-tracker.sh your-project/.claude/hooks/
@@ -88,6 +94,7 @@ chmod +x your-project/.claude/hooks/post-tool-use-tracker.sh
 ```
 
 **settings.json에 추가:**
+
 ```json
 {
   "hooks": {
@@ -121,10 +128,12 @@ chmod +x your-project/.claude/hooks/post-tool-use-tracker.sh
 **통합 방법:**
 
 **먼저 이 hook이 적합한지 확인:**
+
 - ✅ 사용 적합: 멀티 서비스 TypeScript 모노레포
 - ❌ 건너뛰기: 단일 서비스 프로젝트 또는 다른 빌드 설정
 
 **사용하는 경우:**
+
 1. tsc-check.sh 복사
 2. **서비스 감지 부분 수정 (약 28번째 줄):**
    ```bash

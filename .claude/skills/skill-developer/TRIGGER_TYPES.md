@@ -69,11 +69,13 @@ Claude Code의 skill 자동 활성화 시스템에서 skill 트리거를 설정�
 ### 예시
 
 **데이터베이스 작업:**
+
 - 사용자 프롬프트: "사용자 추적 기능 추가해줘"
 - 매칭: `(add).*?(feature)`
 - 활성화: `database-verification`, `error-tracking`
 
 **컴포넌트 생성:**
+
 - 사용자 프롬프트: "대시보드 위젯 만들어줘"
 - 매칭: `(create).*?(component)` (패턴에 component가 있는 경우)
 - 활성화: `frontend-dev-guidelines`
@@ -212,11 +214,13 @@ form/src/workflow-definitions/**/*.json # 워크플로우 정의
 ### 예시
 
 **Prisma 감지:**
+
 - 파일 내용: `import { PrismaService } from '@project/database'`
 - 매칭: `import.*[Pp]risma`
 - 활성화: `database-verification`
 
 **Controller 감지:**
+
 - 파일 내용: `export class UserController {`
 - 매칭: `export class.*Controller`
 - 활성화: `error-tracking`
@@ -262,6 +266,7 @@ useState|useEffect              # React hooks
 ## 모범 사례 요약
 
 ### 해야 할 것:
+
 ✅ 구체적이고 모호하지 않은 키워드 사용
 ✅ 모든 패턴을 실제 예시로 테스트
 ✅ 일반적인 변형 포함
@@ -271,6 +276,7 @@ useState|useEffect              # React hooks
 ✅ 파일 경로 패턴을 좁고 구체적으로 작성
 
 ### 하지 말아야 할 것:
+
 ❌ 너무 일반적인 키워드 사용 ("system", "work")
 ❌ Intent 패턴을 너무 넓게 만들기 (오탐)
 ❌ 패턴을 너무 구체적으로 만들기 (미탐)
@@ -281,12 +287,14 @@ useState|useEffect              # React hooks
 ### 트리거 테스트
 
 **키워드/intent 트리거 테스트:**
+
 ```bash
 echo '{"session_id":"test","prompt":"테스트 프롬프트"}' | \
   npx tsx .claude/hooks/skill-activation-prompt.ts
 ```
 
 **파일 경로/콘텐츠 트리거 테스트:**
+
 ```bash
 cat <<'EOF' | npx tsx .claude/hooks/skill-verification-guard.ts
 {
@@ -300,6 +308,7 @@ EOF
 ---
 
 **관련 파일:**
+
 - [SKILL.md](SKILL.md) - 메인 skill 가이드
 - [SKILL_RULES_REFERENCE.md](SKILL_RULES_REFERENCE.md) - 전체 skill-rules.json 스키마
 - [PATTERNS_LIBRARY.md](PATTERNS_LIBRARY.md) - 바로 사용 가능한 패턴 라이브러리
