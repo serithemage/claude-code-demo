@@ -4,7 +4,7 @@
 
 ## 이 프로젝트의 목적
 
-**RealWorld (Conduit)** 앱 - Medium.com 클론 블로그 플랫폼 - 을 구현하면서 다양한 Claude Code 기능을 실습합니다:
+**[RealWorld (Conduit)](https://realworld-docs.netlify.app/)** 앱 - Medium.com 클론 블로그 플랫폼 - 을 구현하면서 다양한 Claude Code 기능을 실습합니다:
 
 - **Skills**: context 기반 자동 활성화 가이드라인
 - **Hooks**: 도구 사용 전후 자동 실행 스크립트
