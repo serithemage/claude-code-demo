@@ -58,47 +58,50 @@ Authorization: Token jwt.token.here
 
 ### 4개 계층
 
-```
-┌─────────────────────────────────────┐
-│         HTTP 요청                    │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│  계층 1: ROUTES                      │
-│  - 라우트 정의만                      │
-│  - Middleware 등록                   │
-│  - Controller로 위임                 │
-│  - 비즈니스 로직 없음                 │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│  계층 2: CONTROLLERS                 │
-│  - 요청/응답 처리                     │
-│  - 입력 유효성 검사                   │
-│  - Service 호출                      │
-│  - 응답 포맷팅                        │
-│  - 에러 처리                          │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│  계층 3: SERVICES                    │
-│  - 비즈니스 로직                      │
-│  - 오케스트레이션                     │
-│  - Repository 호출                   │
-│  - HTTP 지식 없음                     │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│  계층 4: REPOSITORIES                │
-│  - 데이터 액세스 추상화               │
-│  - Prisma 작업                       │
-│  - 쿼리 최적화                        │
-│  - 캐싱                               │
-└───────────────┬─────────────────────┘
-                ↓
-┌─────────────────────────────────────┐
-│         데이터베이스 (SQLite)          │
-└─────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph Request["HTTP 요청"]
+        R[Client Request]
+    end
+
+    subgraph Routes["계층 1: ROUTES"]
+        R1[라우트 정의]
+        R2[Middleware 등록]
+        R3[Controller로 위임]
+        R4[비즈니스 로직 없음]
+    end
+
+    subgraph Controllers["계층 2: CONTROLLERS"]
+        C1[요청/응답 처리]
+        C2[입력 유효성 검사]
+        C3[Service 호출]
+        C4[응답 포맷팅]
+        C5[에러 처리]
+    end
+
+    subgraph Services["계층 3: SERVICES"]
+        S1[비즈니스 로직]
+        S2[오케스트레이션]
+        S3[Repository 호출]
+        S4[HTTP 지식 없음]
+    end
+
+    subgraph Repositories["계층 4: REPOSITORIES"]
+        Repo1[데이터 액세스 추상화]
+        Repo2[Prisma 작업]
+        Repo3[쿼리 최적화]
+        Repo4[캐싱]
+    end
+
+    subgraph Database["데이터베이스"]
+        DB[(SQLite)]
+    end
+
+    Request --> Routes
+    Routes --> Controllers
+    Controllers --> Services
+    Services --> Repositories
+    Repositories --> Database
 ```
 
 ### RealWorld 백엔드 구조
