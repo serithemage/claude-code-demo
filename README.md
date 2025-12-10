@@ -4,7 +4,7 @@ A learning project to experience the advanced configurations introduced in the [
 
 ## Purpose of This Project
 
-Implement the **RealWorld (Conduit)** app - a Medium.com clone blog platform - while practicing various Claude Code features:
+Implement the **[RealWorld (Conduit)](https://realworld-docs.netlify.app/)** app - a Medium.com clone blog platform - while practicing various Claude Code features:
 
 - **Skills**: Context-based auto-activation guidelines
 - **Hooks**: Auto-execution scripts before/after tool usage
